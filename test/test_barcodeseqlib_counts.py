@@ -23,28 +23,40 @@ import pandas as pd
 import numpy as np
 import os.path
 
+
 from enrich2.libraries.barcode import BarcodeSeqLib
 
 
 def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestBarcodeSeqLibCounts)
-    #suite.addTest(unittest.TestLoader().loadTestsFromTestCase(TestBarcodeSeqLibCounts2))
+    suite = unittest.TestLoader().loadTestsFromTestCase(
+        TestBarcodeSeqLibCounts
+    )
     return suite
 
 
 class TestBarcodeSeqLibCounts(unittest.TestCase):
 
     @classmethod
-    def setUpClass(cls):
-        # read the JSON config file
-        cfg_file = os.path.join(os.path.dirname(__file__), "test_files", "config", "multi_barcode.json")
+    def fileIO(cls):
+        cfg_file = os.path.join(
+            os.path.dirname(__file__),
+            "data", "config", "multi_barcode.json"
+        )
+        print(cfg_file)
         try:
-            cfg = json.load(open(cfg_file, "U"))
+            with open(cfg_file, "rt") as fp:
+                return json.load(fp)
         except IOError:
-            raise IOError("Failed to open '{}' [{}]".format(cfg_file, __file__))
+            raise IOError("Failed to open '{}' "
+                          "[{}]".format(cfg_file, __file__))
         except ValueError:
-            raise ValueError("Improperly formatted .json file [{}]".format(__file__))
+            raise ValueError("Improperly formatted .json file "
+                             "[{}]".format(__file__))
 
+
+    @classmethod
+    def setUpClass(cls):
+        cls._cfg = cls.fileIO()
         cls._obj = BarcodeSeqLib()
 
         # set analysis options
@@ -57,7 +69,7 @@ class TestBarcodeSeqLibCounts(unittest.TestCase):
         cls._obj.output_dir_override = False
 
         # perform the analysis
-        cls._obj.configure(cfg)
+        cls._obj.configure(cls._cfg)
         cls._obj.validate()
         cls._obj.store_open(children=True)
         cls._obj.calculate()
@@ -66,25 +78,28 @@ class TestBarcodeSeqLibCounts(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-
+        os.rmdir(cls._obj.output_dir)
 
     def test_multi_barcode_counts(self):
-        result = pd.DataFrame.from_csv(os.path.join(os.path.dirname(__file__), "test_files", "result", "multi_barcode_count.tsv"), sep='\t').astype(np.int32)
+        path = os.path.join(os.path.dirname(__file__),
+                            "data", "result", "multi_barcode_count.tsv")
         # order in h5 matters
+        result = pd.DataFrame.from_csv(path, sep='\t').astype(np.int32)
         self.assertTrue(self._obj.store['/raw/barcodes/counts'].equals(result))
 
-
     def test_multi_barcode_counts_unsorted(self):
-        result = pd.DataFrame.from_csv(os.path.join(os.path.dirname(__file__), "test_files", "result", "multi_barcode_count.tsv"), sep='\t').astype(np.int32)
+        path = os.path.join(os.path.dirname(__file__),
+                            "data", "result", "multi_barcode_count.tsv")
         # order in h5 doesn't matter
-        self.assertTrue(self._obj.store['/raw/barcodes/counts'].sort_index().equals(result.sort_index()))
-
+        result = pd.DataFrame.from_csv(path, sep='\t').astype(np.int32)
+        store = self._obj.store['/raw/barcodes/counts'].sort_index()
+        self.assertTrue(store.equals(result.sort_index()))
 
     def test_filter_stats(self):
-        result = pd.DataFrame([0], index=['total'], columns=['count']).astype(int)
+        result = pd.DataFrame(
+            [0], index=['total'], columns=['count']
+        ).astype(int)
         self.assertTrue(self._obj.store['/raw/filter'].equals(result))
-
-
 
 if __name__ == "__main__":
     unittest.main()

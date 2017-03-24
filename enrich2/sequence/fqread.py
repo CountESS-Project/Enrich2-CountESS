@@ -56,17 +56,24 @@ class FQRead(object):
 
 
     def __init__(self, header, sequence, header2, quality, qbase=33):
+        lst = [header, sequence, header2, quality]
+        if not all(isinstance(x, str) for x in lst):
+            raise ValueError('Bad file contents. Expeceted str got type '
+                             '{}'.format(type(lst[-1])))
+        if not all(len(x) for x in lst):
+            raise ValueError('Missing fields in FASTQ record')
         if len(sequence) != len(quality):
-            raise ValueError('different lengths for sequence and quality')
-        elif header[0] != '@' or header2[0] != '+':
-            raise ValueError('improperly formatted FASTQ record')
-        else:
-            self.header = header
-            self.sequence = sequence
-            self.header2 = header2
-            # quality is a list of integers
-            self.quality = [x - qbase for x in array('b', quality.encode('ascii')).tolist()]
-            self.qbase = qbase
+            raise ValueError('Different lengths for sequence and quality')
+        if header[0] != '@' or header2[0] != '+':
+            raise ValueError('Improperly formatted FASTQ record')
+
+        self.header = header
+        self.sequence = sequence
+        self.header2 = header2
+        # quality is a list of integers
+        self.quality = [x - qbase for x in
+                        array('b', quality.encode('ascii')).tolist()]
+        self.qbase = qbase
 
 
     def __str__(self):
@@ -74,8 +81,9 @@ class FQRead(object):
         Reformat as a four-line FASTQ_ record. This method converts the 
         integer quality values back into a string.
         """
-        return '\n'.join([self.header, self.sequence, self.header2, 
-                array('b', [x + self.qbase for x in self.quality]).tostring()])
+        quality = array('b', [x + self.qbase for x in self.quality]).tobytes()
+        quality = quality.decode('ascii')
+        return '\n'.join([self.header, self.sequence, self.header2, quality])
 
 
     def __len__(self):
@@ -238,49 +246,50 @@ def read_fastq(fname, filter_function=None, buffer_size=BUFFER_SIZE, qbase=33):
     .. note:: To read multiple files in parallel (such as index or \
         forward/reverse reads), use :py:func:`read_fastq_multi` instead.
     """
-    _, _, _, compression = split_fastq_path(fname)
-    if compression is None: # raw FASTQ
-        handle = open(fname, "rt")
+    _, _, ext, compression = split_fastq_path(fname)
+    if compression is None and ext in (".fq", ".fastq"): # raw FASTQ
+        open_func = open
     elif compression == "bz2":
-        handle = bz2.open(fname, "rt")
+        open_func = bz2.open
     elif compression == "gz":
-        handle = gzip.open(fname, "rt")
+        open_func = gzip.open
     else:
-        raise IOError("unrecognized compression mode '{mode}'".format(mode=compression))
+        raise IOError("Unrecognized compression "
+                      "mode '{mode}'".format(mode=compression))
 
     eof = False
     leftover = ''
+    with open_func(fname, 'rt') as handle:
+        while not eof:
+            buf = handle.read(buffer_size)
+            if len(buf) < buffer_size:
+                eof = True
 
-    while not eof:
-        buf = handle.read(buffer_size)
-        if len(buf) < buffer_size:
-            eof = True
+            buf = leftover + buf # prepend partial record from previous buffer
+            lines = buf.split('\n')
+            fastq_count = len(lines) // 4
 
-        buf = leftover + buf # prepend partial record from previous buffer
-        lines = buf.split('\n')
-        fastq_count = len(lines) // 4
+            if not eof: # handle lines from the trailing partial FASTQ record
+                dangling = len(lines) % 4
+                if dangling == 0: # quality line (probably) incomplete
+                    dangling = 4
+                    fastq_count = fastq_count - 1
+                # join the leftover lines back into a string
+                leftover = '\n'.join(lines[len(lines) - dangling:])
 
-        if not eof: # handle lines from the trailing partial FASTQ record
-            dangling = len(lines) % 4
-            if dangling == 0: # quality line (probably) incomplete
-                dangling = 4
-                fastq_count = fastq_count - 1
-            # join the leftover lines back into a string
-            leftover = '\n'.join(lines[len(lines) - dangling:])
-
-        # index into the list of lines to pull out the FASTQ records
-        for i in range(fastq_count):
-            # (header, sequence, header2, quality)
-            fq = FQRead(*lines[i * 4:(i + 1) * 4], qbase=qbase)
-            if filter_function is None: # no filtering
-                yield fq
-            elif filter_function(fq):   # passes filtering
-                yield fq
-            else:                       # fails filtering
-                continue
-
-    handle.close()
-
+            # index into the list of lines to pull out the FASTQ records
+            for i in range(fastq_count):
+                # (header, sequence, header2, quality)
+                fq = FQRead(*lines[i * 4:(i + 1) * 4], qbase=qbase)
+                if filter_function is None:
+                    # no filtering
+                    yield fq
+                elif filter_function(fq):
+                    # passes filtering
+                    yield fq
+                else:
+                    # fails filtering
+                    continue
 
 
 def read_fastq_multi(fnames, filter_function=None, buffer_size=BUFFER_SIZE,

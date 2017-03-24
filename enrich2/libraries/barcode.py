@@ -78,13 +78,10 @@ class BarcodeSeqLib(SeqLib):
         dumping to a config file.
         """
         cfg = SeqLib.serialize(self)
-
         cfg['barcodes'] = dict()
         if self.barcode_min_count > 0:
             cfg['barcodes']['min count'] = self.barcode_min_count
-
         cfg['fastq'] = self.serialize_fastq()
-
         return cfg
 
     def configure_fastq(self, cfg):
@@ -185,3 +182,4 @@ class BarcodeSeqLib(SeqLib):
                 query="count >= self.barcode_min_count"
             )
             self.save_filter_stats()
+        return
