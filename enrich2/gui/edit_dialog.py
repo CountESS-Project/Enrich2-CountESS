@@ -15,26 +15,24 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.simpledialog as tkSimpleDialog
-import tkinter.messagebox as tkMessageBox
-import json
 from sys import maxsize
 from collections import OrderedDict
+import tkinter as tk
+import tkinter.messagebox as tkMessageBox
+import tkinter.simpledialog as tkSimpleDialog
+import tkinter.ttk as ttk
+
+from ..libraries.barcode import BarcodeSeqLib
+from ..libraries.barcodeid import BcidSeqLib
+from ..libraries.barcodevariant import BcvSeqLib
+from ..libraries.basic import BasicSeqLib
+from ..libraries.idonly import IdOnlySeqLib
+from ..libraries.seqlib import SeqLib
+from ..libraries.variant import VariantSeqLib
+from ..libraries.overlap import OverlapSeqLib
+
 from .dialog_elements import FileEntry, IntegerEntry, Checkbox, StringEntry, \
     SectionLabel, DEFAULT_COLUMNS
-from ..experiment import Experiment
-from ..condition import Condition
-from ..selection import Selection
-from ..basic import BasicSeqLib
-from ..barcodevariant import BcvSeqLib
-from ..barcodeid import BcidSeqLib
-from ..barcode import BarcodeSeqLib
-from ..idonly import IdOnlySeqLib
-from ..overlap import OverlapSeqLib
-from ..seqlib import SeqLib
-from ..variant import VariantSeqLib
 
 
 def clear_nones_filter(v):

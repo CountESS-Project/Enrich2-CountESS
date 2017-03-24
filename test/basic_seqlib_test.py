@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016 Alan F Rubin
 #
 #  This file is part of Enrich2.
 #
@@ -15,13 +15,3 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-def pretty_class_str(obj):
-    cls_name = str(obj.__class__).split('.')[-1][:-2]
-    string = "{}\n{}\n".format(cls_name, '-'*len(cls_name))
-    for (attr, value) in obj.__dict__.items():
-        if not(attr.startswith("__") and attr.endswith("__")):
-            string += "{}={}\n".format(attr, value)
-    return string
-
-
-    

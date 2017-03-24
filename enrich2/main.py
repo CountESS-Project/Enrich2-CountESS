@@ -18,24 +18,24 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
-from argparse import ArgumentParser, RawDescriptionHelpFormatter
-import logging
 import json
-import sys
+import logging
 import os.path
-import enrich2.config_check as config_check
-from enrich2.experiment import Experiment
-from enrich2.selection import Selection
-from enrich2.barcode import BarcodeSeqLib
-from enrich2.barcodeid import BcidSeqLib
-from enrich2.barcodevariant import BcvSeqLib
-from enrich2.basic import BasicSeqLib
-from enrich2.overlap import OverlapSeqLib
-from enrich2.idonly import IdOnlySeqLib
-from enrich2.storemanager import SCORING_METHODS, LOGR_METHODS
-from enrich2.gui.configurator import Configurator
-from enrich2.sfmap import parse_aa_list
+import sys
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+
+from .libraries.barcode import BarcodeSeqLib
+from .libraries.barcodeid import BcidSeqLib
+from .libraries.barcodevariant import BcvSeqLib
+from .libraries.basic import BasicSeqLib
+from .libraries.idonly import IdOnlySeqLib
+from .libraries.overlap import OverlapSeqLib
+from .stores.experiment import Experiment
+from .stores.selection import Selection
+from .stores.storemanager import SCORING_METHODS, LOGR_METHODS
+from .config import config_check
+from .base.sfmap import parse_aa_list
+from .gui.configurator import Configurator
 
 
 __author__ = "Alan F Rubin"

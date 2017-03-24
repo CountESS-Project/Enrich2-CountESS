@@ -15,12 +15,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.simpledialog as tkSimpleDialog
 import tkinter.messagebox as tkMessageBox
-import sys
-import logging
 
 
 class RunnerSavePrompt(tkSimpleDialog.Dialog):

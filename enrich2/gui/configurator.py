@@ -15,26 +15,27 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.messagebox as tkMessageBox
-import tkinter.filedialog as tkFileDialog
-
-import platform
 import json
-from ..config_check import is_seqlib, is_experiment, is_selection, seqlib_type
-from .delete_dialog import DeleteDialog
-from .seqlib_apply_dialog import SeqLibApplyDialog
-from .edit_dialog import EditDialog, clear_nones
+import platform
+import tkinter as tk
+import tkinter.filedialog as tkFileDialog
+import tkinter.messagebox as tkMessageBox
+import tkinter.ttk as ttk
+
+from ..stores.experiment import Experiment
+from ..stores.selection import Selection
+from ..libraries.seqlib import SeqLib
+from ..config.config_check import is_seqlib, is_experiment, is_selection, seqlib_type
+from ..libraries.overlap import OverlapSeqLib
+from ..stores.condition import Condition
+from ..stores.storemanager import SCORING_METHODS, LOGR_METHODS
+
 from .create_root_dialog import CreateRootDialog
 from .create_seqlib_dialog import CreateSeqLibDialog
+from .delete_dialog import DeleteDialog
+from .edit_dialog import EditDialog, clear_nones
 from .runner_window import RunnerWindow, RunnerSavePrompt
-from ..experiment import Experiment
-from ..condition import Condition
-from ..selection import Selection
-from ..overlap import OverlapSeqLib
-from ..seqlib import SeqLib
-from ..storemanager import SCORING_METHODS, LOGR_METHODS
+from .seqlib_apply_dialog import SeqLibApplyDialog
 
 
 def write_json(d, handle):
