@@ -56,7 +56,8 @@ class IdOnlySeqLib(SeqLib):
         cfg = SeqLib.serialize(self)
 
         cfg['identifiers'] = dict()
-        if self.identifier_min_count > 0:
+        if self.identifier_min_count is not None \
+                and self.identifier_min_count > 0:
             cfg['identifiers']['min count'] = self.identifier_min_count
 
         return cfg

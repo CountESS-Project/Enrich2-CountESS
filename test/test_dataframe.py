@@ -18,7 +18,6 @@
 
 import unittest
 import pandas as pd
-from collections import OrderedDict
 
 from enrich2.base.dataframe import fill_position_gaps, singleton_dataframe
 from enrich2.base.dataframe import single_mutation_index, filter_coding_index

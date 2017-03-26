@@ -19,7 +19,7 @@
 import unittest
 import test.test_dataframe as test_dataframe
 import test.test_variant as test_variant
-import test.test_barcodeseqlib_counts as test_seqlib_counts
+import test.test_barcode_counts as test_seqlib_counts
 import test.test_coding_selection as test_coding_selection
 import test.test_noncoding_selection as test_noncoding_selection
 

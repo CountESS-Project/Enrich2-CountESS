@@ -19,6 +19,7 @@
 import os
 import unittest
 import os.path
+
 from enrich2.sequence.fqread import read_fastq
 
 

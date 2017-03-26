@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016 Alan F Rubin
 #
 #  This file is part of Enrich2.
 #
@@ -15,43 +15,30 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
 from sys import maxsize
 from collections import OrderedDict
-import tkinter as tk
-import tkinter.messagebox as tkMessageBox
-import tkinter.simpledialog as tkSimpleDialog
-import tkinter.ttk as ttk
 
-from ..libraries.barcode import BarcodeSeqLib
-from ..libraries.barcodeid import BcidSeqLib
-from ..libraries.barcodevariant import BcvSeqLib
+import tkinter as tk
+import tkinter.ttk
+import tkinter.simpledialog
+import tkinter.messagebox
+import tkinter.filedialog
+
+from .dialog_elements import FileEntry, IntegerEntry, Checkbox
+from .dialog_elements import StringEntry, SectionLabel, DEFAULT_COLUMNS
+
+from ..stores.experiment import Experiment
+from ..stores.condition import Condition
+from ..stores.selection import Selection
 from ..libraries.basic import BasicSeqLib
+from ..libraries.barcodevariant import BcvSeqLib
+from ..libraries.barcodeid import BcidSeqLib
+from ..libraries.barcode import BarcodeSeqLib
 from ..libraries.idonly import IdOnlySeqLib
+from ..libraries.overlap import OverlapSeqLib
 from ..libraries.seqlib import SeqLib
 from ..libraries.variant import VariantSeqLib
-from ..libraries.overlap import OverlapSeqLib
-
-from .dialog_elements import FileEntry, IntegerEntry, Checkbox, StringEntry, \
-    SectionLabel, DEFAULT_COLUMNS
-
-
-def clear_nones_filter(v):
-    """
-    Filter function for clear_nones.
-
-    Returns False if v is None, else True.
-    """
-    if isinstance(v, dict):
-        if len(list(v.keys())) == 0:
-            # removing empty dictionaries breaks SeqLib recognition
-            # return False
-            return True
-        else:
-            return True
-    elif v is None:
-        return False
-    else:
-        return True
 
 
 def clear_nones(d):
@@ -61,8 +48,7 @@ def clear_nones(d):
     if not isinstance(d, dict):
         return d
     else:
-        return dict((k, clear_nones(v)) for k, v in d.items() if
-                    clear_nones_filter(v))
+        return dict((k, clear_nones(v)) for k, v in d.items() if v is not None)
 
 
 # All valid suffixes for a FASTQ file that can be recognized by Enrich2
@@ -104,11 +90,11 @@ class CountsToggle(object):
         self.rb_coutns = None
 
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
-        self.rb_fastq = ttk.Radiobutton(master, text="FASTQ File Mode",
+        self.rb_fastq = tkinter.ttk.Radiobutton(master, text="FASTQ File Mode",
                                         variable=self.mode, value="FASTQ",
                                         command=self.fastq_mode)
         self.rb_fastq.grid(row=row, column=0, columnspan=columns, sticky="ew")
-        self.rb_counts = ttk.Radiobutton(master, text="Count File Mode",
+        self.rb_counts = tkinter.ttk.Radiobutton(master, text="Count File Mode",
                                          variable=self.mode, value="Counts",
                                          command=self.counts_mode)
         self.rb_counts.grid(row=row + 1, column=0, columnspan=columns,
@@ -160,7 +146,7 @@ class CountsToggle(object):
         pass
 
 
-class EditDialog(tkSimpleDialog.Dialog):
+class EditDialog(tkinter.simpledialog.Dialog):
     """
     Dialog box for editing elements. Also used to set properties on newly-created elements.
 
@@ -249,19 +235,19 @@ class EditDialog(tkSimpleDialog.Dialog):
                 self.frame_dict['variants'].append(IntegerEntry("Maximum Mutations", self.element_cfg['variants'], 'max mutations', optional=True))
                 self.frame_dict['variants'].append(Checkbox("Use Aligner", self.element_cfg['variants'], 'use aligner'))
 
-        tkSimpleDialog.Dialog.__init__(self, parent_window, title)
+        tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
 
     def body(self, master):
         """
         Add the UI elements to the edit window. Ordering and placement of UI 
         elements in columns is defined by the ``element_layouts`` dictionary.
         """
-        main = ttk.Frame(master, padding=(3, 3, 12, 12))
+        main = tkinter.ttk.Frame(master, padding=(3, 3, 12, 12))
         main.grid(row=0, column=0, sticky="nsew")
 
         layout = element_layouts[type(self.element).__name__]
         for i, column_tuple in enumerate(layout):
-            new_frame = ttk.Frame(master, padding=(3, 3, 12, 12))
+            new_frame = tkinter.ttk.Frame(master, padding=(3, 3, 12, 12))
             new_frame.grid(row=0, column=i, sticky="nsew")
             row_no = 0
             for row_frame_key in layout[i]:
@@ -286,7 +272,7 @@ class EditDialog(tkSimpleDialog.Dialog):
         if self.element.parent is not None:
             if self.element not in self.element.parent.children:
                 if self.name_entry.value.get() in self.element.parent.child_names():
-                    tkMessageBox.showwarning("", "Sibling names must be unique.")
+                    tkinter.messagebox.showwarning("", "Sibling names must be unique.")
                     return False
 
         return True

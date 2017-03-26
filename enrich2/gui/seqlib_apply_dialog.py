@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016 Alan F Rubin
 #
 #  This file is part of Enrich2.
 #
@@ -16,11 +16,12 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 import tkinter as tk
-import tkinter.ttk as ttk
-import tkinter.simpledialog as tkSimpleDialog
+import tkinter.ttk
+import tkinter.simpledialog
+import tkinter.messagebox
+import tkinter.filedialog
 
-
-class SeqLibApplyDialog(tkSimpleDialog.Dialog):
+class SeqLibApplyDialog(tkinter.simpledialog.Dialog):
     """
     Confirmation dialog box for applying FASTQ filtering options to selected SeqLibs from the Treeview.
     """
@@ -28,7 +29,7 @@ class SeqLibApplyDialog(tkSimpleDialog.Dialog):
         self.tree = tree
         self.source_id = source_id
         self.target_ids = [x for x in self.tree.treeview.selection() if x != source_id and type(self.tree.get_element(self.source_id)) == type(self.tree.get_element(x))]
-        tkSimpleDialog.Dialog.__init__(self, parent_window, title)
+        tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
 
 
     def body(self, master):
@@ -46,7 +47,7 @@ class SeqLibApplyDialog(tkSimpleDialog.Dialog):
             message_string = 'Apply FASTQ filtering options from "{}"" to the following?\n'.format(self.tree.get_element(self.source_id).name)
             for x in self.target_ids:
                 message_string += u"{bullet} {name}\n".format(bullet=bullet, name=self.tree.get_element(x).name)
-        message = ttk.Label(master, text=message_string, justify="left")
+        message = tkinter.ttk.Label(master, text=message_string, justify="left")
         message.grid(row=0, sticky="w")
 
 
@@ -64,7 +65,7 @@ class SeqLibApplyDialog(tkSimpleDialog.Dialog):
 
             box.pack()
         else:
-            tkSimpleDialog.Dialog.buttonbox(self)
+            tkinter.simpledialog.Dialog.buttonbox(self)
 
 
     def apply(self):
