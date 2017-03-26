@@ -221,7 +221,7 @@ class VariantSeqLib(SeqLib):
         self.wt = WildTypeSequence(self.name)
         self.aligner = None
         self.aligner_cache = None
-        self.variant_min_count = None
+        self.variant_min_count = 0
         self.max_mutations = None
         # 'synonymous' label may be added in configure() if wt is coding
         self.add_label('variants')

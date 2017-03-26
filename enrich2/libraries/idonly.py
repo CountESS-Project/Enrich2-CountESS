@@ -29,7 +29,7 @@ class IdOnlySeqLib(SeqLib):
 
     def __init__(self):
         SeqLib.__init__(self)
-        self.identifier_min_count = None
+        self.identifier_min_count = 0
         self.add_label('identifiers')
 
     def configure(self, cfg):

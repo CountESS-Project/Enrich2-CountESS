@@ -47,7 +47,7 @@ class BcidSeqLib(BarcodeSeqLib):
     def __init__(self):
         BarcodeSeqLib.__init__(self)
         self.barcode_map = None
-        self.identifier_min_count = None
+        self.identifier_min_count = 0
         self.add_label('identifiers')
 
     def configure(self, cfg, barcode_map=None):
