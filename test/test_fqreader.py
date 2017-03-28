@@ -16,18 +16,9 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import os
 import unittest
-import os.path
-
+from test.utilities import create_file_path
 from enrich2.sequence.fqread import read_fastq
-
-
-def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(
-        TestFQReaderFormatting
-    )
-    return suite
 
 
 class TestFQReaderFormatting(unittest.TestCase):
@@ -44,62 +35,49 @@ class TestFQReaderFormatting(unittest.TestCase):
         return
 
     def test_read_fq_raises_value_errors(self):
-        empty_seq = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "empty_sequence.fq"
-        )
+        direc = "data/fastq"
+        empty_seq = create_file_path("empty_sequence.fq", direc)
         self.assertRaises(ValueError, self.run_read_fq, empty_seq)
 
-        missing_sequence = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "missing_sequence.fq"
-        )
+        missing_sequence = create_file_path("missing_sequence.fq", direc)
         self.assertRaises(ValueError, self.run_read_fq, missing_sequence)
 
-        missing_quality = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "missing_quality.fq"
-        )
+        missing_quality = create_file_path("missing_quality.fq", direc)
         self.assertRaises(ValueError, self.run_read_fq, missing_quality)
 
-        bad_header = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "bad_header.fq"
-        )
+        bad_header = create_file_path("bad_header.fq", direc)
         self.assertRaises(ValueError, self.run_read_fq, bad_header)
 
-        no_plus_sign = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "no_plus_sign.fq"
-        )
+        no_plus_sign = create_file_path("no_plus_sign.fq", direc)
         self.assertRaises(ValueError, self.run_read_fq, no_plus_sign)
 
-        dff_length = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "seq_qual_diff_length.fq"
-        )
+        dff_length = create_file_path("seq_qual_diff_length.fq", direc)
         self.assertRaises(ValueError, self.run_read_fq, dff_length)
 
-        eof = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "premature_eof.fq"
-        )
+        eof = create_file_path("premature_eof.fq", direc)
         result = str(self.run_read_fq(eof)[-1])
-        expected = "@FQTEST:8:8:8:8:1#0/1\n" \
-                   "AAAAAAAAAAAAAAAA\n+\nHHHHHHHHHHHHHHHH"
+        read = "@FQTEST:8:8:8:8:1#0/1\nAAAAAAAAAAAAAAAA\n+\nHHHHHHHHHHHHHHHH"
+        expected = read
+
         self.assertEqual(result, expected)
 
-        not_a_fastq = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "not_a_fastq.fq"
-        )
+        not_a_fastq = create_file_path("not_a_fastq.fq", direc)
         self.assertRaises(ValueError, self.run_read_fq, not_a_fastq)
 
-        empty = os.path.join(
-            os.path.dirname(__file__),
-            "data", "fastq", "empty.fq"
-        )
+        empty = create_file_path("empty.fq", direc)
         self.assertEqual(self.run_read_fq(empty), [])
+
+
+# --------------------------------------------------------------------------- #
+#
+#                                   MAIN
+#
+# --------------------------------------------------------------------------- #
+def suite():
+    s = unittest.TestSuite()
+    s.addTest(TestFQReaderFormatting)
+    return s
+
 
 if __name__ == "__main__":
     unittest.main()

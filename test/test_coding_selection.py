@@ -16,32 +16,23 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import json
 import unittest
-import pandas as pd
 import numpy as np
 
+from test.utilities import load_result_df, load_config_data
 from enrich2.stores.selection import Selection
 
 
-def suite():
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestCodingSelection)
-    return suite
-
-
+# --------------------------------------------------------------------------- #
+#
+#                           NONCODING SELECTION
+#
+# --------------------------------------------------------------------------- #
 class TestCodingSelection(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # read the JSON config file
-        cfg_file = os.path.join(os.path.dirname(__file__), "test_files", "config", "polyA_coding.json")
-        try:
-            cfg = json.load(open(cfg_file, "U"))
-        except IOError:
-            raise IOError("Failed to open '{}' [{}]".format(cfg_file, __file__))
-        except ValueError:
-            raise ValueError("Improperly formatted .json file [{}]".format(__file__))
-
+        cfg = load_config_data("polyA_coding.json")
         cls._obj = Selection()
 
         # set analysis options
@@ -66,29 +57,49 @@ class TestCodingSelection(unittest.TestCase):
 
 
     def test_variant_counts_sorted(self):
-        result = pd.DataFrame.from_csv(os.path.join(os.path.dirname(__file__), "test_files", "result", "polyA_coding_variant_counts.tsv"), sep='\t').astype(np.float64)
         # order in h5 matters
-        self.assertTrue(self._obj.store['/main/variants/counts'].equals(result))
-
+        expected = load_result_df(
+            "polyA_coding_variant_counts.tsv",
+            sep='\t'
+        ).astype(np.float64)
+        result = self._obj.store['/main/variants/counts']
+        self.assertTrue(expected.equals(result))
 
     def test_variant_counts_unsorted(self):
-        result = pd.DataFrame.from_csv(os.path.join(os.path.dirname(__file__), "test_files", "result", "polyA_coding_variant_counts.tsv"), sep='\t').astype(np.float64)
-        # order in h5 doesn't matter
-        self.assertTrue(self._obj.store['/main/variants/counts'].sort_index().equals(result.sort_index()))
-
+        expected = load_result_df(
+            "polyA_coding_variant_counts.tsv",
+            sep='\t'
+        ).astype(np.float64)
+        result = self._obj.store['/main/variants/counts'].sort_index()
+        self.assertTrue(expected.equals(result))
 
     def test_synonymous_counts_sorted(self):
-        result = pd.DataFrame.from_csv(os.path.join(os.path.dirname(__file__), "test_files", "result", "polyA_coding_synonymous_counts.tsv"), sep='\t').astype(np.float64)
-        # order in h5 matters
-        self.assertTrue(self._obj.store['/main/synonymous/counts'].equals(result))
+        expected = load_result_df(
+            "polyA_coding_synonymous_counts.tsv",
+            sep='\t'
+        ).astype(np.float64)
+        result = self._obj.store['/main/synonymous/counts']
+        self.assertTrue(expected.equals(result))
 
 
     def test_synonymous_counts_unsorted(self):
-        result = pd.DataFrame.from_csv(os.path.join(os.path.dirname(__file__), "test_files", "result", "polyA_coding_synonymous_counts.tsv"), sep='\t').astype(np.float64)
-        # order in h5 doesn't matter
-        self.assertTrue(self._obj.store['/main/synonymous/counts'].sort_index().equals(result.sort_index()))
+        expected = load_result_df(
+            "polyA_coding_synonymous_counts.tsv",
+            sep='\t'
+        ).astype(np.float64)
+        result = self._obj.store['/main/synonymous/counts'].sort_index()
+        self.assertTrue(expected.equals(result))
 
 
+# --------------------------------------------------------------------------- #
+#
+#                                   MAIN
+#
+# --------------------------------------------------------------------------- #
+def suite():
+    s = unittest.TestSuite()
+    s.addTest(TestCodingSelection)
+    return s
 
 if __name__ == "__main__":
     unittest.main()

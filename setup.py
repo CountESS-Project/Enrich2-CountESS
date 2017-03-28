@@ -38,7 +38,7 @@ setup(
 
     packages=find_packages(),
     package_data={
-        'test' : ['test_files/*/*'],
+        'test' : ['data/*/*'],
     },
 
     entry_points = {

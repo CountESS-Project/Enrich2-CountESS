@@ -1,0 +1,12 @@
+{
+  "barcodes": {}, 
+  "fastq": {
+    "filters": {}, 
+    "reads": "test_files/fastq/empty.fq", 
+    "reverse": 0
+  }, 
+  "name": "empty", 
+  "output directory": "test_output/empty", 
+  "report filtered reads": false, 
+  "timepoint": 0
+}

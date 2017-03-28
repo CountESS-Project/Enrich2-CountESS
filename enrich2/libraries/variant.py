@@ -50,10 +50,19 @@ re_noncoding = re.compile(
     "(?P<match>n\.(?P<pos>-?\d+)(?P<pre>[ACGT])>(?P<post>[ACGT]))")
 
 
+def _validate_str(s):
+    if not isinstance(s, str):
+        raise TypeError("Expected string, got {}".format(type(s)))
+    if len(s) == 0:
+        raise ValueError("Empty variant string.")
+    return
+
+
 def valid_variant(s, is_coding=True):
     """
     Returns True if s is a valid coding or noncoding variant, else False.
     """
+    _validate_str(s)
     if s == WILD_TYPE_VARIANT:
         return True
     else:
@@ -78,6 +87,7 @@ def hgvs2single(s):
 
     Returns a list of single-letter variants.
     """
+    _validate_str(s)
     t = re_protein.findall(s)
     return ["{}{}{}".format(AA_CODES[m[1]], m[2], AA_CODES[m[3]]) for m in t]
 
@@ -91,6 +101,7 @@ def single2hgvs(s):
     Searches the string s for all instances of the above
     pattern and returns a list of Enrich2 variants.
     """
+    _validate_str(s)
     t = re.findall('[A-Z*]\d+[A-Z*]', s)
     return ["p.{}{}{}".format(AA_CODES[x[0]], x[1:-1], AA_CODES[x[-1]])
             for x in t]
@@ -107,6 +118,7 @@ def get_variant_type(variant):
     and synonymous special variants will return ``None``.
     :rtype: str
     """
+    _validate_str(variant)
     v = variant.split(', ')[0]  # test first token of multi-mutant
     if re_protein.match(v) is not None:
         return 'protein'
@@ -126,14 +138,16 @@ def mutation_count(variant):
     :return: number of variants (0 if wild type or synonymous)
     :rtype: int
     """
-    if len(variant) == 0:
-        raise ValueError("Empty variant string.")
-    elif variant == WILD_TYPE_VARIANT:
+    _validate_str(variant)
+    if variant == WILD_TYPE_VARIANT:
         return 0
     elif variant == SYNONYMOUS_VARIANT:
         return 0
     else:
-        return len(variant.split(","))
+        result = [x.strip() for x in variant.split(",")]
+        if len(set(result)) != len(result):
+            raise ValueError("Duplicate mutant substrings found in variant")
+        return len(result)
 
 
 def has_indel(variant):
@@ -144,9 +158,8 @@ def has_indel(variant):
     :return: ``True`` if there is an indel, else ``False``
     :rtype: bool
     """
-    if len(variant) == 0:
-        raise ValueError("Empty variant string.")
-    elif variant == WILD_TYPE_VARIANT:
+    _validate_str(variant)
+    if variant == WILD_TYPE_VARIANT:
         return False
     elif variant == SYNONYMOUS_VARIANT:
         return False
@@ -167,6 +180,7 @@ def has_unresolvable(variant):
     :return: ``True`` if there is an unresolvable change, else ``False``
     :rtype: bool
     """
+    _validate_str(variant)
     if AA_CODES['?'] in variant:
         return True
     else:
@@ -184,9 +198,8 @@ def protein_variant(variant):
     :return: protein variant string (or synonymous or wild type)
     :rtype: str
     """
-    if len(variant) == 0:
-        raise ValueError("Empty variant string.")
-    elif variant == WILD_TYPE_VARIANT:
+    _validate_str(variant)
+    if variant == WILD_TYPE_VARIANT:
         return WILD_TYPE_VARIANT
     elif variant == SYNONYMOUS_VARIANT:
         return SYNONYMOUS_VARIANT

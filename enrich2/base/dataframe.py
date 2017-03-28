@@ -44,12 +44,13 @@ def validate_index(index, element):
     elif element == "identifiers":
         retval = [re_identifier.match(x) is not None for x in index]
     elif element == "variants":
-        pass
+        retval = [True for _ in index]
     elif element == "synonymous":
-        pass
+        retval = [True for _ in index]
     else:
         raise NotImplementedError("Unimplemented element type '{}'"
                                   "".format(element))
+    return retval
 
 
 def single_mutation_index(index):
@@ -117,7 +118,7 @@ def single_mutations_to_tuples(index):
     for x in index:
         m = expression.match(x)
         if m is None:
-            raise ValueError("Unrecognized HGVS string.")
+            raise ValueError("Unrecognized HGVS string {}.".format(x))
         else:
             if is_protein:  # convert to single-letter amino acid code
                 tuples.append(SingleMut(AA_CODES[m.group('pre')],
@@ -145,6 +146,12 @@ def fill_position_gaps(positions, gap_size):
     """
     if len(positions) == 0:
         raise ValueError("Empty positions list.")
+    if gap_size <= 0:
+        raise ValueError("Gap size must be a positive integer.")
+    if not all(isinstance(p, int) for p in positions):
+        raise TypeError("Position elements must be integers.")
+    if not isinstance(gap_size, int):
+        raise TypeError("Gap size must be an integer.")
 
     # uniqify and sort
     positions = sorted(list(set(positions)))
@@ -194,6 +201,9 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
     if len(values.index) == 0:
         raise ValueError("Cannot process an empty data frame [{}]".format(
             wt.parent_name))
+    if any(isinstance(v, str) for v in values) or \
+        any(isinstance(v, bytes) for v in values):
+        raise ValueError("Values must be numbers.")
 
     # save the wild type score for later
     if plot_wt_score:
@@ -206,6 +216,8 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
 
     # select only rows with singleton mutations
     values = values[filter_coding_index(single_mutation_index(values.index))]
+    if len(values.index) == 0:
+        raise ValueError("No valid singleton mutations exist in values.")
 
     # parse out the information from the index
     index_tuples = single_mutations_to_tuples(values.index)

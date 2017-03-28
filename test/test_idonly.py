@@ -15,26 +15,24 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
 import unittest
+import numpy as np
 
 from test.utilities import load_result_df, load_config_data
-from enrich2.stores.selection import Selection
-
+from enrich2.libraries.idonly import IdOnlySeqLib
 
 # --------------------------------------------------------------------------- #
 #
-#                           NON-CODING SELECTION
+#                        TEST THE CODING SELECTION
 #
 # --------------------------------------------------------------------------- #
-class TestNoncodingSelection(unittest.TestCase):
+class TestIdonlyCounts(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # read the JSON config file
-        cfg = load_config_data("polyA_noncoding.json")
-        cls._obj = Selection()
+        cfg = load_config_data("idonly_config.json")
+        cls._obj = IdOnlySeqLib()
 
         # set analysis options
         cls._obj.force_recalculate = False
@@ -55,23 +53,32 @@ class TestNoncodingSelection(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
 
-    def test_raw_counts_sorted(self):
-        expected = load_result_df(
-            "polyA_noncoding_variant_counts.tsv",
-            sep='\t'
-        ).astype(float)
-        result = self._obj.store['/main/variants/counts']
+    def test_multi_barcode_counts(self):
+        # order in h5 matters
+        expected = load_result_df("idonly_counts.tsv", sep='\t')
+        result = self._obj.store['/main/identifiers/counts']
         self.assertTrue(expected.equals(result))
 
-    def test_raw_counts_unsorted(self):
-        expected = load_result_df(
-            "polyA_noncoding_variant_counts.tsv",
-            sep='\t'
-        ).astype(float).sort_index()
-        result = self._obj.store['/main/variants/counts'].sort_index()
+        expected = load_result_df("multi_barcode_count.tsv", sep='\t')
+        result = self._obj.store['/raw/identifiers/counts']
         self.assertTrue(expected.equals(result))
 
+    def test_multi_barcode_counts_unsorted(self):
+        # order in h5 doesn't matter
+        result = self._obj.store['/main/identifiers/counts'].sort_index()
+        expected = load_result_df("idonly_counts.tsv", sep='\t')
+        self.assertTrue(expected.equals(result))
+
+        expected = load_result_df("multi_barcode_count.tsv", sep='\t')
+        result = self._obj.store['/raw/identifiers/counts'].sort_index()
+        self.assertTrue(expected.equals(result))
+
+    def test_serialize(self):
+        cfg = load_config_data("idonly_config.json")
+        result = self._obj.serialize()
+        self.assertTrue(cfg == result)
 
 # --------------------------------------------------------------------------- #
 #
@@ -80,9 +87,8 @@ class TestNoncodingSelection(unittest.TestCase):
 # --------------------------------------------------------------------------- #
 def suite():
     s = unittest.TestSuite()
-    s.addTest(TestNoncodingSelection)
+    s.addTest(TestIdonlyCounts)
     return s
-
 
 if __name__ == "__main__":
     unittest.main()
