@@ -1,0 +1,12 @@
+{
+  "barcodes": {}, 
+  "fastq": {
+    "filters": {}, 
+    "reads": "data/reads/barcode/barcode.fq",
+    "reverse": 0
+  }, 
+  "name": "multi_barcode", 
+  "output directory": "test_output/barcode",
+  "report filtered reads": false, 
+  "timepoint": 0
+}

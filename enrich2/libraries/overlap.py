@@ -228,6 +228,7 @@ class OverlapSeqLib(VariantSeqLib):
 
     def counts_from_reads(self):
         df_dict = dict()
+        filter_flags = self.filters
 
         self.merge_mismatches = pd.DataFrame(data=0, index=[x + self.fwd_start + self.wt.dna_offset for x in range(0, self.overlap_length)], columns=["resolved", "unresolved", "first"])
 

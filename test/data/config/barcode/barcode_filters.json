@@ -1,0 +1,18 @@
+{
+  "barcodes": {
+    "min count": 2
+  },
+  "fastq": {
+    "filters": {
+      "max N": 2,
+      "min quality": 20
+    },
+    "length": 13,
+    "reads": "data/reads/barcode/barcode_filters.fq",
+    "reverse": 0
+  },
+  "name": "multi_barcode_filters",
+  "output directory": "test_output/barcode_filters",
+  "report filtered reads": false,
+  "timepoint": 0
+}

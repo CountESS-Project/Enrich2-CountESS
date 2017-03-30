@@ -34,7 +34,7 @@ def load_config_data(fname, direc='data/config/'):
         raise IOError("Failed to open '{}".format(path))
 
 
-def load_fastq_data(fname, direc='data/fastq/'):
+def load_fastq_data(fname, direc='data/reads/'):
     path = create_file_path(fname, direc)
     try:
         with open(path, "rt") as fp:
@@ -49,3 +49,20 @@ def load_result_df(fname, direc='data/result/', sep='\t'):
         return pd.DataFrame.from_csv(path, sep=sep)
     except IOError:
         raise IOError("Failed to open '{}".format(path))
+
+
+def single_column_df_equal(df1, df2):
+    index_eq = [x for x in df1.index == df2.index]
+    values_eq = [x[0] for x in df1.values == df2.values]
+    return all(values_eq) and all(index_eq)
+
+
+def print_groups(store):
+    for key in store:
+        print("")
+        print("-" * 60)
+        print(' '*20 + key + ' '*40)
+        print("-" * 60)
+        print(store[key])
+        print("-"*60)
+        print("")

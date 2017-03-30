@@ -39,7 +39,7 @@ class TestBarcodeSeqLibCounts(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._cfg = load_config_data("multi_barcode.json")
+        cls._cfg = load_config_data("barcode/barcode.json")
         cls._obj = BarcodeSeqLib()
 
         # set analysis options
@@ -65,22 +65,31 @@ class TestBarcodeSeqLibCounts(unittest.TestCase):
 
     def test_multi_barcode_counts(self):
         # order in h5 matters
-        expected = load_result_df("multi_barcode_count.tsv", sep='\t')
+        expected = load_result_df("barcode/barcode_raw_count.tsv", sep='\t')
         expected = expected.astype(np.int32)
         result = self._obj.store['/raw/barcodes/counts']
+        self.assertTrue(expected.equals(result))
+
+        expected = load_result_df("barcode/barcode_main_count.tsv", sep='\t')
+        expected = expected.astype(np.int32)
+        result = self._obj.store['/main/barcodes/counts']
         self.assertTrue(expected.equals(result))
 
     def test_multi_barcode_counts_unsorted(self):
         # order in h5 doesn't matter
         result = self._obj.store['/raw/barcodes/counts'].sort_index()
-        expected = load_result_df("multi_barcode_count.tsv", sep='\t')
+        expected = load_result_df("barcode/barcode_raw_count.tsv", sep='\t')
+        expected = expected.astype(np.int32)
+        self.assertTrue(expected.equals(result))
+
+        # order in h5 doesn't matter
+        result = self._obj.store['/main/barcodes/counts'].sort_index()
+        expected = load_result_df("barcode/barcode_main_count.tsv", sep='\t')
         expected = expected.astype(np.int32)
         self.assertTrue(expected.equals(result))
 
     def test_filter_stats(self):
-        result = pd.DataFrame(
-            [0], index=['total'], columns=['count']
-        ).astype(int)
+        result = load_result_df("barcode/barcode_stats.tsv", sep=',')
         self.assertTrue(self._obj.store['/raw/filter'].equals(result))
 
 
@@ -97,7 +106,7 @@ class TestBarcodeSeqLibFiltering(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._cfg = load_config_data("multi_barcode_filters.json")
+        cls._cfg = load_config_data("barcode/barcode_filters.json")
         cls._obj = BarcodeSeqLib()
 
         # set analysis options
@@ -123,31 +132,35 @@ class TestBarcodeSeqLibFiltering(unittest.TestCase):
 
     def test_multi_barcode_counts(self):
         # order in h5 matters
-        expected = load_result_df("multi_barcode_filters_count.tsv", sep='\t')
+        expected = load_result_df(
+            "barcode/barcode_filter_raw_count.tsv", sep='\t')
         expected = expected.astype(np.int32)
         result = self._obj.store['/raw/barcodes/counts']
+        self.assertTrue(expected.equals(result))
+
+        expected = load_result_df(
+            "barcode/barcode_filter_main_count.tsv", sep='\t')
+        expected = expected.astype(np.int32)
+        result = self._obj.store['/main/barcodes/counts']
         self.assertTrue(expected.equals(result))
 
     def test_multi_barcode_counts_unsorted(self):
         # order in h5 doesn't matter
         result = self._obj.store['/raw/barcodes/counts'].sort_index()
-        expected = load_result_df("multi_barcode_filters_count.tsv", sep='\t')
+        expected = load_result_df(
+            "barcode/barcode_filter_raw_count.tsv", sep='\t')
+        expected = expected.astype(np.int32)
+        self.assertTrue(expected.equals(result))
+
+        # order in h5 doesn't matter
+        result = self._obj.store['/main/barcodes/counts'].sort_index()
+        expected = load_result_df(
+            "barcode/barcode_filter_main_count.tsv", sep='\t')
         expected = expected.astype(np.int32)
         self.assertTrue(expected.equals(result))
 
     def test_filter_stats(self):
-        df1 = pd.DataFrame(
-            [2], index=['total'], columns=['count']
-        ).astype(int)
-
-        df2 = pd.DataFrame(
-            [2], index=['excess N bases'], columns=['count']
-        ).astype(int)
-
-        df3 = pd.DataFrame(
-            [1], index=['single-base quality'], columns=['count']
-        ).astype(int)
-        expected = pd.concat([df3, df2, df1])
+        expected = load_result_df("barcode/barcode_filter_stats.tsv", sep=',')
         result = self._obj.store['/raw/filter']
         self.assertTrue(expected.equals(result))
 

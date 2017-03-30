@@ -37,8 +37,8 @@ class BasicSeqLib(VariantSeqLib):
         VariantSeqLib.__init__(self)
         self.reads = None
         self.revcomp_reads = None
-        self.trim_start = None
-        self.trim_length = None
+        self.trim_start = 0
+        self.trim_length = sys.maxsize
 
     def configure(self, cfg):
         """

@@ -33,7 +33,7 @@ class TestNoncodingSelection(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # read the JSON config file
-        cfg = load_config_data("polyA_noncoding.json")
+        cfg = load_config_data("selection/polyA_noncoding.json")
         cls._obj = Selection()
 
         # set analysis options
@@ -58,7 +58,7 @@ class TestNoncodingSelection(unittest.TestCase):
 
     def test_raw_counts_sorted(self):
         expected = load_result_df(
-            "polyA_noncoding_variant_counts.tsv",
+            "selection/polyA_noncoding_variant_counts.tsv",
             sep='\t'
         ).astype(float)
         result = self._obj.store['/main/variants/counts']
@@ -66,7 +66,7 @@ class TestNoncodingSelection(unittest.TestCase):
 
     def test_raw_counts_unsorted(self):
         expected = load_result_df(
-            "polyA_noncoding_variant_counts.tsv",
+            "selection/polyA_noncoding_variant_counts.tsv",
             sep='\t'
         ).astype(float).sort_index()
         result = self._obj.store['/main/variants/counts'].sort_index()

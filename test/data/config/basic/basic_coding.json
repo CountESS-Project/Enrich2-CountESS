@@ -1,0 +1,19 @@
+{
+  "fastq": {
+    "filters": {
+    },
+    "reads":  "",
+    "reverse": 0
+  },
+  "name": "basic_test",
+  "output directory": "test_output/basic",
+  "report filtered reads": false,
+  "timepoint": 0,
+  "variants": {
+    "use aligner": false,
+    "wild type": {
+      "coding": true,
+      "sequence": "AAAAAA"
+    }
+  }
+}

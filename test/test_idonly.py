@@ -17,7 +17,6 @@
 
 import os
 import unittest
-import numpy as np
 
 from test.utilities import load_result_df, load_config_data
 from enrich2.libraries.idonly import IdOnlySeqLib
@@ -31,7 +30,7 @@ class TestIdonlyCounts(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cfg = load_config_data("idonly_config.json")
+        cfg = load_config_data("idonly/idonly_config.json")
         cls._obj = IdOnlySeqLib()
 
         # set analysis options
@@ -57,26 +56,26 @@ class TestIdonlyCounts(unittest.TestCase):
 
     def test_multi_barcode_counts(self):
         # order in h5 matters
-        expected = load_result_df("idonly_counts.tsv", sep='\t')
+        expected = load_result_df("idonly/idonly_main_count.tsv", sep='\t')
         result = self._obj.store['/main/identifiers/counts']
         self.assertTrue(expected.equals(result))
 
-        expected = load_result_df("multi_barcode_count.tsv", sep='\t')
+        expected = load_result_df("idonly/idonly_raw_count.tsv", sep='\t')
         result = self._obj.store['/raw/identifiers/counts']
         self.assertTrue(expected.equals(result))
 
     def test_multi_barcode_counts_unsorted(self):
         # order in h5 doesn't matter
         result = self._obj.store['/main/identifiers/counts'].sort_index()
-        expected = load_result_df("idonly_counts.tsv", sep='\t')
+        expected = load_result_df("idonly/idonly_main_count.tsv", sep='\t')
         self.assertTrue(expected.equals(result))
 
-        expected = load_result_df("multi_barcode_count.tsv", sep='\t')
+        expected = load_result_df("idonly/idonly_raw_count.tsv", sep='\t')
         result = self._obj.store['/raw/identifiers/counts'].sort_index()
         self.assertTrue(expected.equals(result))
 
     def test_serialize(self):
-        cfg = load_config_data("idonly_config.json")
+        cfg = load_config_data("idonly/idonly_config.json")
         result = self._obj.serialize()
         self.assertTrue(cfg == result)
 

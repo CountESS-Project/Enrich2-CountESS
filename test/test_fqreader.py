@@ -35,7 +35,7 @@ class TestFQReaderFormatting(unittest.TestCase):
         return
 
     def test_read_fq_raises_value_errors(self):
-        direc = "data/fastq"
+        direc = "data/reads"
         empty_seq = create_file_path("empty_sequence.fq", direc)
         self.assertRaises(ValueError, self.run_read_fq, empty_seq)
 

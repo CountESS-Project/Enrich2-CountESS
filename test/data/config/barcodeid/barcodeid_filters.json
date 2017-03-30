@@ -1,0 +1,22 @@
+{
+  "barcodes": {
+    "map file": "data/reads/barcodemap/barcode_trim_map.txt",
+    "min count": 4
+  },
+  "fastq": {
+    "filters": {
+      "max N": 1,
+      "min quality": 30
+    },
+    "length": 13,
+     "reads": "data/reads/barcodeid/barcodeid_filters.fq",
+    "reverse": 0
+  },
+  "identifiers": {
+    "min count": 3
+  },
+  "name": "test_bcid",
+  "output directory": "test_output/barcodeid",
+  "report filtered reads": false, 
+  "timepoint": 0
+}

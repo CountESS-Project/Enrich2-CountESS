@@ -27,6 +27,7 @@ import statsmodels.api as sm
 from matplotlib.backends.backend_pdf import PdfPages
 
 from ..libraries.barcodeid import BcidSeqLib
+from ..libraries import *
 from ..libraries.barcodevariant import BcvSeqLib
 from ..base.constants import WILD_TYPE_VARIANT, SYNONYMOUS_VARIANT
 from ..base.dataframe import singleton_dataframe
@@ -163,6 +164,11 @@ class Selection(StoreManager):
                     # requires that the SeqLib derived classes be
                     # imported into the module namespace
                     # using "from x import y" style
+
+                    # TODO: Fix this introspective loader
+                    from enrich2.libraries.basic import BasicSeqLib
+                    globals()['BasicSeqLib'] = BasicSeqLib
+
                     lib = globals()[libtype]()
                     lib.configure(lib_cfg)
                     self.add_child(lib)

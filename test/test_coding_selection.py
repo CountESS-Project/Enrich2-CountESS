@@ -22,7 +22,6 @@ import numpy as np
 from test.utilities import load_result_df, load_config_data
 from enrich2.stores.selection import Selection
 
-
 # --------------------------------------------------------------------------- #
 #
 #                           NONCODING SELECTION
@@ -32,7 +31,7 @@ class TestCodingSelection(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cfg = load_config_data("polyA_coding.json")
+        cfg = load_config_data("selection/polyA_coding.json")
         cls._obj = Selection()
 
         # set analysis options
@@ -59,7 +58,7 @@ class TestCodingSelection(unittest.TestCase):
     def test_variant_counts_sorted(self):
         # order in h5 matters
         expected = load_result_df(
-            "polyA_coding_variant_counts.tsv",
+            "selection/polyA_coding_variant_counts.tsv",
             sep='\t'
         ).astype(np.float64)
         result = self._obj.store['/main/variants/counts']
@@ -67,7 +66,7 @@ class TestCodingSelection(unittest.TestCase):
 
     def test_variant_counts_unsorted(self):
         expected = load_result_df(
-            "polyA_coding_variant_counts.tsv",
+            "selection/polyA_coding_variant_counts.tsv",
             sep='\t'
         ).astype(np.float64)
         result = self._obj.store['/main/variants/counts'].sort_index()
@@ -75,7 +74,7 @@ class TestCodingSelection(unittest.TestCase):
 
     def test_synonymous_counts_sorted(self):
         expected = load_result_df(
-            "polyA_coding_synonymous_counts.tsv",
+            "selection/polyA_coding_synonymous_counts.tsv",
             sep='\t'
         ).astype(np.float64)
         result = self._obj.store['/main/synonymous/counts']
@@ -84,18 +83,18 @@ class TestCodingSelection(unittest.TestCase):
 
     def test_synonymous_counts_unsorted(self):
         expected = load_result_df(
-            "polyA_coding_synonymous_counts.tsv",
+            "selection/polyA_coding_synonymous_counts.tsv",
             sep='\t'
         ).astype(np.float64)
         result = self._obj.store['/main/synonymous/counts'].sort_index()
         self.assertTrue(expected.equals(result))
 
 
-# --------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------- #
 #
 #                                   MAIN
 #
-# --------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------- #
 def suite():
     s = unittest.TestSuite()
     s.addTest(TestCodingSelection)
