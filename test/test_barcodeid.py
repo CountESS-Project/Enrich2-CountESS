@@ -18,44 +18,128 @@
 
 import os
 import unittest
-import numpy as np
 import os.path
 
 from test.utilities import load_config_data, load_result_df
+from test.utilities import print_groups, single_column_df_equal
 from enrich2.libraries.barcodeid import BcidSeqLib
 
 
-# --------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------- #
 #
-#                           BARCODEID COUNT TESTING
+#                           UTILTIES
 #
-# --------------------------------------------------------------------------- #
-class TestBarcodeidSeqLibCounts(unittest.TestCase):
-    """
-    The purpose of this class is to test if BarcodeidSeqLib can parse
-    fastq reads and barcode maps correctly to output the correct unfiltered
-    count data
-    """
+# -------------------------------------------------------------------------- #
+CFG_PATH = "barcodeid/barcodeid.json"
+READS_DIR = "data/reads/barcodeid"
+RESULT_DIR = "barcodeid/"
+
+
+def make_libarary(cfg, **kwargs):
+    obj = BcidSeqLib()
+    obj.force_recalculate = False
+    obj.component_outliers = False
+    obj.scoring_method = 'counts'
+    obj.logr_method = 'wt'
+    obj.plots_requested = False
+    obj.tsv_requested = False
+    obj.output_dir_override = False
+
+    # perform the analysis
+    obj.configure(cfg)
+    obj.validate()
+    obj.store_open(children=True)
+    obj.calculate()
+
+    for k, v in kwargs.items():
+        setattr(obj, k, v)
+    return obj
+
+
+class HDF5Verifier(object):
+
+    def __call__(self, test_class, file_prefix, sep=';'):
+        self.test_class = test_class
+        self.prefix = file_prefix
+        self.sep = sep
+        if file_prefix != 'counts_only':
+            self.test_raw_filter()
+            self.test_serialize()
+        self.test_main_barcodes_counts()
+        self.test_raw_barcodes_counts()
+        self.test_main_identifiers_counts()
+        self.test_raw_barcode_map()
+
+    def test_main_barcodes_counts(self):
+        expected = load_result_df(
+            '{}/{}_main_barcodes_counts.tsv'.format(RESULT_DIR, self.prefix),
+            sep=self.sep
+        )
+        result = self.test_class.store['/main/barcodes/counts']
+        self.test_class.assertTrue(single_column_df_equal(expected, result))
+
+    def test_raw_barcodes_counts(self):
+        expected = load_result_df(
+            '{}/{}_raw_barcodes_counts.tsv'.format(RESULT_DIR, self.prefix),
+            sep=self.sep
+        )
+        result = self.test_class.store['/raw/barcodes/counts']
+        self.test_class.assertTrue(single_column_df_equal(expected, result))
+
+    def test_main_identifiers_counts(self):
+        expected = load_result_df(
+            '{}/{}_main_identifiers_counts.tsv'.format(
+                RESULT_DIR, self.prefix), sep=self.sep
+        )
+        result = self.test_class.store['/main/identifiers/counts']
+        self.test_class.assertTrue(single_column_df_equal(expected, result))
+
+    def test_raw_filter(self):
+        expected = load_result_df(
+            '{}/{}_raw_filter.tsv'.format(RESULT_DIR, self.prefix),
+            sep=self.sep
+        )
+        result = self.test_class.store['/raw/filter']
+        self.test_class.assertTrue(single_column_df_equal(expected, result))
+
+    def test_raw_barcode_map(self):
+        expected = load_result_df(
+            '{}/{}_raw_barcodemap.tsv'.format(RESULT_DIR, self.prefix),
+            sep=self.sep
+        )
+        result = self.test_class.store['/raw/barcodemap']
+        self.test_class.assertTrue(single_column_df_equal(expected, result))
+
+    def test_serialize(self):
+        cfg = self.test_class._obj.serialize()
+        self.test_class.assertTrue(self.test_class._cfg == cfg)
+
+
+# -------------------------------------------------------------------------- #
+#
+#                          Integrated Filters
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsIntegratedFilters(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._cfg = load_config_data("barcodeid/barcodeid.json")
-        cls._obj = BcidSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._prefix = 'integrated'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR ,'{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'integrated_barcode_map.txt')
+        cls._cfg['fastq']['filters']['max N'] = 0
+        cls._cfg['fastq']['filters']['chastity'] = True
+        cls._cfg['fastq']['filters']['avg quality'] = 38
+        cls._cfg['fastq']['filters']['min quality'] = 20
+        cls._cfg['fastq']['start'] = 4
+        cls._cfg['fastq']['length'] = 3
+        cls._cfg['fastq']['reverse'] = True
+        cls._cfg['barcodes']['min count'] = 2
+        cls._cfg['identifiers']['min count'] = 3
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -63,92 +147,32 @@ class TestBarcodeidSeqLibCounts(unittest.TestCase):
         os.remove(cls._obj.store_path)
         os.rmdir(cls._obj.output_dir)
 
-    def test_main_barcode_counts(self):
-        # order in h5 matters
-        expected = load_result_df("barcodeid/barcodeid_main_count.tsv",
-                                  sep='\t')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/main/barcodes/counts']
-        self.assertTrue(expected.equals(result))
+    @property
+    def store(self):
+        return self._obj.store
 
-        # order in h5 should not matter
-        expected = load_result_df("barcodeid/barcodeid_main_count.tsv",
-                                  sep='\t')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/main/barcodes/counts'].sort_index()
-        self.assertTrue(expected.equals(result))
-
-    def test_raw_barcode_counts(self):
-        # order in h5 matters
-        expected = load_result_df("barcodeid/barcodeid_raw_count.tsv",
-                                  sep='\t')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/raw/barcodes/counts']
-        self.assertTrue(expected.equals(result))
-
-        # order in h5 should not matter
-        expected = load_result_df("barcodeid/barcodeid_raw_count.tsv",
-                                  sep='\t')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/raw/barcodes/counts'].sort_index()
-        self.assertTrue(expected.equals(result))
-
-    def test_main_identifier_counts(self):
-        # order in h5 matters
-        expected = load_result_df("barcodeid/barcodeid_identifiers_count.tsv",
-                                  sep=',')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/main/identifiers/counts']
-        self.assertTrue(expected.equals(result))
-
-        # order in h5 should not matter
-        expected = load_result_df("barcodeid/barcodeid_identifiers_count.tsv",
-                                  sep=',')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/main/identifiers/counts'].sort_index()
-        self.assertTrue(expected.equals(result))
-
-    def test_raw_barcodemap(self):
-        expected = load_result_df("barcodeid/barcodeid_map.txt", sep=',')
-        result = self._obj.store['/raw/barcodemap']
-        self.assertTrue(expected.equals(result))
-
-    def test_raw_filter_is_empty(self):
-        expected = load_result_df("barcodeid/barcodeid_stats.tsv", sep=',')
-        self.assertTrue(self._obj.store['/raw/filter'].equals(expected))
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
 
 
-# --------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------- #
 #
-#                 BARCODEID COUNT TESTING USING FILTERS
+#                      Barcode Min Count Filter
 #
-# --------------------------------------------------------------------------- #
-class TestBarcodeidSeqLibCountsWithFiltering(unittest.TestCase):
-    """
-    The purpose of this class is to test if BarcodeidSeqLib can parse
-    fastq reads and barcode maps correctly to output the correct filtered
-    count data
-    """
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsBarcodeMinCountSetting(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._cfg = load_config_data("barcodeid/barcodeid_filters.json")
-        cls._obj = BcidSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._prefix = 'barcode_mincount'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'barcode_map.txt')
+        cls._cfg['barcodes']['min count'] = 2
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -156,76 +180,318 @@ class TestBarcodeidSeqLibCountsWithFiltering(unittest.TestCase):
         os.remove(cls._obj.store_path)
         os.rmdir(cls._obj.output_dir)
 
-    def test_main_barcode_counts(self):
-        # order in h5 matters
-        expected = load_result_df("barcodeid/barcodeid_filter_main_count.tsv",
-                                  sep=',')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/main/barcodes/counts']
-        self.assertTrue(expected.equals(result))
+    @property
+    def store(self):
+        return self._obj.store
 
-        # order in h5 should not matter
-        expected = load_result_df("barcodeid/barcodeid_filter_main_count.tsv",
-                                  sep=',')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/main/barcodes/counts'].sort_index()
-        self.assertTrue(expected.equals(result))
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
 
-    def test_raw_barcode_counts(self):
-        # order in h5 matters
-        expected = load_result_df("barcodeid/barcodeid_filter_raw_count.tsv",
-                                  sep=',')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/raw/barcodes/counts']
-        self.assertTrue(expected.equals(result))
 
-        # order in h5 should matters
-        expected = load_result_df("barcodeid/barcodeid_filter_raw_count.tsv",
-                                  sep=',')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/raw/barcodes/counts'].sort_index()
-        self.assertFalse(expected.equals(result))
+# -------------------------------------------------------------------------- #
+#
+#                      Counts Only Mode
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsCountsOnlyMode(unittest.TestCase):
 
-    def test_main_identifier_counts(self):
-        # order in h5 matters
-        expected = load_result_df(
-            "barcodeid/barcodeid_filter_identifiers_count.tsv",
-            sep=',')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/main/identifiers/counts']
-        self.assertTrue(expected.equals(result))
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'counts_only'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['counts file'] = "{}/{}".format(
+            READS_DIR , '{}.tsv'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'barcode_map.txt')
+        cls._obj = make_libarary(cls._cfg)
 
-        # order in h5 should not matter
-        expected = load_result_df(
-            "barcodeid/barcodeid_filter_identifiers_count.tsv",
-            sep=',')
-        expected = expected.astype(np.int32)
-        result = self._obj.store['/main/identifiers/counts'].sort_index()
-        self.assertTrue(expected.equals(result))
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
 
-    def test_raw_barcodemap(self):
-        expected = load_result_df("barcodeid/barcodeid_filter_map.txt",
-                                  sep=',')
-        result = self._obj.store['/raw/barcodemap']
-        self.assertTrue(expected.equals(result))
+    @property
+    def store(self):
+        return self._obj.store
 
-    def test_raw_filter_is_empty(self):
-        result = load_result_df('barcodeid/barcodeid_filter_stats.tsv',
-                                sep=',')
-        self.assertTrue(self._obj.store['/raw/filter'].equals(result))
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
 
+
+# -------------------------------------------------------------------------- #
+#
+#                      Average Qual FASTQ Filter
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsAvgQualFQFilter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'filter_avgq'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'barcode_map.txt')
+        cls._cfg['fastq']['filters']['avg quality'] = 38
+        cls._obj = make_libarary(cls._cfg)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
+
+
+# -------------------------------------------------------------------------- #
+#
+#                      Max N FASTQ Filter
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsMaxNFQFilter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'filter_maxn'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'barcode_map.txt')
+        cls._cfg['fastq']['filters']['max N'] = 0
+        cls._obj = make_libarary(cls._cfg)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
+
+
+# -------------------------------------------------------------------------- #
+#
+#                      Min Quality FASTQ Filter
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsMinQualFQFilter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'filter_minq'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'barcode_map.txt')
+        cls._cfg['fastq']['filters']['min quality'] = 20
+        cls._obj = make_libarary(cls._cfg)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
+
+
+# -------------------------------------------------------------------------- #
+#
+#                      Not Chaste FASTQ Filter
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsNotChasteFQFilter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'filter_not_chaste'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'barcode_map.txt')
+        cls._cfg['fastq']['filters']['chastity'] = True
+        cls._obj = make_libarary(cls._cfg)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
+
+
+# -------------------------------------------------------------------------- #
+#
+#                      Identifiers Min Count Filter
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsWithIdentifiersMinCountFilter(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'identifiers_mincount'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'barcode_map.txt')
+        cls._cfg['identifiers']['min count'] = 2
+        cls._obj = make_libarary(cls._cfg)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
+
+
+# -------------------------------------------------------------------------- #
+#
+#                      Reverse Completement Setting On
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsWithRevCompSetting(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'revcomp'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'revcomp_barcode_map.txt')
+        cls._cfg['fastq']['reverse'] = True
+        cls._obj = make_libarary(cls._cfg)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
+
+
+# -------------------------------------------------------------------------- #
+#
+#                      Trim Length Setting
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsWithTrimLengthSetting(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'trim_len'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'trim_len_barcode_map.txt')
+        cls._cfg['fastq']['length'] = 3
+        cls._obj = make_libarary(cls._cfg)
+
+        print_groups(cls._obj.store)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
+
+
+# -------------------------------------------------------------------------- #
+#
+#                      Trim Start Setting
+#
+# -------------------------------------------------------------------------- #
+class TestBcidSeqLibCountsWithTrimStartSetting(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._prefix = 'trim_start'
+        cls._cfg = load_config_data(CFG_PATH)
+        cls._cfg['fastq']['reads'] = "{}/{}".format(
+            READS_DIR , '{}.fq'.format(cls._prefix))
+        cls._cfg['barcodes']['map file'] = "{}/{}".format(
+            READS_DIR, 'trim_start_barcode_map.txt')
+        cls._cfg['fastq']['start'] = 4
+        cls._obj = make_libarary(cls._cfg)
+
+        print_groups(cls._obj.store)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, file_prefix=self._prefix, sep=';')
 
 # -------------------------------------------------------------------------- #
 #
 #                                   MAIN
 #
 # -------------------------------------------------------------------------- #
-def suite():
-    s = unittest.TestSuite()
-    s.addTest(TestBarcodeidSeqLibCounts)
-    s.addTest(TestBarcodeidSeqLibCountsWithFiltering)
-    return s
-
-
 if __name__ == "__main__":
     unittest.main()

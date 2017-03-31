@@ -30,6 +30,27 @@ from enrich2.libraries.basic import BasicSeqLib
 #                           GENERAIC TEST DRIVER
 #
 # -------------------------------------------------------------------------- #
+def make_libarary(cfg, **kwargs):
+    obj = BasicSeqLib()
+    obj.force_recalculate = False
+    obj.component_outliers = False
+    obj.scoring_method = 'counts'
+    obj.logr_method = 'wt'
+    obj.plots_requested = False
+    obj.tsv_requested = False
+    obj.output_dir_override = False
+
+    # perform the analysis
+    obj.configure(cfg)
+    obj.validate()
+    obj.store_open(children=True)
+    obj.calculate()
+
+    for k, v in kwargs.items():
+        setattr(obj, k, v)
+    return obj
+
+
 class HDF5Verifier(object):
 
     def __call__(self, test_class, file_prefix, coding_prefix, sep=';'):
@@ -108,21 +129,7 @@ class TestBasicSeqLibCountsIntegrated(unittest.TestCase):
         cls._cfg['variants']['use aligner'] = True
 
         cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -150,22 +157,7 @@ class TestBasicSeqLibCountsSynonymous(unittest.TestCase):
     def setUpClass(cls):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/synonymous.fq'
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -193,22 +185,7 @@ class TestBasicSeqLibCountsSingleMutation(unittest.TestCase):
     def setUpClass(cls):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/single_mutation.fq'
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -236,22 +213,7 @@ class TestBasicSeqLibCountsMultiMutation(unittest.TestCase):
     def setUpClass(cls):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/multi_mutation.fq'
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -279,22 +241,7 @@ class TestBasicSeqLibCountsWildType(unittest.TestCase):
     def setUpClass(cls):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/wildtype.fq'
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -323,22 +270,7 @@ class TestBasicSeqLibCountsWithMaxNFQFilter(unittest.TestCase):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/max_n.fq'
         cls._cfg['fastq']['filters']['max N'] = 0
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -367,22 +299,7 @@ class TestBasicSeqLibCountsWithChaste(unittest.TestCase):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/not_chaste_reads.fq'
         cls._cfg['fastq']['filters']['chastity'] = True
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -411,22 +328,7 @@ class TestBasicSeqLibCountsWithMinQualFQFilter(unittest.TestCase):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/min_quality.fq'
         cls._cfg['fastq']['filters']['min quality'] = 20
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -455,22 +357,7 @@ class TestBasicSeqLibCountsWithAvgQualFQFilter(unittest.TestCase):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/avg_quality.fq'
         cls._cfg['fastq']['filters']['avg quality'] = 38
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -500,22 +387,7 @@ class TestBasicSeqLibCountsTrimLengthSetting(unittest.TestCase):
         cls._cfg['fastq']['reads'] = 'data/reads/basic/trim_length.fq'
         cls._cfg['fastq']['length'] = 3
         cls._cfg['variants']['wild type']['sequence'] = "AAA"
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -545,22 +417,7 @@ class TestBasicSeqLibCountsTrimStartSetting(unittest.TestCase):
         cls._cfg['fastq']['reads'] = 'data/reads/basic/trim_start.fq'
         cls._cfg['fastq']['start'] = 4
         cls._cfg['variants']['wild type']['sequence'] = "AAA"
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -590,22 +447,7 @@ class TestBasicSeqLibCountsReverseSetting(unittest.TestCase):
         cls._cfg['fastq']['reads'] = 'data/reads/basic/reverse_complement.fq'
         cls._cfg['fastq']['reverse'] = True
         cls._cfg['variants']['wild type']['sequence'] = "TTTTTT"
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -634,22 +476,7 @@ class TestBasicSeqLibCountsWithRefOffset(unittest.TestCase):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/reference_offset.fq'
         cls._cfg['variants']['wild type']['reference offset'] = 6
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -679,22 +506,7 @@ class TestBasicSeqLibCountsWithRefOffsetNotMultipleOfThree(unittest.TestCase):
         cls._cfg['fastq'][
             'reads'] = 'data/reads/basic/reference_offset.fq'
         cls._cfg['variants']['wild type']['reference offset'] = 5
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -724,22 +536,7 @@ class TestBasicSeqLibCountsWithVariantMinCount(unittest.TestCase):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/min_count.fq'
         cls._cfg['variants']['min count'] = 2
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -769,22 +566,7 @@ class TestBasicSeqLibCountsWithVariantMaxMutations(unittest.TestCase):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/max_mutations.fq'
         cls._cfg['variants']['max mutations'] = 1
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -814,22 +596,7 @@ class TestBasicSeqLibCountsWithVariantAligner(unittest.TestCase):
         cls._cfg = load_config_data("basic/basic_noncoding.json")
         cls._cfg['fastq']['reads'] = 'data/reads/basic/use_aligner.fq'
         cls._cfg['variants']['use aligner'] = True
-        cls._obj = BasicSeqLib()
-
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
-
-        # perform the analysis
-        cls._obj.configure(cls._cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+        cls._obj = make_libarary(cls._cfg)
 
     @classmethod
     def tearDownClass(cls):
