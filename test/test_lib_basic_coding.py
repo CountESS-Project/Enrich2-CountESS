@@ -59,7 +59,8 @@ class HDF5Verifier(object):
         self.coding_prefix = coding_prefix
         self.prefix = "{}_{}".format(coding_prefix, file_prefix)
         self.sep = sep
-        self.test_filter_stats()
+        if file_prefix != "counts_only":
+            self.test_filter_stats()
         if coding_prefix == 'c':
             self.test_main_syn_count()
         self.test_main_variant_count()
@@ -100,7 +101,7 @@ class HDF5Verifier(object):
 
 # -------------------------------------------------------------------------- #
 #
-#                           INTEGRATION COUNT TESTING
+#                          INTEGRATION COUNT TESTING
 #
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsIntegrated(unittest.TestCase):
@@ -612,6 +613,34 @@ class TestBasicSeqLibCountsWithVariantAligner(unittest.TestCase):
         driver = HDF5Verifier()
         driver(self, coding_prefix='c',
                file_prefix='use_aligner', sep=';')
+
+
+# -------------------------------------------------------------------------- #
+#
+#                   COUNTS ONLY MODE
+#
+# -------------------------------------------------------------------------- #
+class TestBasicSeqLibCountsOnlyMode(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls._cfg = load_config_data("basic/basic_coding.json")
+        cls._cfg['counts file'] = 'data/reads/basic/counts_only.tsv'
+        cls._obj = make_libarary(cls._cfg)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._obj.store_close(children=True)
+        os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
+
+    @property
+    def store(self):
+        return self._obj.store
+
+    def test_main(self):
+        driver = HDF5Verifier()
+        driver(self, coding_prefix='c', file_prefix='counts_only', sep=';')
 
 
 # -------------------------------------------------------------------------- #
