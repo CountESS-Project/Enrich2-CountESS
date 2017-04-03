@@ -1,0 +1,23 @@
+{
+  "barcodes": {
+    "map file": ""
+  },
+  "fastq": {
+    "filters": {
+    },
+    "reads": "",
+    "reverse": false
+  },
+  "name": "barcode_variant_test",
+  "output directory": "test_output/barcodevariant",
+  "report filtered reads": false,
+  "timepoint": 0,
+  "variants": {
+    "use aligner": false,
+    "wild type": {
+      "coding": false,
+      "reference offset": 0,
+      "sequence": "AAAAAAAAAAAA"
+    }
+  }
+}
