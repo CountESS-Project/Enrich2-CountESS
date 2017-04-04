@@ -19,42 +19,52 @@
 import os
 import unittest
 
-from test.utilities import load_result_df, load_config_data
+from test.utilities import load_result_df, load_config_data, print_groups
+from test.utilities import save_result
 from enrich2.stores.selection import Selection
 
 
-# --------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------- #
 #
 #                           NON-CODING SELECTION
 #
-# --------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------- #
 class TestNoncodingSelection(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         # read the JSON config file
-        cfg = load_config_data("selection/polyA_noncoding.json")
-        cls._obj = Selection()
 
-        # set analysis options
-        cls._obj.force_recalculate = False
-        cls._obj.component_outliers = False
-        cls._obj.scoring_method = 'counts'
-        cls._obj.logr_method = 'wt'
-        cls._obj.plots_requested = False
-        cls._obj.tsv_requested = False
-        cls._obj.output_dir_override = False
+        import itertools
+        xs = ['WLS', 'OLS', 'simple', 'counts', 'ratios']
+        xl = ['wt', 'complete', 'full']
+        for (s, l) in itertools.product(xs, xl):
+            cfg = load_config_data("selection/polyA_noncoding.json")
+            cls._obj = Selection()
 
-        # perform the analysis
-        cls._obj.configure(cfg)
-        cls._obj.validate()
-        cls._obj.store_open(children=True)
-        cls._obj.calculate()
+            # set analysis options
+            cls._obj.force_recalculate = False
+            cls._obj.component_outliers = False
+            cls._obj.scoring_method = s
+            cls._obj.logr_method = l
+            cls._obj.plots_requested = False
+            cls._obj.tsv_requested = False
+            cls._obj.output_dir_override = False
+
+            # perform the analysis
+            cls._obj.configure(cfg)
+            cls._obj.validate()
+            cls._obj.store_open(children=True)
+            cls._obj.calculate()
+
+            save_result(cls._obj, 'selection', prefix='n', sep='\t')
+        print_groups(cls._obj.store)
 
     @classmethod
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
+        os.rmdir(cls._obj.output_dir)
 
     def test_raw_counts_sorted(self):
         expected = load_result_df(
@@ -73,11 +83,11 @@ class TestNoncodingSelection(unittest.TestCase):
         self.assertTrue(expected.equals(result))
 
 
-# --------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------- #
 #
 #                                   MAIN
 #
-# --------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------- #
 def suite():
     s = unittest.TestSuite()
     s.addTest(TestNoncodingSelection)

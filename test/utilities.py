@@ -57,6 +57,19 @@ def single_column_df_equal(df1, df2):
     return all(values_eq) and all(index_eq)
 
 
+def save_result(test_obj, folder, prefix='c', sep='\t'):
+    for key in test_obj.store:
+        name = "data/result/{}/{}_{}_{}_{}.tsv".format(
+            folder,
+            prefix,
+            test_obj.scoring_method,
+            test_obj.logr_method,
+            key[1:].replace("/", "_")
+        )
+        test_obj.store[key].to_csv(name, sep=sep)
+    return
+
+
 def print_groups(store):
     for key in store:
         print("")

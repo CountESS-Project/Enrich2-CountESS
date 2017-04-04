@@ -2,14 +2,14 @@
   "libraries" : [
     {
       "fastq": {
-        "filters": {},
+        "filters": {}, 
         "reads": "data/reads/selection/polyA_t0.fq",
         "reverse": 0
       }, 
       "variants": {
         "use aligner": false, 
         "wild type": {
-          "coding": true, 
+          "coding": false, 
           "sequence": "AAAAAAAAAAAAAAA"
         }
       },
@@ -26,7 +26,7 @@
       "variants": {
         "use aligner": false, 
         "wild type": {
-          "coding": true, 
+          "coding": false, 
           "sequence": "AAAAAAAAAAAAAAA"
         }
       },
@@ -43,15 +43,15 @@
       "variants": {
         "use aligner": false, 
         "wild type": {
-          "coding": true, 
+          "coding": false, 
           "sequence": "AAAAAAAAAAAAAAA"
         }
       },
       "name": "polyA_t2", 
       "report filtered reads": false, 
-      "timepoint": 2
+      "timepoint": 1
     }
   ],
-  "name" : "polyA_coding",
-  "output directory": "test_output/polyA_coding/"
+  "name" : "polyA_noncoding",
+  "output directory": "test_output/polyA_noncoding" 
 }

@@ -26,7 +26,8 @@ requirements = [
     'matplotlib >= 1.4.3',
 ]
 
-# dirty workaround to deal with Enthought Canopy referring to the tables module as pytables
+# dirty workaround to deal with Enthought Canopy referring to the
+# tables module as pytables
 if 'Canopy' in sys.executable:
     requirements.append('pytables >= 3.2.0')
 else:
@@ -48,7 +49,8 @@ setup(
 
     author="Alan F Rubin",
     author_email="alan.rubin@wehi.edu.au",
-    description="Analysis program for calculating variant scores from deep mutational scanning data.",
+    description="Analysis program for calculating variant scores from "
+                "deep mutational scanning data.",
     url="https://github.com/FowlerLab/Enrich2/",
 
     install_requires =  requirements,

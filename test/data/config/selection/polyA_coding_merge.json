@@ -49,7 +49,7 @@
       },
       "name": "polyA_t2", 
       "report filtered reads": false, 
-      "timepoint": 2
+      "timepoint": 1
     }
   ],
   "name" : "polyA_coding",
