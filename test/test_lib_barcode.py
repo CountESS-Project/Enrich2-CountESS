@@ -20,7 +20,7 @@ import os
 import unittest
 import os.path
 
-from test.utilities import load_config_data, load_result_df
+from test.utilities import load_config_data, load_df_from_txt
 from test.utilities import print_groups, single_column_df_equal
 from enrich2.libraries.barcode import BarcodeSeqLib
 
@@ -64,7 +64,7 @@ class HDF5Verifier(object):
         self.test_main_barcode_count()
 
     def test_main_barcode_count(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             'barcode/{}_main_barcodes_counts.tsv'.format(self.prefix),
             sep=self.sep
         )
@@ -72,7 +72,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_raw_barcode_count(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             'barcode/{}_raw_barcodes_counts.tsv'.format(self.prefix),
             sep=self.sep
         )
@@ -80,7 +80,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_filter_stats(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             'barcode/{}_raw_filter.tsv'.format(self.prefix),
             sep=self.sep
         )

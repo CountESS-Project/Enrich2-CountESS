@@ -20,7 +20,7 @@ import os
 import unittest
 import os.path
 
-from test.utilities import load_config_data, load_result_df
+from test.utilities import load_config_data, load_df_from_txt
 from test.utilities import print_groups, single_column_df_equal
 from enrich2.libraries.idonly import IdOnlySeqLib
 
@@ -67,7 +67,7 @@ class HDF5Verifier(object):
         self.test_raw_identifiers_counts()
 
     def test_main_identifiers_counts(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_main_identifiers_counts.tsv'.format(
                 RESULT_DIR, self.prefix), sep=self.sep
         )
@@ -75,7 +75,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_raw_identifiers_counts(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_raw_identifiers_counts.tsv'.format(
                 RESULT_DIR, self.prefix), sep=self.sep
         )

@@ -20,7 +20,7 @@ import os
 import unittest
 import os.path
 
-from test.utilities import load_config_data, load_result_df
+from test.utilities import load_config_data, load_df_from_txt
 from test.utilities import single_column_df_equal, print_groups
 from enrich2.libraries.barcodevariant import BcvSeqLib
 
@@ -78,7 +78,7 @@ class HDF5Verifier(object):
             self.test_raw_filter()
 
     def test_raw_barcode_map(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_raw_barcodemap.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )
@@ -86,7 +86,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_raw_filter(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_raw_filter.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )
@@ -94,7 +94,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_raw_barcodes_counts(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_raw_barcodes_counts.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )
@@ -102,7 +102,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_main_barcodes_counts(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_main_barcodes_counts.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )
@@ -110,7 +110,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_main_syn_count(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_main_syn_counts.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )
@@ -118,7 +118,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_main_variant_count(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_main_variants_counts.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )

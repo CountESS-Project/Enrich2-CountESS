@@ -20,7 +20,7 @@ import os
 import unittest
 import os.path
 
-from test.utilities import load_config_data, load_result_df
+from test.utilities import load_config_data, load_df_from_txt
 from test.utilities import single_column_df_equal, print_groups
 from enrich2.libraries.basic import BasicSeqLib
 
@@ -67,7 +67,7 @@ class HDF5Verifier(object):
         self.test_raw_variant_count()
 
     def test_main_variant_count(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             'basic/{}_main_variants_count.tsv'.format(self.prefix),
             sep=self.sep
         )
@@ -75,7 +75,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_raw_variant_count(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             'basic/{}_raw_variants_count.tsv'.format(self.prefix),
             sep=self.sep
         )
@@ -83,7 +83,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_filter_stats(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             'basic/{}_stats.tsv'.format(self.prefix),
             sep=self.sep
         )
@@ -91,7 +91,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_main_syn_count(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             'basic/{}_main_syn_count.tsv'.format(self.prefix),
             sep=self.sep
         )

@@ -6,7 +6,7 @@
     },
     "reads": "",
     "reverse": false
-  }, 
+  },
   "name": "barcode_only_test", 
   "output directory": "test_output/barcode_only/",
   "report filtered reads": false, 

@@ -20,7 +20,7 @@ import os
 import unittest
 import os.path
 
-from test.utilities import load_config_data, load_result_df
+from test.utilities import load_config_data, load_df_from_txt
 from test.utilities import print_groups, single_column_df_equal
 from enrich2.libraries.barcodeid import BcidSeqLib
 
@@ -71,7 +71,7 @@ class HDF5Verifier(object):
         self.test_raw_barcode_map()
 
     def test_main_barcodes_counts(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_main_barcodes_counts.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )
@@ -79,7 +79,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_raw_barcodes_counts(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_raw_barcodes_counts.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )
@@ -87,7 +87,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_main_identifiers_counts(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_main_identifiers_counts.tsv'.format(
                 RESULT_DIR, self.prefix), sep=self.sep
         )
@@ -95,7 +95,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_raw_filter(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_raw_filter.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )
@@ -103,7 +103,7 @@ class HDF5Verifier(object):
         self.test_class.assertTrue(single_column_df_equal(expected, result))
 
     def test_raw_barcode_map(self):
-        expected = load_result_df(
+        expected = load_df_from_txt(
             '{}/{}_raw_barcodemap.tsv'.format(RESULT_DIR, self.prefix),
             sep=self.sep
         )

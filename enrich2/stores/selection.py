@@ -27,17 +27,28 @@ import statsmodels.api as sm
 from matplotlib.backends.backend_pdf import PdfPages
 
 from ..libraries.barcodeid import BcidSeqLib
-from ..libraries import *
+from ..libraries.idonly import IdOnlySeqLib
 from ..libraries.barcodevariant import BcvSeqLib
+from ..libraries.basic import BasicSeqLib
+from ..libraries.barcode import BarcodeSeqLib
+from ..libraries.variant import protein_variant
+
 from ..base.constants import WILD_TYPE_VARIANT, SYNONYMOUS_VARIANT
 from ..base.dataframe import singleton_dataframe
 from ..base.sfmap import sfmap_plot
+
 from ..config.config_check import seqlib_type
-from ..libraries.variant import protein_variant
+
 from ..plotting.plots import configure_axes, plot_colors, weights_plot
 from ..plotting.plots import fit_axes, fit_axes_text, volcano_plot
+
 from ..stores.storemanager import StoreManager
 
+globals()['BasicSeqLib'] = BasicSeqLib
+globals()['BarcodeSeqLib'] = BarcodeSeqLib
+globals()['BcvSeqLib'] = BcvSeqLib
+globals()['BcidSeqLib'] = BcidSeqLib
+globals()['IdOnlySeqLib'] = IdOnlySeqLib
 
 def regression_apply(row, timepoints, weighted):
     """
@@ -164,11 +175,6 @@ class Selection(StoreManager):
                     # requires that the SeqLib derived classes be
                     # imported into the module namespace
                     # using "from x import y" style
-
-                    # TODO: Fix this introspective loader
-                    from enrich2.libraries.basic import BasicSeqLib
-                    globals()['BasicSeqLib'] = BasicSeqLib
-
                     lib = globals()[libtype]()
                     lib.configure(lib_cfg)
                     self.add_child(lib)

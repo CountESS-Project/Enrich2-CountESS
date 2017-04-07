@@ -1,0 +1,42 @@
+{
+  "libraries": [
+    {
+      "barcodes": {
+        "map file": "data/reads/selection/barcode_map.txt"
+      },
+      "identifiers": {},
+      "fastq": {
+        "filters": {},
+        "reads": "data/reads/selection/polyA_t0.fq",
+        "reverse": false
+      },
+      "name": "polyA_t0",
+      "report filtered reads": false,
+      "timepoint": 0
+    },
+    {
+      "barcodes": {},
+      "fastq": {
+        "filters": {},
+        "reads": "data/reads/selection/polyA_t1.fq",
+        "reverse": false
+      },
+      "name": "polyA_t1",
+      "report filtered reads": false,
+      "timepoint": 1
+    },
+    {
+      "barcodes": {},
+      "fastq": {
+        "filters": {},
+        "reads": "data/reads/selection/polyA_t2.fq",
+        "reverse": false
+      },
+      "name": "polyA_t2",
+      "report filtered reads": false,
+      "timepoint": 2
+    }
+  ],
+  "name": "barcodeid_selection_test",
+  "output directory": "test_output/selection/"
+}
