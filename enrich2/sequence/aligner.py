@@ -27,7 +27,6 @@ insertion and deletion variants (i.e. not coding sequences).
 
 import numpy as np
 
-
 #: Default similarity matrix used by the aligner.
 #: User-defined matrices must have this format.
 _simple_similarity = {
@@ -66,9 +65,9 @@ class Aligner(object):
         if 'gap' in similarity_keys:
             similarity_keys.remove('gap')
         for key in similarity_keys:
-            clause_1 = all(x in similarity[key] for x in similarity_keys)
-            clause_2 = len(similarity[key]) != len(similarity_keys)
-            if not clause_1 or clause_2:
+            keys_map_to_dicts = all(x in similarity[key] for x in similarity_keys)
+            symmetrical = len(similarity[key]) != len(similarity_keys)
+            if not keys_map_to_dicts or symmetrical:
                 raise ValueError("Asymmetrical alignment scoring matrix")
 
         self.similarity = similarity
@@ -91,6 +90,15 @@ class Aligner(object):
         For indels, the ``length`` value is the number of bases inserted or
         deleted with respect to *seq1* starting at ``i``.
         """
+        if not isinstance(seq1, str):
+            raise TypeError("First sequence must be a str type")
+        if not isinstance(seq2, str):
+            raise TypeError("Second sequence must be a str type")
+        if not seq1:
+            raise ValueError("First sequence must not be empty.")
+        if not seq2:
+            raise ValueError("Second sequence must not be empty.")
+
         self.matrix = np.ndarray(
             shape=(len(seq1) + 1, len(seq2) + 1),
             dtype=np.dtype([('score', np.int), ('trace', np.byte)])

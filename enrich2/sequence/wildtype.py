@@ -39,7 +39,6 @@ class WildTypeSequence(object):
         self.dna_offset = None
         self.protein_offset = None
 
-
     def __str__(self):
         return pretty_class_str(self)
 
@@ -47,10 +46,8 @@ class WildTypeSequence(object):
         # note we don't need to check protein_offset, since it depends on dna_offset and protein_seq
         return self.dna_seq == other.dna_seq and self.protein_seq == other.protein_seq and self.dna_offset == other.dna_offset
 
-
     def __ne__(self, other):
         return not self == other
-
 
     def configure(self, cfg):
         try:
@@ -65,8 +62,11 @@ class WildTypeSequence(object):
             # set the reference offset
             if 'reference offset' in cfg:
                 try:
-                    self.dna_offset = int(cfg['reference offset'])
-                except ValueError:
+                    offset = int(cfg['reference offset'])
+                    self.dna_offset = offset
+                    if offset < 0:
+                        raise ValueError("Offset must be 0 or greater [{}]".format(self.parent_name))
+                except (ValueError, TypeError):
                     raise ValueError("Invalid reference offset value [{}]".format(self.parent_name))
             else:
                 self.dna_offset = 0
@@ -95,7 +95,6 @@ class WildTypeSequence(object):
         except KeyError as key:
             raise KeyError("Missing required config value {key} [{name}]".format(key=key, name=self.parent_name))
 
-
     def serialize(self):
         """
         Format this object as a config object suitable for dumping to a config file.
@@ -107,10 +106,8 @@ class WildTypeSequence(object):
               }
         return cfg
 
-
     def is_coding(self):
         return self.protein_seq is not None
-
 
     def duplicate(self, new_parent_name):
         """
@@ -125,7 +122,6 @@ class WildTypeSequence(object):
             raise ValueError("Failed to duplicate wild type sequence [{}]".format(self.parent_name))
         else:
             return new
-    
 
     def position_tuples(self, protein=False):
         """
