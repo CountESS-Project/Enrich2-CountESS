@@ -51,7 +51,7 @@ if __name__ == "__main__":
             result_dir=RESULT_DIR,
             file_sep='\t',
             file_ext='tsv',
-            verbose=False,
+            verbose=True,
             save=False
         )
         class_name = "TestSelection{}Lib{}Scoring{}Norm{}".format(

@@ -169,7 +169,6 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
         
         self.count_synonymous()
 
-
     def make_plots(self):
         """
         Make plots for :py:class:`~seqlib.seqlib.BcvSeqLib` objects.

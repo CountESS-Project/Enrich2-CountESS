@@ -415,6 +415,73 @@ class Selection(StoreManager):
             data_columns=bcm.columns
         )
 
+    def timepoint_indices_intersect(self):
+        """
+        Check to see if timepoints share all variants in common for all labels.
+        Raises ValueError if not.
+
+        Returns
+        -------
+        None
+
+        """
+        for label in self.labels:
+            self.timepoint_indices_intersect_for_label(label)
+
+    def timepoint_indices_intersect_for_label(self, label):
+        """
+        For a single label, check to see if timepoints share all variants
+        in common. Raises ValueError if not.
+
+        Returns
+        -------
+        None
+
+        """
+        from functools import reduce
+        table_key = "/main/{}/counts".format(label)
+        libs = [lib for tp in self.timepoints for lib in self.libraries[tp]]
+        series_ls = [lib.store.select_column(table_key, 'index') for lib in libs]
+        index_ls = [pd.Index(series.values) for series in series_ls]
+        index_len_ls = [len(set(idx)) for idx in index_ls]
+        common = reduce(lambda idx1, idx2: idx1.intersection(idx2), index_ls)
+        common_len = len(common)
+        all_good = all(common_len == idx_len for idx_len in index_len_ls)
+        if not all_good:
+            raise ValueError("Timepoints contain different variants"
+                             " for label {}.".format(label))
+
+    def timepoints_contain_variants(self):
+        """
+        For each label, check to see if timepoints share all variants in
+        common. Raises ValueError if not.
+
+        Returns
+        -------
+        None
+
+        """
+        for label in self.labels:
+            self.timepoints_contain_variants_for_label(label)
+
+    def timepoints_contain_variants_for_label(self, label):
+        """
+        For a single label, check to see if timepoints share all variants in
+        common. Raises ValueError if not.
+
+        Returns
+        -------
+        None
+
+        """
+        table_key = "/main/{}/counts".format(label)
+        libs = [lib for tp in self.timepoints for lib in self.libraries[tp]]
+        series_ls = [lib.store.select_column(table_key, 'index') for lib in libs]
+        all_good = all(set(s.values) != set(["_wt"]) for s in series_ls)
+        if not all_good:
+            raise ValueError("Some timepoints do not contain any"
+                             " variants for label {}.".format(label))
+
     def calculate(self):
         """
         Wrapper method to calculate counts and enrichment scores 
@@ -430,6 +497,9 @@ class Selection(StoreManager):
 
         if self.is_barcodevariant() or self.is_barcodeid():
             self.combine_barcode_maps()
+
+        self.timepoint_indices_intersect()
+        self.timepoints_contain_variants()
 
         if self.scoring_method == "counts":
             pass
@@ -634,8 +704,10 @@ class Selection(StoreManager):
         variances = self.store.select("/main/{}/counts".format(label))
         c_n = ['c_{}'.format(x) for x in self.timepoints]
         index = variances.index
-        # perform operations on the numpy values of the data frame for easier broadcasting
-        #variances = 1.0 / (variances[c_n].values + 0.5) + 1.0 / (variances[['c_0']].values + 0.5)
+
+        # perform operations on the numpy values of the
+        # data frame for easier broadcasting
+        # variances = 1.0 / (variances[c_n].values + 0.5) + 1.0 / (variances[['c_0']].values + 0.5)
         variances = 1.0 / (variances[c_n].values + 0.5)
         if self.logr_method == "wt":
             if "variants" in self.labels:
@@ -643,26 +715,52 @@ class Selection(StoreManager):
             elif "identifiers" in self.labels:
                 wt_label = "identifiers"
             else:
-                raise ValueError('Failed to use wild type log ratio method, suitable data table not present [{}]'.format(self.name))
-            wt_counts = self.store.select("/main/{}/counts".format(wt_label), "columns=c_n & index='{}'".format(WILD_TYPE_VARIANT))
+                raise ValueError(
+                    'Failed to use wild type log ratio method, '
+                    'suitable data table not present [{}]'.format(self.name)
+                )
+            wt_counts = self.store.select(
+                "/main/{}/counts".format(wt_label),
+                "columns=c_n & index='{}'".format(WILD_TYPE_VARIANT)
+            )
             if len(wt_counts) == 0: # wild type not found
-                raise ValueError('Failed to use wild type log ratio method, wild type sequence not present [{}]'.format(self.name))
+                raise ValueError(
+                    'Failed to use wild type log ratio method, wild type '
+                    'sequence not present [{}]'.format(self.name)
+                )
             variances = variances + 1.0 / (wt_counts.values + 0.5)
         elif self.logr_method == "complete":
-            variances = variances + 1.0 / (self.store.select("/main/{}/counts".format(label), "columns=c_n").sum(axis="index").values + 0.5)
+            variances = variances + 1.0 / (self.store.select(
+                "/main/{}/counts".format(label),
+                "columns=c_n"
+            ).sum(axis="index").values + 0.5)
         elif self.logr_method == "full":
-            variances = variances + 1.0 / (self.store.select("/main/{}/counts_unfiltered".format(label), "columns=c_n").sum(axis="index", skipna=True).values + 0.5)
+            variances = variances + 1.0 / (
+                self.store.select(
+                    "/main/{}/counts_unfiltered".format(label),
+                    "columns=c_n"
+                ).sum(axis="index", skipna=True).values + 0.5)
         else:
-            raise ValueError('Invalid log ratio method "{}" [{}]'.format(self.logr_method, self.name))
+            raise ValueError('Invalid log ratio method "{}" [{}]'.format(
+                self.logr_method, self.name)
+            )
         variances = 1.0 / variances # weights are reciprocal of variances
         # make it a data frame again
-        variances = pd.DataFrame(data=variances, index=index, columns=['W_{}'.format(x) for x in self.timepoints])
-        self.store.put("/main/{}/weights".format(label), variances, format="table", data_columns=variances.columns)
+        variances = pd.DataFrame(
+            data=variances, index=index,
+            columns=['W_{}'.format(x) for x in self.timepoints]
+        )
+        self.store.put(
+            "/main/{}/weights".format(label),
+            variances, format="table",
+            data_columns=variances.columns
+        )
 
 
     def calc_regression(self, label):
         """
-        Calculate least squares regression for *label*. If *weighted* is ``True``, calculates weighted least squares; else ordinary least squares.
+        Calculate least squares regression for *label*. If *weighted* is
+        ``True``, calculates weighted least squares; else ordinary least squares.
 
         Regression results are stored in ``'/main/label/scores'``
 
@@ -673,12 +771,19 @@ class Selection(StoreManager):
             # need to remove the current keys because we are using append
             self.store.remove("/main/{}/scores".format(label))
 
-        logging.info("Calculating {} regression coefficients ({})".format(self.scoring_method, label), extra={'oname' : self.name})
+        logging.info("Calculating {} regression coefficients ({})".format(
+            self.scoring_method, label), extra={'oname' : self.name}
+        )
+
         # append is required because it takes the "min_itemsize" argument, and put doesn't
-        longest = self.store.select("/main/{}/log_ratios".format(label), "columns='index'").index.map(len).max()
+        longest = self.store.select(
+            "/main/{}/log_ratios".format(label),
+            "columns='index'"
+        ).index.map(len).max()
         chunk = 1
         if self.scoring_method == "WLS":
-            for data in self.store.select_as_multiple(["/main/{}/log_ratios".format(label), "/main/{}/weights".format(label)], chunksize=self.chunksize):
+            selection = ["/main/{}/log_ratios".format(label), "/main/{}/weights".format(label)]
+            for data in self.store.select_as_multiple(selection, chunksize=self.chunksize):
                 logging.info("Calculating weighted least squares for chunk {} ({} rows)".format(chunk, len(data.index)), extra={'oname' : self.name})
                 result = data.apply(regression_apply, args=[self.timepoints, True], axis="columns")
                 self.store.append("/main/{}/scores".format(label), result, min_itemsize={"index" : longest})
