@@ -482,6 +482,55 @@ class Selection(StoreManager):
             raise ValueError("Some timepoints do not contain any"
                              " variants for label {}.".format(label))
 
+    def table_not_empty_for_key(self, key):
+        """
+        Checks to see if a table exists in a hdf5 store and is populated.
+
+        Parameters
+        ----------
+        key : `str`, string key used to index a hdf5 store.
+
+        Returns
+        -------
+        bool: True if table exists but is empty.
+
+        """
+        if not self.table_exists_for_key(key):
+            raise ValueError("Required table {} does "
+                             "not exist.".format(key))
+        empty = self.store[key].empty
+        return not empty
+
+    def table_exists_for_key(self, key):
+        """
+        Checks to see if a table exists in a hdf5 store.
+
+        Parameters
+        ----------
+        key : `str`, string key used to index a hdf5 store.
+
+        Returns
+        -------
+        bool: True if table exists but is empty.
+
+        """
+        exists = self.check_store(key)
+        return exists
+
+    def ensure_main_count_tables_exist_and_populated(self):
+        """
+        Before the main computations are performed, checks to see if the
+        required count tables in main exist and are populated.
+        """
+        for label in self.labels:
+            key = "/main/{}/counts".format(label)
+            if not self.table_exists_for_key(key):
+                raise ValueError("Required table {} does "
+                                 "not exist.".format(key))
+            if not self.table_not_empty_for_key(key):
+                raise ValueError("Required table {} does "
+                                 "is empty.".format(key))
+
     def calculate(self):
         """
         Wrapper method to calculate counts and enrichment scores 
@@ -498,6 +547,7 @@ class Selection(StoreManager):
         if self.is_barcodevariant() or self.is_barcodeid():
             self.combine_barcode_maps()
 
+        self.ensure_main_count_tables_exist_and_populated()
         self.timepoint_indices_intersect()
         self.timepoints_contain_variants()
 
