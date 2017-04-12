@@ -19,6 +19,7 @@
 import os
 import unittest
 import os.path
+import shutil
 
 from test.utilities import load_config_data, load_df_from_txt
 from test.utilities import print_groups, single_column_df_equal
@@ -106,7 +107,7 @@ class TestIdonlySeqLibCountsOnlyModeNoFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -137,7 +138,7 @@ class TestIdonlySeqLibCountsWithIdentifiersMinCountSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):

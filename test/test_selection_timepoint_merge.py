@@ -16,42 +16,57 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from itertools import product
 from copy import deepcopy
 
 from test.utilities import load_config_data
 from test.utilities import DEFAULT_STORE_PARAMS
-from test.test_methods import GeneralTestCase
+from test.methods import HDF5TestComponent
+
 from enrich2.stores.selection import Selection
 
-CFG_PATH = "data/config/selection/"
+
+CFG_FILE = "selection_timepoint_merge.json"
+CFG_DIR = "data/config/selection/"
 READS_DIR = "data/reads/selection/"
 RESULT_DIR = "data/result/selection/"
 
+DRIVER = "runTest"
+LIBTYPE = 'barcode'
+FILE_EXT = 'tsv'
+FILE_SEP = '\t'
+
+
+class TestSelectionTimepointMerge(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'counts'
+        logr = 'wt'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = "timepoint_merge"
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
 if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    cfg_file = "selection_timepoint_merge.json"
-    cfg = load_config_data(cfg_file, CFG_PATH)
-    driver_name = "runTest"
-
-    cfg = load_config_data(cfg_file, CFG_PATH)
-    params = deepcopy(DEFAULT_STORE_PARAMS)
-    test_case = GeneralTestCase(
-        methodName=driver_name,
-        store_constructor=Selection,
-        cfg=cfg,
-        params=params,
-        file_prefix='timepoint_merge',
-        result_dir=RESULT_DIR,
-        file_sep='\t',
-        file_ext='tsv',
-        verbose=False,
-        save=False
-    )
-    class_name = "TestSelectionTimepointMerge"
-    test_case.__name__ = class_name
-    suite.addTest(test_case)
-
-    # Run suite
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
+    unittest.main()

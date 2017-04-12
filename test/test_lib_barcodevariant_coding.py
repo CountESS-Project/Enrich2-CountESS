@@ -17,6 +17,7 @@
 
 
 import os
+import shutil
 import unittest
 import os.path
 
@@ -175,7 +176,7 @@ class TestBcvSeqLibCountsIntegrated(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -213,7 +214,7 @@ class TestBcvSeqLibCountsBarcodesMinCountFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -252,7 +253,7 @@ class TestBcvSeqLibCountsCountsOnlyMode(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -291,7 +292,7 @@ class TestBcvSeqLibCountsAvgQFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -330,7 +331,7 @@ class TestBcvSeqLibCountsMinQFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -369,7 +370,7 @@ class TestBcvSeqLibCountsMaxNFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -407,7 +408,7 @@ class TestBcvSeqLibCountsNotChasteFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -445,7 +446,7 @@ class TestBcvSeqLibDetectMultiMutations(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -484,7 +485,7 @@ class TestBcvSeqLibDetectSingleMutations(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -523,7 +524,7 @@ class TestBcvSeqLibWithRevcomp(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -563,7 +564,7 @@ class TestBcvSeqLibWithTrimLengthAt3(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -602,7 +603,7 @@ class TestBcvSeqLibWithTrimStartAt4(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -640,7 +641,7 @@ class TestBcvSeqLibDetectSynonymous(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -677,7 +678,7 @@ class TestBcvSeqLibDetectWildtype(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -715,7 +716,7 @@ class TestBcvSeqLibWithVariantMaxMutationsFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -752,7 +753,7 @@ class TestBcvSeqLibWithVariantMinCountFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -790,7 +791,7 @@ class TestBcvSeqLibWithReferenceOffset(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -829,7 +830,7 @@ class TestBcvSeqLibWithUseAlignerSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):

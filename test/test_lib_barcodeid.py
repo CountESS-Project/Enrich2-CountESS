@@ -17,6 +17,7 @@
 
 
 import os
+import shutil
 import unittest
 import os.path
 
@@ -145,7 +146,7 @@ class TestBcidSeqLibCountsIntegratedFilters(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -178,7 +179,7 @@ class TestBcidSeqLibCountsBarcodeMinCountSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -210,7 +211,7 @@ class TestBcidSeqLibCountsCountsOnlyMode(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -243,7 +244,7 @@ class TestBcidSeqLibCountsAvgQualFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -276,7 +277,7 @@ class TestBcidSeqLibCountsMaxNFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -309,7 +310,7 @@ class TestBcidSeqLibCountsMinQualFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -342,7 +343,7 @@ class TestBcidSeqLibCountsNotChasteFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -375,7 +376,7 @@ class TestBcidSeqLibCountsWithIdentifiersMinCountFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -408,7 +409,7 @@ class TestBcidSeqLibCountsWithRevCompSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -443,7 +444,7 @@ class TestBcidSeqLibCountsWithTrimLengthSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -478,7 +479,7 @@ class TestBcidSeqLibCountsWithTrimStartSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):

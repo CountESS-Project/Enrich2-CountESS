@@ -31,7 +31,9 @@ from .utilities import dispatch_loader, save_result_to_pkl, print_test
 #                             TEST CLASS
 #
 # -------------------------------------------------------------------------- #
-class GeneralTestCase(unittest.TestCase):
+
+@unittest.skip("GenerealTestCase should not be run directly.")
+class HDF5TestComponent(unittest.TestCase):
     """
     Utility class that builds a parameterized set of common tests. Allows
     customisation of the store manager class, coding/noncoding tests, and
@@ -47,10 +49,11 @@ class GeneralTestCase(unittest.TestCase):
 
     """
 
-    def __init__(self, methodName, store_constructor, cfg, file_prefix,
-                 result_dir, file_ext, file_sep='\t', save=False,
+    def __init__(self, methodName="runTest",
+                 store_constructor=None, cfg=None, file_prefix="",
+                 result_dir="", file_ext="", file_sep='\t', save=False,
                  params=DEFAULT_STORE_PARAMS, verbose=False):
-        super(GeneralTestCase, self).__init__(methodName)
+        super(HDF5TestComponent, self).__init__(methodName)
         self.file_prefix = file_prefix
         self.result_dir = result_dir
         self.file_ext = file_ext
@@ -98,7 +101,6 @@ class GeneralTestCase(unittest.TestCase):
         shutil.rmtree(self.obj.output_dir)
 
     def runTest(self):
-        # print_groups(self.obj.store)
         for test_func_name in self.tests:
             getattr(self, test_func_name)()
 

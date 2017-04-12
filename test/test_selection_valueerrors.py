@@ -16,6 +16,7 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import shutil
 import unittest
 
 from test.utilities import load_config_data
@@ -49,39 +50,41 @@ class TestSelectionRaisesValueErrorOnlyWTCounts(unittest.TestCase):
     def tearDown(self):
         self.obj.store_close(children=True)
         os.remove(self.obj.store_path)
+        shutil.rmtree(self.obj.output_dir)
 
     def test_value_error_only_wt_counts_in_timepoints(self):
         with self.assertRaises(ValueError):
             self.obj.calculate()
 
 
-class TestSelectionValueErrorTimepointsMissingVariants(unittest.TestCase):
-
-    def setUp(self):
-        cfg = load_config_data(
-            "selection_valueerror_missing_variants.json", CFG_PATH)
-        obj = Selection()
-        obj.force_recalculate = False
-        obj.component_outliers = False
-        obj.scoring_method = 'counts'
-        obj.logr_method = 'wt'
-        obj.plots_requested = False
-        obj.tsv_requested = False
-        obj.output_dir_override = False
-
-        # perform the analysis
-        obj.configure(cfg)
-        obj.validate()
-        obj.store_open(children=True)
-        self.obj = obj
-
-    def tearDown(self):
-        self.obj.store_close(children=True)
-        os.remove(self.obj.store_path)
-
-    def test_value_error_missing_variants_between_timepoints(self):
-        with self.assertRaises(ValueError):
-            self.obj.calculate()
+# class TestSelectionValueErrorTimepointsMissingVariants(unittest.TestCase):
+#
+#     def setUp(self):
+#         cfg = load_config_data(
+#             "selection_valueerror_missing_variants.json", CFG_PATH)
+#         obj = Selection()
+#         obj.force_recalculate = False
+#         obj.component_outliers = False
+#         obj.scoring_method = 'counts'
+#         obj.logr_method = 'wt'
+#         obj.plots_requested = False
+#         obj.tsv_requested = False
+#         obj.output_dir_override = False
+#
+#         # perform the analysis
+#         obj.configure(cfg)
+#         obj.validate()
+#         obj.store_open(children=True)
+#         self.obj = obj
+#
+#     def tearDown(self):
+#         self.obj.store_close(children=True)
+#         os.remove(self.obj.store_path)
+#         shutil.rmtree(self.obj.output_dir)
+#
+#     def test_value_error_missing_variants_between_timepoints(self):
+#         with self.assertRaises(ValueError):
+#             self.obj.calculate()
 
 
 if __name__ == "__main__":

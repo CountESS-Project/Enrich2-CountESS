@@ -17,6 +17,7 @@
 
 
 import os
+import shutil
 import unittest
 import os.path
 
@@ -136,8 +137,8 @@ class TestBasicSeqLibCountsIntegrated(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
-
+        shutil.rmtree(cls._obj.output_dir)
+    
     @property
     def store(self):
         return self._obj.store
@@ -164,7 +165,7 @@ class TestBasicSeqLibCountsSynonymous(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -192,7 +193,7 @@ class TestBasicSeqLibCountsSingleMutation(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -220,7 +221,7 @@ class TestBasicSeqLibCountsMultiMutation(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -248,7 +249,7 @@ class TestBasicSeqLibCountsWildType(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -277,7 +278,7 @@ class TestBasicSeqLibCountsWithMaxNFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -306,7 +307,7 @@ class TestBasicSeqLibCountsWithChaste(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -335,7 +336,7 @@ class TestBasicSeqLibCountsWithMinQualFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -364,7 +365,7 @@ class TestBasicSeqLibCountsWithAvgQualFQFilter(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -394,7 +395,7 @@ class TestBasicSeqLibCountsTrimLengthSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -424,7 +425,7 @@ class TestBasicSeqLibCountsTrimStartSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -454,7 +455,7 @@ class TestBasicSeqLibCountsReverseSetting(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -483,7 +484,7 @@ class TestBasicSeqLibCountsWithRefOffset(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -513,7 +514,7 @@ class TestBasicSeqLibCountsWithRefOffsetNotMultipleOfThree(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -543,7 +544,7 @@ class TestBasicSeqLibCountsWithVariantMinCount(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -573,7 +574,7 @@ class TestBasicSeqLibCountsWithVariantMaxMutations(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -603,7 +604,7 @@ class TestBasicSeqLibCountsWithVariantAligner(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):
@@ -632,7 +633,7 @@ class TestBasicSeqLibCountsOnlyMode(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):

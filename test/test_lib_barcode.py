@@ -17,6 +17,7 @@
 
 
 import os
+import shutil
 import unittest
 import os.path
 
@@ -117,7 +118,7 @@ class TestBarcodeSeqLibCountsIntegratedFilters(unittest.TestCase):
     def tearDownClass(cls):
         cls._obj.store_close(children=True)
         os.remove(cls._obj.store_path)
-        os.rmdir(cls._obj.output_dir)
+        shutil.rmtree(cls._obj.output_dir)
 
     @property
     def store(self):

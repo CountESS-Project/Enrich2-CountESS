@@ -16,49 +16,343 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from itertools import product
 from copy import deepcopy
 
 from test.utilities import load_config_data
 from test.utilities import DEFAULT_STORE_PARAMS
-from test.test_methods import GeneralTestCase
+from test.methods import HDF5TestComponent
 
 from enrich2.stores.selection import Selection
 
-CFG_PATH = "data/config/selection/"
+
+CFG_FILE = "barcode_selection.json"
+CFG_DIR = "data/config/selection/"
 READS_DIR = "data/reads/selection/"
 RESULT_DIR = "data/result/selection/"
 
-if __name__ == "__main__":
-    suite = unittest.TestSuite()
-    score_methods = ['WLS', 'OLS', 'ratios', 'counts', 'simple']
-    logr_methods = ['complete', 'full']
-    libtype = 'barcode'
-    cfg_file = "{}_selection.json".format(libtype)
-    cfg = load_config_data(cfg_file, CFG_PATH)
-    driver_name = "runTest"
+DRIVER = "runTest"
+LIBTYPE = 'barcode'
+FILE_EXT = 'tsv'
+FILE_SEP = '\t'
 
-    for (s, l) in product(score_methods, logr_methods):
+
+class TestSelectionBarocdeLibWLSScoringCompleteNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'WLS'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = s
-        params['logr_method'] = l
-        test_case = GeneralTestCase(
-            methodName=driver_name,
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
             store_constructor=Selection,
             cfg=cfg,
             params=params,
-            file_prefix='{}_{}_{}'.format(libtype, s, l),
+            file_prefix=file_prefix,
             result_dir=RESULT_DIR,
-            file_ext='tsv',
-            file_sep='\t',
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
             verbose=False,
             save=False
         )
-        class_name = "TestSelection{}Lib{}Scoring{}Norm".format(
-            libtype.capitalize(), s.capitalize(), l.capitalize())
-        test_case.__name__ = class_name
-        suite.addTest(test_case)
+        self.general_test_component.setUp()
 
-    # Run suite
-    runner = unittest.TextTestRunner()
-    runner.run(suite)
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibWLSScoringFullNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'WLS'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibOLSScoringCompleteNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'OLS'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibOLSScoringFullNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'OLS'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibRatiosScoringCompleteNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'ratios'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibRatiosScoringFullNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'ratios'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibCountsScoringCompleteNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'counts'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibCountsScoringFullNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'counts'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibSimpleScoringCompleteNorm(unittest.TestCase):
+    def setUp(self):
+        scoring = 'simple'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestSelectionBarocdeLibSimpleScoringFullNorm(unittest.TestCase):
+    def setUp(self):
+        scoring = 'simple'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+        params['scoring_method'] = scoring
+        params['logr_method'] = logr
+        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
+
+        self.general_test_component = HDF5TestComponent(
+            methodName=DRIVER,
+            store_constructor=Selection,
+            cfg=cfg,
+            params=params,
+            file_prefix=file_prefix,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            verbose=False,
+            save=False
+        )
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+if __name__ == "__main__":
+    unittest.main()

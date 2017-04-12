@@ -46,12 +46,12 @@ setup(
         'console_scripts' : ['enrich_cmd = enrich2.main:main_cmd'],
         'gui_scripts' : ['enrich_gui = enrich2.main:main_gui'],
     },
+    test_suite="tests",
 
     author="Alan F Rubin",
     author_email="alan.rubin@wehi.edu.au",
     description="Analysis program for calculating variant scores from "
                 "deep mutational scanning data.",
     url="https://github.com/FowlerLab/Enrich2/",
-
     install_requires =  requirements,
 )
