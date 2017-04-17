@@ -1,0 +1,147 @@
+{
+  "conditions": [
+    {
+      "name": "Condition_1", 
+      "selections": [
+        {
+          "libraries": [
+            {
+              "barcodes": {
+                "map file": "enrich2/tests/data/reads/experiment/barcode_map.txt"
+              },
+              "fastq": {
+                "filters": {}, 
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t0_s1_c1.fq", 
+                "reverse": false
+              }, 
+              "name": "polyA_t0_s1_c1",
+              "report filtered reads": false, 
+              "timepoint": 0, 
+              "variants": {
+                "use aligner": false, 
+                "wild type": {
+                  "coding": false, 
+                  "reference offset": 0, 
+                  "sequence": "AAAAAAAAAAAAAAA"
+                }
+              }
+            }, 
+            {
+              "barcodes": {
+                "map file": "enrich2/tests/data/reads/experiment/barcode_map.txt"
+              },
+              "fastq": {
+                "filters": {}, 
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t1_s1_c1.fq", 
+                "reverse": false
+              }, 
+              "name": "polyA_t1_s1_c1",
+              "report filtered reads": false, 
+              "timepoint": 1, 
+              "variants": {
+                "use aligner": false, 
+                "wild type": {
+                  "coding": false, 
+                  "reference offset": 0, 
+                  "sequence": "AAAAAAAAAAAAAAA"
+                }
+              }
+            }, 
+            {
+              "barcodes": {
+                "map file": "enrich2/tests/data/reads/experiment/barcode_map.txt"
+              },
+              "fastq": {
+                "filters": {}, 
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t2_s1_c1.fq", 
+                "reverse": false
+              }, 
+              "name": "polyA_t2_s1_c1",
+              "report filtered reads": false, 
+              "timepoint": 2, 
+              "variants": {
+                "use aligner": false, 
+                "wild type": {
+                  "coding": false, 
+                  "reference offset": 0, 
+                  "sequence": "AAAAAAAAAAAAAAA"
+                }
+              }
+            }
+          ], 
+          "name": "Selection_1_C1"
+        }, 
+        {
+          "libraries": [
+            {
+              "barcodes": {
+                "map file": "enrich2/tests/data/reads/experiment/barcode_map.txt"
+              },
+              "fastq": {
+                "filters": {}, 
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t0_s2_c1.fq", 
+                "reverse": false
+              }, 
+              "name": "polyA_t0_s2_c1",
+              "report filtered reads": false, 
+              "timepoint": 0, 
+              "variants": {
+                "use aligner": false, 
+                "wild type": {
+                  "coding": false, 
+                  "reference offset": 0, 
+                  "sequence": "AAAAAAAAAAAAAAA"
+                }
+              }
+            }, 
+            {
+              "barcodes": {
+                "map file": "enrich2/tests/data/reads/experiment/barcode_map.txt"
+              },
+              "fastq": {
+                "filters": {}, 
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t1_s2_c1.fq", 
+                "reverse": false
+              }, 
+              "name": "polyA_t1_s2_c1",
+              "report filtered reads": false, 
+              "timepoint": 1, 
+              "variants": {
+                "use aligner": false, 
+                "wild type": {
+                  "coding": false, 
+                  "reference offset": 0, 
+                  "sequence": "AAAAAAAAAAAAAAA"
+                }
+              }
+            }, 
+            {
+              "barcodes": {
+                "map file": "enrich2/tests/data/reads/experiment/barcode_map.txt"
+              },
+              "fastq": {
+                "filters": {}, 
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t2_s2_c1.fq", 
+                "reverse": false
+              }, 
+              "name": "polyA_t2_s2_c1",
+              "report filtered reads": false, 
+              "timepoint": 2, 
+              "variants": {
+                "use aligner": false, 
+                "wild type": {
+                  "coding": false, 
+                  "reference offset": 0, 
+                  "sequence": "AAAAAAAAAAAAAAA"
+                }
+              }
+            }
+          ], 
+          "name": "Selection_2_C1"
+        }
+      ]
+    }
+  ], 
+  "name": "barcodevariant_experiment_noncoding_test",
+  "output directory": "test_output/experiment/"
+}

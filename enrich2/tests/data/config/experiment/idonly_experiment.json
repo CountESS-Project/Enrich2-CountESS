@@ -1,0 +1,63 @@
+{
+  "conditions": [
+    {
+      "name": "Condition_1", 
+      "selections": [
+        {
+          "libraries": [
+            {
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "identifiers": {},
+              "name": "polyA_t0_s1_c1",
+              "report filtered reads": false,
+              "timepoint": 0
+            },
+            {
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "identifiers": {},
+              "name": "polyA_t1_s1_c1",
+              "report filtered reads": false,
+              "timepoint": 1
+            },
+            {
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "identifiers": {},
+              "name": "polyA_t2_s1_c1",
+              "report filtered reads": false,
+              "timepoint": 2
+            }
+          ],
+          "name": "Selection_1"
+        },
+        {
+          "libraries": [
+            {
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "identifiers": {},
+              "name": "polyA_t0_s2_c1",
+              "report filtered reads": false,
+              "timepoint": 0
+            },
+            {
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "identifiers": {},
+              "name": "polyA_t1_s2_c1",
+              "report filtered reads": false,
+              "timepoint": 1
+            },
+            {
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "identifiers": {},
+              "name": "polyA_t2_s2_c1",
+              "report filtered reads": false,
+              "timepoint": 2
+            }
+          ],
+          "name": "Selection_2"
+        }
+      ]
+    }
+  ],
+  "name": "idonly_experiment",
+  "output directory": "test_output/experiment/"
+}

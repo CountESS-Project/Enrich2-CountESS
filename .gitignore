@@ -54,7 +54,9 @@ docs/_build/
 target/
 
 # Unit test output directory
-test/test_output/
+test/test_output/*
+tests/test_output/*
+test_output/
 
 # Jupyter checkpoint files
 docs/notebooks/.ipynb_checkpoints/

@@ -150,7 +150,8 @@ def element_type(cfg):
 
     Returns:
         str: The class name of the 
-        :py:class:`~enrich2.storemanager.StoreManager` derived object specified 
+        :py:class:`~enrich2.storemanager.StoreManager`
+        derived object specified
         by `cfg`.
 
     Raises:

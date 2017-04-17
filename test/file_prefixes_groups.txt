@@ -1,2 +1,0 @@
-c_counts_only
-raw_barcodemap,raw_filter,raw_barcodes_counts,main_barcodes_counts,main_syn_counts,main_variants_counts

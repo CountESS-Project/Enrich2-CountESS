@@ -23,6 +23,8 @@ import collections
 import getpass
 import time
 
+from ..config.types import StoreConfiguration
+
 
 #: Dictionary specifying available scoring methods for the analysis
 #: Key is the internal name of the method, value is the GUI label
@@ -478,6 +480,26 @@ class StoreManager(object):
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
         """
+        # if not isinstance(cfg, StoreConfiguration):
+        #     raise ValueError("Expected `StoreConfiguration` object but"
+        #                      "found {}.".format(type(cfg)))
+        # self.name = cfg.name
+        # if cfg.has_output_dir and self.output_dir_override:
+        #     logging.warning("Using command line supplied output "
+        #                     "directory instead of config file output "
+        #                     "directory", extra={'oname': self.name})
+        # elif cfg.has_output_dir and not self.output_dir_override:
+        #     self.output_dir = cfg.output_dir
+        #
+        # if cfg.has_store_path:
+        #     self.store_cfg = True
+        #     self.store_path = cfg.store_path
+        #     logging.info('Using specified HDF5 data store "{}"'.format(
+        #         self.store_path), extra={'oname': self.name})
+        # else:
+        #     self.store_cfg = False
+        #     self.store_path = None
+
         try:
             self.name = cfg['name']
             if 'output directory' in cfg:

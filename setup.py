@@ -39,14 +39,14 @@ setup(
 
     packages=find_packages(),
     package_data={
-        'test' : ['data/*/*/*'],
+        'enrich2.tests' : ['data/*/*/*'],
     },
 
     entry_points = {
         'console_scripts' : ['enrich_cmd = enrich2.main:main_cmd'],
         'gui_scripts' : ['enrich_gui = enrich2.main:main_gui'],
     },
-    test_suite="tests",
+    test_suite="enrich2.tests.test_enrich2",
 
     author="Alan F Rubin",
     author_email="alan.rubin@wehi.edu.au",

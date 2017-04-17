@@ -211,7 +211,8 @@ def split_fastq_path(fname):
         if ext.lower() in (".fq", ".fastq"):
             return (head, base, ext, compression)
         else:
-            print("Warning: unexpected file extension for '{fname}'".format(fname=fname), file=stderr)
+            print("Warning: unexpected file extension for '{fname}'".format(
+                fname=fname), file=stderr)
             return None
     else:
         raise IOError("file '{fname}' doesn't exist".format(fname=fname))
@@ -231,7 +232,8 @@ def create_compressed_outfile(fname, compression):
     elif compression is None:
         handle = open(fname, "wt")
     else:
-        raise IOError("unrecognized compression mode '{mode}'".format(mode=compression))
+        raise IOError("unrecognized compression mode '{mode}'".format(
+            mode=compression))
     return handle
 
 

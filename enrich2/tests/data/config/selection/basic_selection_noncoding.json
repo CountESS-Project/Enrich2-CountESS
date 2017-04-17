@@ -1,0 +1,60 @@
+{
+  "libraries": [
+    {
+      "fastq": {
+        "filters": {},
+        "reads": "enrich2/tests/data/reads/selection/polyA_t0.fq",
+        "reverse": false
+      },
+      "name": "polyA_t0",
+      "report filtered reads": false,
+      "timepoint": 0,
+      "variants": {
+        "use aligner": false,
+        "wild type": {
+          "coding": false,
+          "reference offset": 0,
+          "sequence": "AAAAAAAAAAAAAAA"
+        }
+      }
+    },
+    {
+      "fastq": {
+        "filters": {},
+        "reads": "enrich2/tests/data/reads/selection/polyA_t1.fq",
+        "reverse": false
+      },
+      "name": "polyA_t1",
+      "report filtered reads": false,
+      "timepoint": 1,
+      "variants": {
+        "use aligner": false,
+        "wild type": {
+          "coding": false,
+          "reference offset": 0,
+          "sequence": "AAAAAAAAAAAAAAA"
+        }
+      }
+    },
+    {
+      "fastq": {
+        "filters": {},
+        "reads": "enrich2/tests/data/reads/selection/polyA_t2.fq",
+        "reverse": false
+      },
+      "name": "polyA_t2",
+      "report filtered reads": false,
+      "timepoint": 2,
+      "variants": {
+        "use aligner": false,
+        "wild type": {
+          "coding": false,
+          "reference offset": 0,
+          "sequence": "AAAAAAAAAAAAAAA"
+        }
+      }
+    }
+  ],
+  "name": "barcodevariant_selection_coding_test",
+  "output directory": "test_output/selection/"
+}

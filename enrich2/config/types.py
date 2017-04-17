@@ -50,6 +50,7 @@ SELECTIONS = 'selections'
 TIMEPOINT = 'timepoint'
 OUTPUT_DIR = 'output directory'
 REPORT_FILTERED_READS = 'report filtered reads'
+STORE = 'store'
 
 FASTQ = 'fastq'
 READS = 'reads'
@@ -75,7 +76,7 @@ REF_OFFSET = 'reference offset'
 SEQUENCE = 'sequence'
 
 BARCODES = 'barcodes'
-BARCODE_MAP_FILE = 'map_file'
+BARCODE_MAP_FILE = 'map file'
 BARCODE_MIN_COUNT = 'min count'
 
 
@@ -83,6 +84,21 @@ class Configuration(ABC):
     """
     Abtract class representing required operations on the data model.
     """
+
+    def __rdict__(self):
+        repr_dict = {}
+        for k, v in self.__dict__.items():
+            if isinstance(v, Configuration):
+                repr_dict[k] = v.__rdict__()
+            else:
+                repr_dict[k] = v
+        return repr_dict
+
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return str(self.__rdict__())
 
     @abstractclassmethod
     def validate(self):
@@ -131,6 +147,7 @@ class FASTQConfiguration(Configuration):
                              "need extension to be either bz2, gz, fq or"
                              "fastq.")
         self.filters_cfg.validate()
+        return self
 
 
 class FiltersConfiguration(Configuration):
@@ -178,6 +195,7 @@ class FiltersConfiguration(Configuration):
         self.validate_max_n()
         self.validate_avg_base_quality()
         self.validate_min_base_quality()
+        return self
 
 
 class BarcodeConfiguration(Configuration):
@@ -215,6 +233,7 @@ class BarcodeConfiguration(Configuration):
     def validate(self):
         self.validate_min_count()
         self.validate_map_file()
+        return self
 
 
 class IdentifiersConfiguration(Configuration):
@@ -234,6 +253,7 @@ class IdentifiersConfiguration(Configuration):
 
     def validate(self):
         self.validate_min_count()
+        return self
 
 
 class VariantsConfiguration(Configuration):
@@ -278,6 +298,7 @@ class VariantsConfiguration(Configuration):
         self.validate_max_mutations()
         self.validate_min_count()
         self.validate_use_aligner()
+        return self
 
 
 class WildTypeConfiguration(Configuration):
@@ -330,6 +351,7 @@ class WildTypeConfiguration(Configuration):
         self.validate_coding()
         self.validate_sequence()
         self.validate_reference_offset()
+        return self
 
 
 # -------------------------------------------------------------------------- #
@@ -344,15 +366,25 @@ class BaseLibraryConfiguration(Configuration):
             raise TypeError("dict required for base library configuration.")
 
         if NAME not in cfg:
-            raise ValueError("Missing {} from base library configuration.")
+            raise ValueError("Missing {} from base library "
+                             "configuration.".format(NAME))
         if TIMEPOINT not in cfg:
-            raise ValueError("Missing {} from base library configuration.")
+            raise ValueError("Missing {} from base library "
+                             "configuration.".format(TIMEPOINT))
         if REPORT_FILTERED_READS not in cfg:
-            raise ValueError("Missing {} from BarcodeSeqLib configuration.")
+            raise ValueError("Missing {} from BarcodeSeqLib "
+                             "configuration.".format(REPORT_FILTERED_READS))
+
+        filters_cfg = cfg.get(FASTQ, {})
+
+        self.seqlib_type = seqlib_type(cfg)
+        if self.seqlib_type is None:
+            raise ValueError("Unrecognized SeqLib config")
 
         self.name = cfg.get(NAME)
         self.timepoint = cfg.get(TIMEPOINT)
         self.report_filtered_reads = cfg.get(REPORT_FILTERED_READS, False)
+        self.fastq_filters_cfg = FASTQConfiguration(filters_cfg).validate()
         self.validate()
 
     def validate_name(self):
@@ -380,6 +412,7 @@ class BaseLibraryConfiguration(Configuration):
         self.validate_name()
         self.validate_report_filtered_reads()
         self.validate_timepoint()
+        return self
 
 
 class BarcodeSeqLibConfiguration(BaseLibraryConfiguration):
@@ -389,15 +422,9 @@ class BarcodeSeqLibConfiguration(BaseLibraryConfiguration):
             raise TypeError("dict required for BarcodeSeqLibConfiguration.")
         super(BarcodeSeqLibConfiguration, self).__init__(cfg)
 
-        barcode_cfg = cfg.get(BARCODES, {})
-        self.barcodes_cfg = BarcodeConfiguration(barcode_cfg)
+        barcodes_cfg = cfg.get(BARCODES, {})
+        self.barcodes_cfg = BarcodeConfiguration(barcodes_cfg).validate()
         self.validate()
-
-    def validate(self):
-        self.validate_name()
-        self.validate_report_filtered_reads()
-        self.validate_timepoint()
-        self.barcodes_cfg.validate()
 
 
 class BcidSeqLibConfiguration(BaseLibraryConfiguration):
@@ -407,25 +434,20 @@ class BcidSeqLibConfiguration(BaseLibraryConfiguration):
             raise TypeError("dict required for BcidSeqLibConfiguration.")
         super(BcidSeqLibConfiguration, self).__init__(cfg)
 
-        barcode_cfg = cfg.get(BARCODES, {})
+        barcodes_cfg = cfg.get(BARCODES, {})
         identifers_cfg = cfg.get(IDENTIFIERS, {})
-        if not barcode_cfg:
+        if not barcodes_cfg:
             raise ValueError("Key {} missing for BcidSeqLib "
                              "configuration.".format(BARCODES))
         if not identifers_cfg:
             raise ValueError("Key {} missing for BcidSeqLib "
                              "configuration.".format(IDENTIFIERS))
 
-        self.barcodes_cfg = BarcodeConfiguration(barcode_cfg)
-        self.identifers_cfg = BarcodeConfiguration(identifers_cfg)
+        barcodes_cfg = BarcodeConfiguration(barcodes_cfg).validate()
+        identifers_cfg = IdentifiersConfiguration(identifers_cfg).validate()
         self.validate()
-
-    def validate(self):
-        self.validate_name()
-        self.validate_report_filtered_reads()
-        self.validate_timepoint()
-        self.barcodes_cfg.validate()
-        self.identifers_cfg.validate()
+        self.barcodes_cfg = barcodes_cfg
+        self.identifers_cfg = identifers_cfg
 
 
 class BcvSeqLibConfiguration(BaseLibraryConfiguration):
@@ -435,25 +457,20 @@ class BcvSeqLibConfiguration(BaseLibraryConfiguration):
             raise TypeError("dict required for BcvSeqLibConfiguration.")
         super(BcvSeqLibConfiguration, self).__init__(cfg)
 
-        barcode_cfg = cfg.get(BARCODES, {})
+        barcodes_cfg = cfg.get(BARCODES, {})
         variants_cfg = cfg.get(VARIANTS, {})
-        if not barcode_cfg:
+        if not barcodes_cfg:
             raise ValueError("Key {} missing for BcvSeqLib "
                              "configuration.".format(BARCODES))
         if not variants_cfg:
             raise ValueError("Key {} missing for BcvSeqLib "
                              "configuration.".format(VARIANTS))
 
-        self.barcodes_cfg = BarcodeConfiguration(barcode_cfg)
-        self.variants_cfg = BarcodeConfiguration(variants_cfg)
+        barcodes_cfg = BarcodeConfiguration(barcodes_cfg).validate()
+        variants_cfg = VariantsConfiguration(variants_cfg).validate()
         self.validate()
-
-    def validate(self):
-        self.validate_name()
-        self.validate_report_filtered_reads()
-        self.validate_timepoint()
-        self.barcodes_cfg.validate()
-        self.variants_cfg.validate()
+        self.barcodes_cfg = barcodes_cfg
+        self.variants_cfg = variants_cfg
 
 
 class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
@@ -463,8 +480,9 @@ class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
             raise TypeError("dict required for IdOnlySeqLib configuration.")
         super(IdOnlySeqLibConfiguration, self).__init__(cfg)
         identifiers_cfg = cfg.get(IDENTIFIERS, {})
+        identifiers_cfg = IdentifiersConfiguration(identifiers_cfg).validate()
         self.counts_file = cfg.get(COUNTS_FILE, "")
-        self.identifiers_cfg = IdentifiersConfiguration(identifiers_cfg)
+        self.identifiers_cfg = identifiers_cfg
         self.validate()
 
     def validate_counts_file(self):
@@ -484,7 +502,7 @@ class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
 
     def validate(self):
         self.validate_counts_file()
-        self.identifiers_cfg.validate()
+        return self
 
 
 class BasicSeqLibConfiguration(BaseLibraryConfiguration):
@@ -499,14 +517,8 @@ class BasicSeqLibConfiguration(BaseLibraryConfiguration):
             raise ValueError("Key {} missing for BcvSeqLib "
                              "configuration.".format(VARIANTS))
 
-        self.variants_cfg = BarcodeConfiguration(variants_cfg)
+        self.variants_cfg = VariantsConfiguration(variants_cfg).validate()
         self.validate()
-
-    def validate(self):
-        self.validate_name()
-        self.validate_report_filtered_reads()
-        self.validate_timepoint()
-        self.variants_cfg.validate()
 
 
 class OverlapSeqLibConfiguration(BaseLibraryConfiguration):
@@ -515,7 +527,7 @@ class OverlapSeqLibConfiguration(BaseLibraryConfiguration):
         super(OverlapSeqLibConfiguration, self).__init__(cfg)
 
     def validate(self):
-        pass
+        return self
 
 
 # -------------------------------------------------------------------------- #
@@ -529,20 +541,13 @@ class ExperimentConfiguration(Configuration):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for experiment configuration.")
 
-        if NAME not in cfg:
-            raise ValueError("Experiment does not have a name.")
+        self.store_cfg = StoreConfiguration(cfg).validate()
         if CONDITIONS not in cfg:
             raise ValueError("Experiment has no conditions element.")
-        if OUTPUT_DIR not in cfg:
-            raise ValueError("Experiment does not have an output directory.")
 
-        conditions_cfg = cfg[CONDITIONS]
+        conditions_cfg = cfg.get(CONDITIONS, [])
         self.conditions = []
-        self.name = cfg[NAME]
-        self.output_dir = cfg[OUTPUT_DIR]
 
-        if not isinstance(self.name, str):
-            raise ValueError("Experiment name must be a string.")
         if not isinstance(conditions_cfg, list):
             raise ValueError("Experiment conditions must be an iterable.")
         if len(conditions_cfg) == 0:
@@ -556,6 +561,7 @@ class ExperimentConfiguration(Configuration):
     def validate(self):
         for condition in self.conditions:
             condition.validate()
+        return self
 
 
 class ConditonsConfiguration(Configuration):
@@ -564,17 +570,13 @@ class ConditonsConfiguration(Configuration):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for condition configuration.")
 
-        if NAME not in cfg:
-            raise ValueError("Condition does not have a name.")
+        self.store_cfg = StoreConfiguration(cfg).validate()
         if SELECTIONS not in cfg:
             raise ValueError("Condition has no selection element.")
 
-        selections_cfg = cfg[SELECTIONS]
+        selections_cfg = cfg.get(SELECTIONS, [])
         self.selections = []
-        self.name = cfg[NAME]
 
-        if not isinstance(self.name, str):
-            raise ValueError("Condition name must be a string.")
         if not isinstance(selections_cfg, list):
             raise ValueError("Condition selections must be an iterable.")
         if len(selections_cfg) == 0:
@@ -588,6 +590,12 @@ class ConditonsConfiguration(Configuration):
     def validate(self):
         for selection in self.selections:
             selection.validate()
+        # all_libs = [lib for sel in self.selections for lib in sel.libraries]
+        # lib_names = set([lib.name for lib in all_libs])
+        # if len(lib_names) != len(all_libs):
+        #     raise ValueError("Libraries must have unique names accross"
+        #                      " conditions and selections.")
+        return self
 
 
 class SelectionsConfiguration(Configuration):
@@ -605,17 +613,12 @@ class SelectionsConfiguration(Configuration):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for selection configuration.")
 
-        if NAME not in cfg:
-            raise ValueError("Selection does not have a name.")
+        self.libraries = []
+        self.timepoints = []
+        self.store_cfg = StoreConfiguration(cfg).validate()
+        libraries_cfg = cfg.get(LIBRARIES, [])
         if LIBRARIES not in cfg:
             raise ValueError("Selection has no library element.")
-
-        libraries_cfg = cfg[LIBRARIES]
-        self.libraries = []
-        self.name = cfg[NAME]
-
-        if not isinstance(self.name, str):
-            raise ValueError("Selection name must be a string.")
         if not isinstance(libraries_cfg, list):
             raise ValueError("Selection library config must be an iterable.")
         if len(libraries_cfg) == 0:
@@ -631,3 +634,48 @@ class SelectionsConfiguration(Configuration):
     def validate(self):
         for library in self.libraries:
             library.validate()
+
+        self.timepoints = [l.timepoint for l in self.libraries]
+        if 0 not in self.timepoints:
+            raise ValueError("Missing timepoint 0 from selections")
+
+        num_names = len(set([library.name for library in self.libraries]))
+        if num_names != len(self.libraries):
+            raise ValueError("Libraries must have unique names accross"
+                             " selections.")
+        return self
+
+
+class StoreConfiguration(Configuration):
+
+    def __init__(self, cfg):
+        if not isinstance(cfg, dict):
+            raise TypeError("dict required for experiment configuration.")
+
+        self.name = cfg.get(NAME, "")
+        self.output_dir = cfg.get(OUTPUT_DIR, "")
+        self.store_path = cfg.get(STORE, "")
+
+        if not isinstance(self.name, str):
+            raise ValueError("Store `name` must be a str.")
+        if not isinstance(self.output_dir, str):
+            raise ValueError("Store `output_dir` must be a str.")
+        if not isinstance(self.store_path, str):
+            raise ValueError("Store `store_path` must be a str.")
+        if not self.name:
+            raise ValueError("Store does not have a name.")
+
+        self.has_store_path = bool(self.store_path)
+        self.has_output_dir = bool(self.output_dir)
+
+    def validate(self):
+        if self.has_store_path and not os.path.exists(self.store_path):
+            raise IOError('Specified store file "{}" not found'.format(
+                self.store_path))
+        elif self.has_store_path and \
+                        os.path.splitext(self.store_path)[-1].lower() != ".h5":
+            raise ValueError('Unrecognized store file extension for '
+                             '"{}"'.format(self.store_path))
+        if self.has_output_dir and not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        return self
