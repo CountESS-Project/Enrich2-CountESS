@@ -28,4 +28,6 @@ install:
       - python setup.py install
 
 # command to run tests
-script: "python setup.py test"
+script:
+ - source activate test-environment
+ - python setup.py test
