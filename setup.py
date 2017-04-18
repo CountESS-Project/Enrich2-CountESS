@@ -19,11 +19,11 @@ import sys
 from setuptools import setup, find_packages
 
 requirements = [
-    # 'numpy >= 1.10.4',
-    # 'scipy >= 0.16.0',
-    # 'pandas >= 0.18.0',
-    # 'statsmodels >= 0.6.1',
-    # 'matplotlib >= 1.4.3',
+    'numpy >= 1.10.4',
+    'scipy >= 0.16.0',
+    'pandas >= 0.18.0',
+    'statsmodels >= 0.6.1',
+    'matplotlib >= 1.4.3',
 ]
 
 # dirty workaround to deal with Enthought Canopy referring to the
