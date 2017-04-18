@@ -6,6 +6,7 @@ python:
 # command to install dependencies
 install:
       - sudo apt-get update
+      - sudo apt-get build-dep python-tables
 
       # We do this conditionally because it saves us some downloading if the
       # version is the same.
@@ -22,7 +23,8 @@ install:
       # Replace dep1 dep2 ... with your dependencies
       - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
       - source activate test-environment
-      - pip install --install-option="--hdf5=/usr/local/hdf5" tables
+      
+      - pip install tables
       - python setup.py install
 
 # command to run tests
