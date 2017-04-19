@@ -34,6 +34,9 @@ LIBTYPE = 'idonly'
 FILE_EXT = 'tsv'
 FILE_SEP = '\t'
 
+SAVE = False
+VERBOSE = False
+
 
 class TestSelectionIdOnlyLibWLSScoringCompleteNorm(unittest.TestCase):
 
@@ -55,8 +58,8 @@ class TestSelectionIdOnlyLibWLSScoringCompleteNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -87,8 +90,8 @@ class TestSelectionIdOnlyLibWLSScoringFullNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -119,8 +122,8 @@ class TestSelectionIdOnlyLibOLSScoringCompleteNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -151,8 +154,8 @@ class TestSelectionIdOnlyLibOLSScoringFullNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -183,8 +186,8 @@ class TestSelectionIdOnlyLibRatiosScoringCompleteNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -215,8 +218,8 @@ class TestSelectionIdOnlyLibRatiosScoringFullNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -247,8 +250,8 @@ class TestSelectionIdOnlyLibCountsScoringCompleteNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -279,8 +282,8 @@ class TestSelectionIdOnlyLibCountsScoringFullNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -310,8 +313,8 @@ class TestSelectionIdOnlyLibSimpleScoringCompleteNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 
@@ -341,8 +344,8 @@ class TestSelectionIdOnlyLibSimpleScoringFullNorm(unittest.TestCase):
             result_dir=RESULT_DIR,
             file_ext=FILE_EXT,
             file_sep=FILE_SEP,
-            verbose=False,
-            save=False
+            verbose=VERBOSE,
+            save=SAVE
         )
         self.general_test_component.setUp()
 

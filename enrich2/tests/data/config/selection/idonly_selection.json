@@ -1,21 +1,21 @@
 {
   "libraries": [
     {
-      "counts file": "enrich2/tests/data/reads/selection/counts_only.tsv",
+      "counts file": "enrich2/tests/data/reads/selection/counts_only_1.tsv",
       "identifiers": {},
       "name": "polyA_t0",
       "report filtered reads": false,
       "timepoint": 0
     },
     {
-      "counts file": "enrich2/tests/data/reads/selection/counts_only.tsv",
+      "counts file": "enrich2/tests/data/reads/selection/counts_only_2.tsv",
       "identifiers": {},
       "name": "polyA_t1",
       "report filtered reads": false,
       "timepoint": 1
     },
     {
-      "counts file": "enrich2/tests/data/reads/selection/counts_only.tsv",
+      "counts file": "enrich2/tests/data/reads/selection/counts_only_3.tsv",
       "identifiers": {},
       "name": "polyA_t2",
       "report filtered reads": false,
