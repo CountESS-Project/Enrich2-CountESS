@@ -6,21 +6,21 @@
         {
           "libraries": [
             {
-              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only_1.tsv",
               "identifiers": {},
               "name": "polyA_t0_s1_c1",
               "report filtered reads": false,
               "timepoint": 0
             },
             {
-              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only_2.tsv",
               "identifiers": {},
               "name": "polyA_t1_s1_c1",
               "report filtered reads": false,
               "timepoint": 1
             },
             {
-              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only_3.tsv",
               "identifiers": {},
               "name": "polyA_t2_s1_c1",
               "report filtered reads": false,
@@ -32,21 +32,21 @@
         {
           "libraries": [
             {
-              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only_1.tsv",
               "identifiers": {},
               "name": "polyA_t0_s2_c1",
               "report filtered reads": false,
               "timepoint": 0
             },
             {
-              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only_2.tsv",
               "identifiers": {},
               "name": "polyA_t1_s2_c1",
               "report filtered reads": false,
               "timepoint": 1
             },
             {
-              "counts file": "enrich2/tests/data/reads/experiment/counts_only.tsv",
+              "counts file": "enrich2/tests/data/reads/experiment/counts_only_3.tsv",
               "identifiers": {},
               "name": "polyA_t2_s2_c1",
               "report filtered reads": false,
