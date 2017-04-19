@@ -35,8 +35,8 @@ LIBTYPE = 'idonly'
 FILE_EXT = 'pkl'
 FILE_SEP = ''
 
-SAVE = True
-VERBOSE = True
+SAVE = False
+VERBOSE = False
 
 
 class TestExperimentIdOnlyLibWLSScoringCompleteNorm(unittest.TestCase):

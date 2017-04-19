@@ -150,6 +150,7 @@ class Selection(StoreManager):
         If *configure_children* is false, do not configure the children in 
         *cfg*.
         """
+
         StoreManager.configure(self, cfg)
         if configure_children:
             if 'libraries' not in cfg:
