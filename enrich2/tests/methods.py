@@ -62,7 +62,7 @@ class HDF5TestComponent(unittest.TestCase):
         self.params = params
         self.store_constructor = store_constructor
         self.tests = []
-        self.verbose = True
+        self.verbose = verbose
         self.save = save
 
     def __str__(self):

@@ -616,9 +616,12 @@ class SelectionsConfiguration(Configuration):
         self.libraries = []
         self.timepoints = []
         self.store_cfg = StoreConfiguration(cfg).validate()
-        libraries_cfg = cfg.get(LIBRARIES, [])
+
         if LIBRARIES not in cfg:
-            raise ValueError("Selection has no library element.")
+            raise ValueError("Selection has no `{}` element.".format(
+                LIBRARIES))
+
+        libraries_cfg = cfg.get(LIBRARIES, [])
         if not isinstance(libraries_cfg, list):
             raise ValueError("Selection library config must be an iterable.")
         if len(libraries_cfg) == 0:
@@ -627,6 +630,8 @@ class SelectionsConfiguration(Configuration):
 
         for libraries_cfg in cfg[LIBRARIES]:
             library_type = seqlib_type(libraries_cfg)
+            if library_type is None:
+                raise ValueError("Unrecognized SeqLib config")
             library_constructor = self._lib_constructors[library_type]
             self.libraries.append(library_constructor(libraries_cfg))
         self.validate()
@@ -637,12 +642,17 @@ class SelectionsConfiguration(Configuration):
 
         self.timepoints = [l.timepoint for l in self.libraries]
         if 0 not in self.timepoints:
-            raise ValueError("Missing timepoint 0 from selections")
+            raise ValueError("Missing timepoint 0 [{}].".format(
+                self.__class__.__name__))
+        if len(self.timepoints) < 2:
+            raise ValueError("Multiple timepoints "
+                             "required [{}].".format(self.__class__.__name__))
 
         num_names = len(set([library.name for library in self.libraries]))
         if num_names != len(self.libraries):
             raise ValueError("Libraries must have unique names accross"
-                             " selections.")
+                             " selections [{}].".format(
+                self.__class__.__name__))
         return self
 
 
