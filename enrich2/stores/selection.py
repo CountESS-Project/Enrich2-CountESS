@@ -799,18 +799,18 @@ class Selection(StoreManager):
                     'Failed to use wild type log ratio method, wild type '
                     'sequence not present [{}]'.format(self.name)
                 )
-            variances += 1.0 / (wt_counts.values + 0.5)
+            variances = variances + 1.0 / (wt_counts.values + 0.5)
 
         #---------------------- COMPLETE NORM ----------------------------- #
         elif self.logr_method == "complete":
-            variances += 1.0 / (self.store.select(
+            variances = variances + 1.0 / (self.store.select(
                 "/main/{}/counts".format(label),
                 "columns=c_n"
             ).sum(axis="index").values + 0.5)
 
         # ------------------------- FULL NORM ----------------------------- #
         elif self.logr_method == "full":
-            variances += 1.0 / (self.store.select(
+            variances = variances + 1.0 / (self.store.select(
                     "/main/{}/counts_unfiltered".format(label),
                     "columns=c_n"
                 ).sum(axis="index", skipna=True).values + 0.5)
