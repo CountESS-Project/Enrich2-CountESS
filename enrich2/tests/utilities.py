@@ -120,21 +120,19 @@ def dispatch_loader(fname, direc, sep='\t'):
     else:
         raise ValueError("Unexpected file extension {}.".format(ext))
 
-
-def print_test(test_name, expected, result):
-    print("")
-    print("-" * 60)
-    print(test_name)
-    print("-" * 60)
-    print("-" * 26 + "EXPECTED" + "-" * 26)
-    print(expected)
-    print("-" * 28 + "END" + "-" * 29)
-    print("-" * 27 + "RESULT" + "-" * 27)
-    print(result)
-    print("-" * 28 + "END" + "-" * 29)
-    print("")
-    return
-
+def str_test(test_name, expected, result):
+    line = '\n'
+    line += "-" * 60 + '\n'
+    line += "{}\n".format(test_name)
+    line += "-" * 60 + '\n'
+    line += "-" * 26 + "EXPECTED" + "-" * 26 + '\n'
+    line += "{}\n".format(expected)
+    line += "-" * 28 + "END" + "-" * 29 + '\n'
+    line += "-" * 27 + "RESULT" + "-" * 27 + '\n'
+    line += "{}\n".format(result)
+    line += "-" * 28 + "END" + "-" * 29 + '\n'
+    line += '\n'
+    return line
 
 DEFAULT_STORE_PARAMS = {
     'force_recalculate': False,

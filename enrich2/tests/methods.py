@@ -23,7 +23,7 @@ import numpy as np
 from types import MethodType
 
 from .utilities import DEFAULT_STORE_PARAMS, save_result_to_txt
-from .utilities import dispatch_loader, save_result_to_pkl, print_test
+from .utilities import dispatch_loader, save_result_to_pkl, str_test
 
 
 # -------------------------------------------------------------------------- #
@@ -127,7 +127,7 @@ def test_main_variants_scores_shared_full(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -141,7 +141,7 @@ def test_main_variants_scores_shared(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -155,7 +155,7 @@ def test_main_variants_scores_pvalues_wt(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -169,7 +169,7 @@ def test_main_variants_scores(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -183,7 +183,7 @@ def test_main_variants_weights(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -197,7 +197,7 @@ def test_main_variants_log_ratios(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -211,7 +211,7 @@ def test_main_variants_counts(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -225,7 +225,7 @@ def test_main_variants_counts_unfiltered(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -239,7 +239,7 @@ def test_raw_variants_counts(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -258,7 +258,7 @@ def test_main_synonymous_scores_shared_full(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -272,7 +272,7 @@ def test_main_synonymous_scores_shared(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -286,7 +286,7 @@ def test_main_synonymous_scores_pvalues_wt(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -300,7 +300,7 @@ def test_main_synonymous_scores(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -314,7 +314,7 @@ def test_main_synonymous_weights(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -328,7 +328,7 @@ def test_main_synonymous_log_ratios(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -342,7 +342,7 @@ def test_main_synonymous_counts(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -356,7 +356,7 @@ def test_main_synonymous_counts_unfiltered(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -370,7 +370,7 @@ def test_raw_synonymous_counts(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -389,7 +389,7 @@ def test_main_barcodes_scores_shared_full(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -403,7 +403,7 @@ def test_main_barcodes_scores_shared(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -417,7 +417,7 @@ def test_main_barcodes_scores_pvalues_wt(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -431,7 +431,7 @@ def test_main_barcodes_scores(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -445,7 +445,7 @@ def test_main_barcodes_weights(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -459,7 +459,7 @@ def test_main_barcodes_log_ratios(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -473,7 +473,7 @@ def test_main_barcodes_counts(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(expected.equals(result))
 
 
@@ -487,7 +487,7 @@ def test_main_barcodes_counts_unfiltered(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(expected.equals(result))
 
 
@@ -501,7 +501,7 @@ def test_raw_barcodes_counts(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(expected.equals(result))
 
 
@@ -515,7 +515,7 @@ def test_main_barcodemap(self):
     result = self.obj.store[key]
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(expected.equals(result))
 
 
@@ -529,7 +529,7 @@ def test_raw_barcodemap(self):
     result = self.obj.store[key]
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(expected.equals(result))
 
 
@@ -548,7 +548,7 @@ def test_main_identifiers_scores_shared_full(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -562,7 +562,7 @@ def test_main_identifiers_scores_shared(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -576,7 +576,7 @@ def test_main_identifiers_scores_pvalues_wt(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -590,7 +590,7 @@ def test_main_identifiers_scores(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -604,7 +604,7 @@ def test_main_identifiers_weights(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -618,7 +618,7 @@ def test_main_identifiers_log_ratios(self):
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -632,7 +632,7 @@ def test_main_identifiers_counts(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -646,7 +646,7 @@ def test_main_identifiers_counts_unfiltered(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -660,7 +660,7 @@ def test_raw_identifiers_counts(self):
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
 
 
@@ -679,7 +679,7 @@ def test_raw_filter(self):
     result = self.obj.store[key]
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
-        print_test(test_name, expected, result)
+        print(str_test(test_name, expected, result))
     self.assertTrue(expected.equals(result))
 
 
