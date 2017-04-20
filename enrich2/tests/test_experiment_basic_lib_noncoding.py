@@ -18,10 +18,10 @@
 import unittest
 from copy import deepcopy
 
-from ..stores.experiment import Experiment
+from ..experiment.experiment import Experiment
+from .methods import HDF5TestComponent
 from .utilities import DEFAULT_STORE_PARAMS
 from .utilities import load_config_data
-from .methods import HDF5TestComponent
 
 CFG_FILE = "basic_experiment_noncoding.json"
 CFG_DIR = "data/config/experiment/"

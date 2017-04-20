@@ -19,9 +19,8 @@ import os
 import shutil
 import unittest
 
-from ..stores.selection import Selection
+from ..selection.selection import Selection
 from .utilities import load_config_data
-
 
 CFG_PATH = "data/config/selection/"
 READS_DIR = "data/reads/selection/"

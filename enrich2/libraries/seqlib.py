@@ -25,8 +25,8 @@ import numpy as np
 import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 
+from ..base.storemanager import StoreManager, fix_filename, ELEMENT_LABELS
 from ..plotting.plots import counts_plot
-from ..stores.storemanager import StoreManager, fix_filename, ELEMENT_LABELS
 
 
 class SeqLib(StoreManager):

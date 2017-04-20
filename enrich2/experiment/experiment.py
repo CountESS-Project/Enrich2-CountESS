@@ -24,12 +24,11 @@ import pandas as pd
 import scipy.stats as stats
 from matplotlib.backends.backend_pdf import PdfPages
 
-from ..base.constants import WILD_TYPE_VARIANT
-from ..base.dataframe import singleton_dataframe
-from ..base.sfmap import sfmap_plot
-from ..statistics.random_effects import rml_estimator
-from ..stores.storemanager import StoreManager
-
+from enrich2.base.constants import WILD_TYPE_VARIANT
+from enrich2.base.dataframe import singleton_dataframe
+from enrich2.base.sfmap import sfmap_plot
+from enrich2.base.storemanager import StoreManager
+from enrich2.statistics.random_effects import rml_estimator
 from .condition import Condition
 
 

@@ -24,19 +24,18 @@ import os.path
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
+from .base.storemanager import SCORING_METHODS, LOGR_METHODS
+from .experiment.experiment import Experiment
+from .selection.selection import Selection
+from .base.sfmap import parse_aa_list
+from .config import config_check
+from .gui.configurator import Configurator
 from .libraries.barcode import BarcodeSeqLib
 from .libraries.barcodeid import BcidSeqLib
 from .libraries.barcodevariant import BcvSeqLib
 from .libraries.basic import BasicSeqLib
 from .libraries.idonly import IdOnlySeqLib
 from .libraries.overlap import OverlapSeqLib
-from .stores.experiment import Experiment
-from .stores.selection import Selection
-from .stores.storemanager import SCORING_METHODS, LOGR_METHODS
-from .config import config_check
-from .base.sfmap import parse_aa_list
-from .gui.configurator import Configurator
-
 
 __author__ = "Alan F Rubin"
 __copyright__ = "Copyright 2016-2017, Alan F Rubin"

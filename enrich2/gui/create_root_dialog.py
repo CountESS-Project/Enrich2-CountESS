@@ -16,28 +16,13 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 import tkinter as tk
-import tkinter.ttk
-import tkinter.simpledialog
-import tkinter.messagebox
 import tkinter.filedialog
+import tkinter.messagebox
+import tkinter.simpledialog
+import tkinter.ttk
 
-import json
-from copy import deepcopy
-from collections import OrderedDict
-
-from .dialog_elements import FileEntry, StringEntry, DEFAULT_COLUMNS
 from .create_seqlib_dialog import seqlib_label_text
-
-from ..stores.experiment import Experiment
-from ..stores.condition import Condition
-from ..stores.selection import Selection
-from ..libraries.basic import BasicSeqLib
-from ..libraries.barcodevariant import BcvSeqLib
-from ..libraries.barcodeid import BcidSeqLib
-from ..libraries.barcode import BarcodeSeqLib
-from ..libraries.overlap import OverlapSeqLib
-from ..libraries.seqlib import SeqLib
-from ..libraries.variant import VariantSeqLib
+from .dialog_elements import FileEntry, StringEntry, DEFAULT_COLUMNS
 
 
 class CreateRootDialog(tkinter.simpledialog.Dialog):

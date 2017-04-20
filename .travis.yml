@@ -31,4 +31,4 @@ install:
 # command to run tests
 script:
  - source activate test-environment
- - python setup.py test
+ - coverage run --source=enrich2/ setup.py test

@@ -15,34 +15,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import tkinter as tk
-import tkinter.ttk
-import tkinter.simpledialog
-import tkinter.messagebox
-import tkinter.filedialog
-
 import json
 import platform
+import tkinter as tk
+import tkinter.filedialog
+import tkinter.messagebox
+import tkinter.simpledialog
+import tkinter.ttk
 
-from ..config.config_check import is_seqlib, is_experiment
-from ..config.config_check import is_selection, seqlib_type
-from ..stores.experiment import Experiment
-from ..stores.condition import Condition
-from ..stores.selection import Selection
-from ..stores.storemanager import SCORING_METHODS, LOGR_METHODS
-from ..libraries.basic import BasicSeqLib
-from ..libraries.barcodevariant import BcvSeqLib
-from ..libraries.barcode import BarcodeSeqLib
-from ..libraries.overlap import OverlapSeqLib
-from ..libraries.seqlib import SeqLib
-from ..libraries.variant import VariantSeqLib
-
-from .delete_dialog import DeleteDialog
-from .seqlib_apply_dialog import SeqLibApplyDialog
-from .edit_dialog import EditDialog, clear_nones
+from ..base.storemanager import SCORING_METHODS, LOGR_METHODS
+from ..experiment.condition import Condition
+from ..selection.selection import Selection
 from .create_root_dialog import CreateRootDialog
 from .create_seqlib_dialog import CreateSeqLibDialog
+from .delete_dialog import DeleteDialog
+from .edit_dialog import EditDialog, clear_nones
 from .runner_window import RunnerWindow, RunnerSavePrompt
+from .seqlib_apply_dialog import SeqLibApplyDialog
+from ..config.config_check import is_selection, seqlib_type
+from ..config.config_check import is_seqlib, is_experiment
+from ..libraries.overlap import OverlapSeqLib
+from ..libraries.seqlib import SeqLib
+from ..experiment.experiment import Experiment
 
 available_scoring_methods = SCORING_METHODS
 available_logr_methods = LOGR_METHODS

@@ -15,26 +15,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
-from sys import maxsize
-from collections import OrderedDict
-
 import tkinter as tk
-import tkinter.ttk
-import tkinter.simpledialog
-import tkinter.messagebox
 import tkinter.filedialog
+import tkinter.messagebox
+import tkinter.simpledialog
+import tkinter.ttk
+from collections import OrderedDict
+from sys import maxsize
 
 from .dialog_elements import FileEntry, IntegerEntry, Checkbox
 from .dialog_elements import StringEntry, SectionLabel, DEFAULT_COLUMNS
-
-from ..stores.experiment import Experiment
-from ..stores.condition import Condition
-from ..stores.selection import Selection
-from ..libraries.basic import BasicSeqLib
-from ..libraries.barcodevariant import BcvSeqLib
-from ..libraries.barcodeid import BcidSeqLib
 from ..libraries.barcode import BarcodeSeqLib
+from ..libraries.barcodeid import BcidSeqLib
+from ..libraries.barcodevariant import BcvSeqLib
+from ..libraries.basic import BasicSeqLib
 from ..libraries.idonly import IdOnlySeqLib
 from ..libraries.overlap import OverlapSeqLib
 from ..libraries.seqlib import SeqLib

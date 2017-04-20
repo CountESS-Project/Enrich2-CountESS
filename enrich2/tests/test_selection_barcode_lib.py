@@ -18,12 +18,10 @@
 import unittest
 from copy import deepcopy
 
-
-from ..stores.selection import Selection
+from ..selection.selection import Selection
+from .methods import HDF5TestComponent
 from .utilities import DEFAULT_STORE_PARAMS
 from .utilities import load_config_data
-from .methods import HDF5TestComponent
-
 
 CFG_FILE = "barcode_selection.json"
 CFG_DIR = "data/config/selection/"

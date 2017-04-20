@@ -16,8 +16,8 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from ..stores.storemanager import StoreManager
-from .selection import Selection
+from enrich2.base.storemanager import StoreManager
+from enrich2.selection.selection import Selection
 
 
 class Condition(StoreManager):

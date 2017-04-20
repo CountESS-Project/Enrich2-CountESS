@@ -21,12 +21,13 @@ import logging
 import numpy as np
 import pandas as pd
 
+from ..base.storemanager import ELEMENT_LABELS
 from ..base.constants import AA_CODES
 from ..base.constants import WILD_TYPE_VARIANT
 from ..base.sfmap import AA_LIST, NT_LIST
 from ..libraries.barcodemap import re_barcode, re_identifier
-from ..libraries.variant import mutation_count, re_protein, re_coding, re_noncoding
-from ..stores.storemanager import ELEMENT_LABELS
+from ..libraries.variant import mutation_count, re_protein, re_coding, \
+    re_noncoding
 
 SingleMut = collections.namedtuple("SingleMut", ['pre', 'post', 'pos', 'key'])
 

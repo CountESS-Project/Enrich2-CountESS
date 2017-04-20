@@ -26,23 +26,19 @@ import scipy.stats as stats
 import statsmodels.api as sm
 from matplotlib.backends.backend_pdf import PdfPages
 
-from ..libraries.barcodeid import BcidSeqLib
-from ..libraries.idonly import IdOnlySeqLib
-from ..libraries.barcodevariant import BcvSeqLib
-from ..libraries.basic import BasicSeqLib
-from ..libraries.barcode import BarcodeSeqLib
-from ..libraries.variant import protein_variant
-
 from ..base.constants import WILD_TYPE_VARIANT, SYNONYMOUS_VARIANT
 from ..base.dataframe import singleton_dataframe
 from ..base.sfmap import sfmap_plot
-
+from ..base.storemanager import StoreManager
 from ..config.config_check import seqlib_type
-
+from ..libraries.barcode import BarcodeSeqLib
+from ..libraries.barcodeid import BcidSeqLib
+from ..libraries.barcodevariant import BcvSeqLib
+from ..libraries.basic import BasicSeqLib
+from ..libraries.idonly import IdOnlySeqLib
+from ..libraries.variant import protein_variant
 from ..plotting.plots import configure_axes, plot_colors, weights_plot
 from ..plotting.plots import fit_axes, fit_axes_text, volcano_plot
-
-from ..stores.storemanager import StoreManager
 
 globals()['BasicSeqLib'] = BasicSeqLib
 globals()['BarcodeSeqLib'] = BarcodeSeqLib

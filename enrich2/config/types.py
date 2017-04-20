@@ -61,6 +61,8 @@ FILTERS_MIN_COUNT = 'min count'
 FILTERS_AVG_Q = 'avg quality'
 FILTERS_MIN_Q = 'min quality'
 FILTERS_CHASTITY = 'chastity'
+TRIM_START = 'start'
+TRIM_LENGTH = 'length'
 
 COUNTS_FILE = 'counts file'
 IDENTIFIERS = 'identifiers'
@@ -122,16 +124,34 @@ class FASTQConfiguration(Configuration):
             ))
 
         filters_cfg = cfg.get(FILTERS, {})
-        self.reads = cfg.get(READS, "")
+        self.reads = cfg.get(READS)
         self.reverse = cfg.get(REVERSE, False)
+        self.trim_start = cfg.get(TRIM_START, 1)
+        self.trim_length = cfg.get(TRIM_LENGTH, sys.maxsize)
         self.filters_cfg =  FiltersConfiguration(filters_cfg)
         self.validate()
 
-    def validate(self):
+    def validate_reverse(self):
         if not isinstance(self.reverse, bool):
             raise TypeError("Expected bool for reverse but found {}.".format(
                 type(self.reverse)
             ))
+
+    def validate_trim_start(self):
+        if not isinstance(self.trim_start, int):
+            raise TypeError("FASTQ `start` must be an integer."     
+                            " Found type {}.".format(type(self.trim_start)))
+        if self.trim_start < 0:
+            raise ValueError("FASTQ `start` must not be negative.")
+
+    def validate_trim_length(self):
+        if not isinstance(self.trim_length, int):
+            raise TypeError("FASTQ `length` must be an integer."     
+                            " Found type {}.".format(type(self.trim_length)))
+        if self.trim_length < 0:
+            raise ValueError("FASTQ `length` must not be negative.")
+
+    def validate_reads(self):
         if not isinstance(self.reads, str):
             raise TypeError("Expected str for reads but found {}.".format(
                 type(self.reads)
@@ -146,6 +166,12 @@ class FASTQConfiguration(Configuration):
             raise ValueError("Unsupported format for reads. Files"
                              "need extension to be either bz2, gz, fq or"
                              "fastq.")
+
+    def validate(self):
+        self.validate_reverse()
+        self.validate_trim_start()
+        self.validate_trim_length()
+        self.validate_reads()
         self.filters_cfg.validate()
         return self
 
@@ -213,15 +239,17 @@ class BarcodeConfiguration(Configuration):
             raise TypeError("Expected str for map file but found {}.".format(
                 type(self.map_file)
             ))
-        if not os.path.isfile(self.map_file):
+        if self.map_file and not os.path.isfile(self.map_file):
             raise IOError("File {} does not exist."
                           " Try using absolute paths.".format(self.map_file))
-
-        _, tail = os.path.split(self.map_file)
-        _, ext = os.path.splitext(tail)
-        if ext not in set(['.bz2', '.gz', '.txt']):
-            raise ValueError("Unsupported format for map file. Files"
-                             "need extension to be either bz2, gz or txt.")
+        elif self.map_file and os.path.isfile(self.map_file):
+            _, tail = os.path.split(self.map_file)
+            _, ext = os.path.splitext(tail)
+            if ext not in set(['.bz2', '.gz', '.txt']):
+                raise ValueError("Unsupported format for map file. Files"
+                                 "need extension to be either bz2, gz or txt.")
+        else:
+            self.map_file = None
 
     def validate_min_count(self):
         if not isinstance(self.min_count, int):
@@ -258,6 +286,8 @@ class IdentifiersConfiguration(Configuration):
 
 class VariantsConfiguration(Configuration):
 
+    DEFAULT_MAX_MUTATIONS = 10
+
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for variants configuration.")
@@ -269,7 +299,8 @@ class VariantsConfiguration(Configuration):
 
         wildtype_cfg = cfg.get(WILDTYPE, {})
         self.use_aligner = cfg.get(USE_ALIGNER, False)
-        self.max_mutations = cfg.get(VARIANTS_MAX_MUTATIONS, sys.maxsize)
+        self.max_mutations = cfg.get(VARIANTS_MAX_MUTATIONS,
+                                     self.DEFAULT_MAX_MUTATIONS)
         self.min_count = cfg.get(VARIANTS_MIN_COUNT, 0)
         self.wildtype_cfg = WildTypeConfiguration(wildtype_cfg)
         self.validate()
@@ -372,7 +403,7 @@ class BaseLibraryConfiguration(Configuration):
             raise ValueError("Missing {} from base library "
                              "configuration.".format(TIMEPOINT))
         if REPORT_FILTERED_READS not in cfg:
-            raise ValueError("Missing {} from BarcodeSeqLib "
+            raise ValueError("Missing {} from base library "
                              "configuration.".format(REPORT_FILTERED_READS))
 
         filters_cfg = cfg.get(FASTQ, {})
@@ -385,6 +416,8 @@ class BaseLibraryConfiguration(Configuration):
         self.timepoint = cfg.get(TIMEPOINT)
         self.report_filtered_reads = cfg.get(REPORT_FILTERED_READS, False)
         self.fastq_filters_cfg = FASTQConfiguration(filters_cfg).validate()
+        self.counts_file = cfg.get(COUNTS_FILE, "")
+        self.store_cfg = StoreConfiguration(cfg).validate()
         self.validate()
 
     def validate_name(self):
@@ -408,10 +441,28 @@ class BaseLibraryConfiguration(Configuration):
                 type(self.report_filtered_reads)
             ))
 
+    def validate_counts_file(self):
+        if not isinstance(self.counts_file, str):
+            raise TypeError("Expected str for `counts file` but "
+                            "found {}.".format(type(self.counts_file)))
+
+        if self.counts_file and not os.path.isfile(self.counts_file):
+            raise IOError("File {} does not exist. Try using "
+                          "absolute paths.".format(self.counts_file))
+        elif self.counts_file and os.path.isfile(self.counts_file):
+            _, tail = os.path.split(self.counts_file)
+            _, ext = os.path.splitext(tail)
+            if ext not in set(['.tsv', '.txt']):
+                raise ValueError("Unsupported format for `counts file`. Files"
+                                 "need extension to be either bz2, gz or txt.")
+        else:
+            self.counts_file = None
+
     def validate(self):
         self.validate_name()
         self.validate_report_filtered_reads()
         self.validate_timepoint()
+        self.validate_counts_file()
         return self
 
 
@@ -481,28 +532,9 @@ class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
         super(IdOnlySeqLibConfiguration, self).__init__(cfg)
         identifiers_cfg = cfg.get(IDENTIFIERS, {})
         identifiers_cfg = IdentifiersConfiguration(identifiers_cfg).validate()
-        self.counts_file = cfg.get(COUNTS_FILE, "")
+
         self.identifiers_cfg = identifiers_cfg
         self.validate()
-
-    def validate_counts_file(self):
-        if not isinstance(self.counts_file, str):
-            raise TypeError("Expected str for `counts file` but "
-                            "found {}.".format(type(self.counts_file)))
-
-        if not os.path.isfile(self.counts_file):
-            raise IOError("File {} does not exist. Try using "
-                          "absolute paths.".format(self.counts_file))
-
-        _, tail = os.path.split(self.counts_file)
-        _, ext = os.path.splitext(tail)
-        if ext not in set(['.tsv', '.txt']):
-            raise ValueError("Unsupported format for `counts file`. Files"
-                             "need extension to be either bz2, gz or txt.")
-
-    def validate(self):
-        self.validate_counts_file()
-        return self
 
 
 class BasicSeqLibConfiguration(BaseLibraryConfiguration):
@@ -526,9 +558,6 @@ class OverlapSeqLibConfiguration(BaseLibraryConfiguration):
     def __init__(self, cfg):
         super(OverlapSeqLibConfiguration, self).__init__(cfg)
 
-    def validate(self):
-        return self
-
 
 # -------------------------------------------------------------------------- #
 #
@@ -543,13 +572,14 @@ class ExperimentConfiguration(Configuration):
 
         self.store_cfg = StoreConfiguration(cfg).validate()
         if CONDITIONS not in cfg:
-            raise ValueError("Experiment has no conditions element.")
+            raise KeyError("Missing required config value `{}` [{}]"
+                           "".format(CONDITIONS, self.__class__.__name__))
 
         conditions_cfg = cfg.get(CONDITIONS, [])
         self.conditions = []
 
         if not isinstance(conditions_cfg, list):
-            raise ValueError("Experiment conditions must be an iterable.")
+            raise ValueError("Experiment `conditions` must be an iterable.")
         if len(conditions_cfg) == 0:
             raise ValueError("At least 1 experimental condition must be "
                              "present in an experiment.")
@@ -561,6 +591,21 @@ class ExperimentConfiguration(Configuration):
     def validate(self):
         for condition in self.conditions:
             condition.validate()
+
+        condition_names = [condition.name for condition in self.conditions]
+        if len(set(condition_names)) != len(condition_names):
+            raise ValueError("Non-unique condition names in Experiment "
+                             "[{}].".format(self.__class__.__name__))
+
+        selection_names = [
+            selection.name
+            for condition in self.conditions
+            for selection in condition.selections
+        ]
+        if len(set(selection_names)) != len(selection_names):
+            raise ValueError("Non-unique selection names across conditions "
+                             "[{}].".format(self.__class__.__name__))
+
         return self
 
 
@@ -572,13 +617,15 @@ class ConditonsConfiguration(Configuration):
 
         self.store_cfg = StoreConfiguration(cfg).validate()
         if SELECTIONS not in cfg:
-            raise ValueError("Condition has no selection element.")
+            raise KeyError("Condition is missing required config value "
+                           "`{}` [{}]".format(SELECTIONS,
+                                              self.__class__.__name__))
 
         selections_cfg = cfg.get(SELECTIONS, [])
         self.selections = []
 
         if not isinstance(selections_cfg, list):
-            raise ValueError("Condition selections must be an iterable.")
+            raise ValueError("Condition `selections` must be an iterable.")
         if len(selections_cfg) == 0:
             raise ValueError("At least 1 selection must be "
                              "present in a condition.")
@@ -590,11 +637,6 @@ class ConditonsConfiguration(Configuration):
     def validate(self):
         for selection in self.selections:
             selection.validate()
-        # all_libs = [lib for sel in self.selections for lib in sel.libraries]
-        # lib_names = set([lib.name for lib in all_libs])
-        # if len(lib_names) != len(all_libs):
-        #     raise ValueError("Libraries must have unique names accross"
-        #                      " conditions and selections.")
         return self
 
 
@@ -650,9 +692,8 @@ class SelectionsConfiguration(Configuration):
 
         num_names = len(set([library.name for library in self.libraries]))
         if num_names != len(self.libraries):
-            raise ValueError("Libraries must have unique names accross"
-                             " selections [{}].".format(
-                self.__class__.__name__))
+            raise ValueError("Libraries must have unique names within a "
+                             "selection [{}].".format(self.__class__.__name__))
         return self
 
 
