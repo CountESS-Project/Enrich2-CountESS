@@ -33,3 +33,4 @@ install:
 script:
  - source activate test-environment
  - coverage run --source=enrich2/base/,enrich2/config/,enrich2/experiment/,enrich2/libraries/,enrich2/selection/,enrich2/sequence/,enrich2/statistics/ setup.py test
+ - coverage report
