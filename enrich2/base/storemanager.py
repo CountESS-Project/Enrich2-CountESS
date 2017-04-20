@@ -677,6 +677,24 @@ class StoreManager(object):
         self.store[key].to_csv(os.path.join(self.tsv_dir, fname), sep='\t',
                                na_rep="NA")
 
+    def get_table(self, key):
+        """
+        Checks to see if a particular data frame in the HDF5 store already
+        exists and returns it.
+
+        Args:
+            key (str): key for the requested data frame
+
+        Returns:
+            bool: True if the key exists in the HDF5 store, else False.
+        """
+        if not self.check_store(key):
+            raise ValueError("Store {} does not exist [{}]".format(
+                key, self.name
+            ))
+        else:
+            return self.store[key]
+
     def check_store(self, key):
         """
         Checks to see if a particular data frame in the HDF5 store already
