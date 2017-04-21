@@ -35,10 +35,10 @@ options.add_option(
 )
 
 
-class WLSScoring(BaseScoringPlugin):
+class OLSScoring(BaseScoringPlugin):
 
     def __init__(self, store, options):
-        super(WLSScoring, self).__init__(store, options)
+        super(OLSScoring, self).__init__(store, options)
 
     def compute_scores(self):
         for label in self.store_labels():
@@ -68,8 +68,7 @@ class WLSScoring(BaseScoringPlugin):
 
         # perform the fit
         X = sm.add_constant(xvalues)  # fit intercept
-        W = row[['W_{}'.format(t) for t in timepoints]]
-        fit = sm.WLS(y, X, weights=W).fit()
+        fit = sm.OLS(y, X).fit()
 
         # re-format as a data frame row
         values = np.concatenate([fit.params, [fit.bse['x1'], fit.tvalues['x1'],
@@ -256,29 +255,23 @@ class WLSScoring(BaseScoringPlugin):
         ).index.map(len).max()
         chunk = 1
 
-        # -------------------- WLS COMPUTATION --------------------------- #
-        selection = [
-            "/main/{}/log_ratios".format(label),
-            "/main/{}/weights".format(label)
-        ]
-        store_selection = self.store_select_multiple(selection)
-        for data in store_selection:
+        # -------------------- OLS COMPUTATION --------------------------- #
+        data_selection = self.store_select("/main/{}/log_ratios".format(label))
+        for data in data_selection:
             logging.info(
-                "Calculating weighted least "
-                "squares for chunk {} ({} rows)".format(
-                    chunk, len(data.index)), extra={'oname' : self.name}
+                "Calculating ordinary least squares "
+                "for chunk {} ({} rows)".format(chunk, len(data.index)),
+                extra={'oname': self.name}
             )
             result = data.apply(
                 self.row_apply_function,
                 axis="columns",
-                timepoints=self.store_timepoints()
+                timepoints = self.store_timepoints()
             )
-            # append is required because it takes the
-            # "min_itemsize" argument, and put doesn't
             self.store_append(
                 key="/main/{}/scores".format(label),
                 data=result,
-                min_itemsize={"index" : longest}
+                min_itemsize={"index": longest}
             )
             chunk += 1
 

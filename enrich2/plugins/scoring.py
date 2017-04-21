@@ -190,7 +190,8 @@ class BaseScoringPlugin(ABC):
             raise ValueError("Store {} does not exist [{}]".format(
                 key, self.name
             ))
-        return self._store.store.select(key, where, **kwargs)
+        return self._store.store.select(
+            key, where, chunksize=self._store.chunksize, **kwargs)
 
     def store_select_multiple(self, keys, **kwargs):
         """
