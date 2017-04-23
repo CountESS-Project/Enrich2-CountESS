@@ -537,6 +537,10 @@ class Selection(StoreManager):
         Wrapper method to calculate counts and enrichment scores 
         for all data in the :py:class:`~selection.Selection`.
         """
+        from ..plugins.regression_scorer import RegressionScorer
+        from ..plugins.ratios_scorer import RatiosScorer
+        from ..plugins.simple_scorer import SimpleScorer
+
         if len(self.labels) == 0:
             raise ValueError("No data present across all "
                              "sequencing libraries [{}]".format(self.name))
@@ -556,385 +560,401 @@ class Selection(StoreManager):
             pass
 
         elif self.scoring_method == "ratios":
-            for label in self.labels:
-                self.calc_ratios(label)
+            scorer = RatiosScorer(
+                store_manager=self,
+                options={'logr_method': self.logr_method}
+            )
+            scorer.compute_scores()
 
         elif self.scoring_method == "simple":
-            for label in self.labels:
-                self.calc_simple_ratios(label)
+            scorer = SimpleScorer(
+                store_manager=self,
+                options={}
+            )
+            scorer.compute_scores()
 
-        elif self.scoring_method in ("WLS", "OLS"):
+        elif self.scoring_method == "OLS":
             if len(self.timepoints) <= 2:
                 raise ValueError("Regression-based scoring "
                                  "requires three or more time points.")
-            for label in self.labels:
-                self.calc_log_ratios(label)
-                if self.scoring_method == "WLS":
-                    self.calc_weights(label)
-                self.calc_regression(label)
+            scorer = RegressionScorer(
+                store_manager=self,
+                options={'logr_method': self.logr_method, 'weighted': False}
+            )
+            scorer.compute_scores()
+
+        elif self.scoring_method == "WLS":
+            if len(self.timepoints) <= 2:
+                raise ValueError("Regression-based scoring "
+                                 "requires three or more time points.")
+            scorer = RegressionScorer(
+                store_manager=self,
+                options={'logr_method': self.logr_method, 'weighted': True}
+            )
+            scorer.compute_scores()
 
         else:
             raise ValueError('Invalid scoring method "{}" '
                              '[{}]'.format(self.scoring_method, self.name))
 
-        methods = ("ratios" , "WLS", "OLS")
-        if self.scoring_method in methods and self.component_outliers:
+        # TODO: Write outlier computation as a plugin?
+        allowed_methods = ("ratios" , "WLS", "OLS")
+        if self.scoring_method in allowed_methods and self.component_outliers:
             if self.is_barcodevariant() or self.is_barcodeid():
                 self.calc_outliers("barcodes")
             if self.is_coding():
                 self.calc_outliers("variants")
 
-    def calc_simple_ratios(self, label):
-        """
-        Calculate simplified (original Enrich) ratios scores.
-        This method does not produce standard errors.
-        """
-        if self.check_store("/main/{}/scores".format(label)):
-            return
-
-        logging.info("Calculating simple ratios "
-                     "({})".format(label), extra={'oname' : self.name})
-        c_last = 'c_{}'.format(self.timepoints[-1])
-        df = self.store.select(
-            "/main/{}/counts".format(label),
-            "columns in ['c_0', c_last]"
-        )
-
-        # perform operations on the numpy values of the
-        # dataframe for easier broadcasting
-        num = df[c_last].values.astype("float") / df[c_last].sum(axis="index")
-        denom = df['c_0'].values.astype("float") / df['c_0'].sum(axis="index")
-        ratios =  num / denom
-
-        # make it a data frame again
-        ratios = pd.DataFrame(data=ratios, index=df.index, columns=['ratio'])
-        ratios['score'] = np.log2(ratios['ratio'])
-        ratios['SE'] = np.nan
-        ratios = ratios[['score', 'SE', 'ratio']]   # re-order columns
-
-        self.store.put(
-            "/main/{}/scores".format(label), ratios,
-            format="table", data_columns=ratios.columns
-        )
-
-    def calc_ratios(self, label):
-        """
-        Calculate frequency ratios and standard errors between the
-        last timepoint and the input. Ratios can be calculated using
-        one of three methods:
-            - wt
-            - complete
-            - full
-        """
-        if self.check_store("/main/{}/scores".format(label)):
-            return
-
-        logging.info(
-            "Calculating ratios ({})".format(label),
-            extra={'oname' : self.name}
-        )
-        c_last = 'c_{}'.format(self.timepoints[-1])
-        df = self.store.select(
-            "/main/{}/counts".format(label),
-            "columns in ['c_0', c_last]"
-        )
-
-        if self.logr_method == "wt":
-            if "variants" in self.labels:
-                wt_label = "variants"
-            elif "identifiers" in self.labels:
-                wt_label = "identifiers"
-            else:
-                raise ValueError('Failed to use wild type log '
-                                 'ratio method, suitable data '
-                                 'table not present [{}]'.format(self.name))
-
-            shared_counts = self.store.select(
-                "/main/{}/counts".format(wt_label),
-                "columns in ['c_0', c_last] & index='{}'".format(
-                    WILD_TYPE_VARIANT))
-
-            # wild type not found
-            if len(shared_counts) == 0:
-                raise ValueError('Failed to use wild type log '
-                                 'ratio method, wild type '
-                                 'sequence not present [{}]'.format(self.name))
-
-            shared_counts = shared_counts.values + 0.5
-
-        elif self.logr_method == "complete":
-            shared_counts = self.store.select(
-                "/main/{}/counts".format(label),
-                "columns in ['c_0', c_last]").sum(axis="index").values + 0.5
-
-        elif self.logr_method == "full":
-            shared_counts = self.store.select(
-                "/main/{}/counts_unfiltered".format(label),
-                "columns in ['c_0', c_last]").sum(
-                axis="index", skipna=True).values + 0.5
-        else:
-            raise ValueError('Invalid log ratio method "{}" '
-                             '[{}]'.format(self.logr_method, self.name))
-
-        ratios = np.log(df[['c_0', c_last]].values + 0.5) - \
-                 np.log(shared_counts)
-        ratios = ratios[:, 1] - ratios[:, 0]    # selected - input
-        ratios = pd.DataFrame(ratios, index=df.index, columns=['logratio'])
-
-        shared_variance = np.sum(1. / shared_counts)
-        summed = np.sum(1. / (df[['c_0', c_last]].values + 0.5), axis=1)
-
-        ratios['variance'] = summed + shared_variance
-        ratios['score'] = ratios['logratio']
-        ratios['SE'] = np.sqrt(ratios['variance'])
-
-        # re-order columns
-        ratios = ratios[['score', 'SE', 'logratio', 'variance']]
-        self.store.put(
-            "/main/{}/scores".format(label), ratios,
-            format="table", data_columns=ratios.columns)
-
-    def calc_log_ratios(self, label):
-        """
-        Calculate the log ratios that will be fit using the linear models.
-        """
-        if self.check_store("/main/{}/log_ratios".format(label)):
-            return
-
-        logging.info(
-            "Calculating log ratios ({})".format(label),
-            extra={'oname' : self.name}
-        )
-        ratios = self.store.select("/main/{}/counts".format(label))
-        index = ratios.index
-        c_n = ['c_{}'.format(x) for x in self.timepoints]
-        ratios = np.log(ratios + 0.5)
-
-        # perform operations on the numpy values of the data
-        # frame for easier broadcasting
-        ratios = ratios[c_n].values
-        if self.logr_method == "wt":
-            if "variants" in self.labels:
-                wt_label = "variants"
-            elif "identifiers" in self.labels:
-                wt_label = "identifiers"
-            else:
-                raise ValueError('Failed to use wild type log ratio method, '
-                                 'suitable data table not '
-                                 'present [{}]'.format(self.name))
-            wt_counts = self.store.select(
-                "/main/{}/counts".format(wt_label),
-                "columns=c_n & index='{}'".format(WILD_TYPE_VARIANT))
-
-            if len(wt_counts) == 0: # wild type not found
-                raise ValueError('Failed to use wild type log ratio method, '
-                                 'wild type sequence not '
-                                 'present [{}]'.format(self.name))
-            ratios = ratios - np.log(wt_counts.values + 0.5)
-
-        elif self.logr_method == "complete":
-            ratios = ratios - np.log(
-                self.store.select("/main/{}/counts".format(label),
-                                  "columns=c_n").sum(axis="index").values + 0.5)
-        elif self.logr_method == "full":
-            ratios = ratios - np.log(self.store.select(
-                "/main/{}/counts_unfiltered".format(label),
-                "columns=c_n").sum(axis="index", skipna=True).values + 0.5)
-        else:
-            raise ValueError('Invalid log ratio method "{}" [{}]'.format(
-                self.logr_method, self.name)
-            )
-
-        # make it a data frame again
-        columns = ['L_{}'.format(x) for x in self.timepoints]
-        ratios = pd.DataFrame(data=ratios, index=index, columns=columns)
-        self.store.put(
-            "/main/{}/log_ratios".format(label), ratios,
-            format="table", data_columns=ratios.columns)
-
-    def calc_weights(self, label):
-        """
-        Calculate the regression weights (1 / variance).
-        """
-        if self.check_store("/main/{}/weights".format(label)):
-            return
-
-        logging.info(
-            "Calculating regression weights ({})".format(label),
-            extra={'oname' : self.name}
-        )
-        variances = self.store.select("/main/{}/counts".format(label))
-        c_n = ['c_{}'.format(x) for x in self.timepoints]
-        index = variances.index
-
-        # perform operations on the numpy values of the
-        # data frame for easier broadcasting
-        # var_left = 1.0 / (variances[c_n].values + 0.5)
-        # var_right = 1.0 / (variances[['c_0']].values + 0.5)
-        # variances = var_left + var_right
-        variances = 1.0 / (variances[c_n].values + 0.5)
-
-        # -------------------------- WT NORM ----------------------------- #
-        if self.logr_method == "wt":
-            if "variants" in self.labels:
-                wt_label = "variants"
-            elif "identifiers" in self.labels:
-                wt_label = "identifiers"
-            else:
-                raise ValueError(
-                    'Failed to use wild type log ratio method, '
-                    'suitable data table not present [{}]'.format(self.name)
-                )
-            wt_counts = self.store.select(
-                "/main/{}/counts".format(wt_label),
-                "columns=c_n & index='{}'".format(WILD_TYPE_VARIANT)
-            )
-
-            # wild type not found
-            if len(wt_counts) == 0:
-                raise ValueError(
-                    'Failed to use wild type log ratio method, wild type '
-                    'sequence not present [{}]'.format(self.name)
-                )
-            variances = variances + 1.0 / (wt_counts.values + 0.5)
-
-        #---------------------- COMPLETE NORM ----------------------------- #
-        elif self.logr_method == "complete":
-            variances = variances + 1.0 / (self.store.select(
-                "/main/{}/counts".format(label),
-                "columns=c_n"
-            ).sum(axis="index").values + 0.5)
-
-        # ------------------------- FULL NORM ----------------------------- #
-        elif self.logr_method == "full":
-            variances = variances + 1.0 / (self.store.select(
-                    "/main/{}/counts_unfiltered".format(label),
-                    "columns=c_n"
-                ).sum(axis="index", skipna=True).values + 0.5)
-
-        # ---------------------------- WUT? ------------------------------- #
-        else:
-            raise ValueError('Invalid log ratio method "{}" [{}]'.format(
-                self.logr_method, self.name))
-
-        # weights are reciprocal of variances
-        variances = 1.0 / variances
-
-        # make it a data frame again
-        variances = pd.DataFrame(
-            data=variances, index=index,
-            columns=['W_{}'.format(x) for x in self.timepoints]
-        )
-        self.store.put(
-            "/main/{}/weights".format(label),
-            variances, format="table",
-            data_columns=variances.columns
-        )
-
-    def calc_regression(self, label):
-        """
-        Calculate least squares regression for *label*. If *weighted* is
-        ``True``, calculates weighted least squares; else ordinary least
-        squares.
-
-        Regression results are stored in ``'/main/label/scores'``
-
-        """
-        if self.check_store("/main/{}/scores".format(label)):
-            return
-        elif "/main/{}/scores".format(label) in list(self.store.keys()):
-            # need to remove the current keys because we are using append
-            self.store.remove("/main/{}/scores".format(label))
-
-        logging.info("Calculating {} regression coefficients ({})".format(
-            self.scoring_method, label), extra={'oname' : self.name}
-        )
-
-        # append is required because it takes the
-        # "min_itemsize" argument, and put doesn't
-        longest = self.store.select(
-            "/main/{}/log_ratios".format(label),
-            "columns='index'"
-        ).index.map(len).max()
-        chunk = 1
-
-        # -------------------- WLS COMPUTATION --------------------------- #
-        if self.scoring_method == "WLS":
-            selection = [
-                "/main/{}/log_ratios".format(label),
-                "/main/{}/weights".format(label)
-            ]
-            store_selection = self.store.select_as_multiple(
-                selection, chunksize=self.chunksize
-            )
-            for data in store_selection:
-                logging.info(
-                    "Calculating weighted least "
-                    "squares for chunk {} ({} rows)".format(
-                        chunk, len(data.index)), extra={'oname' : self.name}
-                )
-                result = data.apply(
-                    regression_apply,
-                    args=[self.timepoints, True], axis="columns"
-                )
-                self.store.append(
-                    "/main/{}/scores".format(label), result,
-                    min_itemsize={"index" : longest}
-                )
-                chunk += 1
-
-        # -------------------- OLS COMPUTATION --------------------------- #
-        elif self.scoring_method == "OLS":
-            data_selection = self.store.select(
-                "/main/{}/log_ratios".format(label), chunksize=self.chunksize)
-            for data in data_selection:
-                logging.info(
-                    "Calculating ordinary least squares "
-                    "for chunk {} ({} rows)".format(chunk, len(data.index)),
-                    extra={'oname' : self.name}
-                )
-                result = data.apply(
-                    regression_apply,
-                    args=[self.timepoints, False],
-                    axis="columns"
-                )
-                self.store.append(
-                    "/main/{}/scores".format(label), result,
-                    min_itemsize={"index" : longest}
-                )
-                chunk += 1
-        # -------------------------- WUT? -------------------------------- #
-        else:
-            raise ValueError(
-                'Invalid regression scoring method "{}" [{}]'.format(
-                    self.scoring_method, self.name)
-            )
-
-        # ----------------------- POST ------------------------------------ #
-        # need to read from the file, calculate percentiles, and rewrite it
-        logging.info("Calculating slope "
-                     "standard error percentiles ({})".format(
-            label), extra={'oname' : self.name}
-        )
-        data = self.store['/main/{}/scores'.format(label)]
-        data['score'] = data['slope']
-        data['SE'] = data['SE_slope']
-        data['SE_pctile'] = [
-            stats.percentileofscore(data['SE'], x, "weak") for x in data['SE']
-        ]
-
-        # reorder columns
-        reorder_selector = [
-            'score', 'SE', 'SE_pctile',
-            'slope', 'intercept', 'SE_slope',
-            't', 'pvalue_raw'
-        ]
-        data = data[reorder_selector]
-        self.store.put(
-            "/main/{}/scores".format(label), data,
-            format="table", data_columns=data.columns
-        )
-
+    # def calc_simple_ratios(self, label):
+    #     """
+    #     Calculate simplified (original Enrich) ratios scores.
+    #     This method does not produce standard errors.
+    #     """
+    #     if self.check_store("/main/{}/scores".format(label)):
+    #         return
+    #
+    #     logging.info("Calculating simple ratios "
+    #                  "({})".format(label), extra={'oname' : self.name})
+    #     c_last = 'c_{}'.format(self.timepoints[-1])
+    #     df = self.store.select(
+    #         "/main/{}/counts".format(label),
+    #         "columns in ['c_0', c_last]"
+    #     )
+    #
+    #     # perform operations on the numpy values of the
+    #     # dataframe for easier broadcasting
+    #     num = df[c_last].values.astype("float") / df[c_last].sum(axis="index")
+    #     denom = df['c_0'].values.astype("float") / df['c_0'].sum(axis="index")
+    #     ratios =  num / denom
+    #
+    #     # make it a data frame again
+    #     ratios = pd.DataFrame(data=ratios, index=df.index, columns=['ratio'])
+    #     ratios['score'] = np.log2(ratios['ratio'])
+    #     ratios['SE'] = np.nan
+    #     ratios = ratios[['score', 'SE', 'ratio']]   # re-order columns
+    #
+    #     self.store.put(
+    #         "/main/{}/scores".format(label), ratios,
+    #         format="table", data_columns=ratios.columns
+    #     )
+    #
+    # def calc_ratios(self, label):
+    #     """
+    #     Calculate frequency ratios and standard errors between the
+    #     last timepoint and the input. Ratios can be calculated using
+    #     one of three methods:
+    #         - wt
+    #         - complete
+    #         - full
+    #     """
+    #     if self.check_store("/main/{}/scores".format(label)):
+    #         return
+    #
+    #     logging.info(
+    #         "Calculating ratios ({})".format(label),
+    #         extra={'oname' : self.name}
+    #     )
+    #     c_last = 'c_{}'.format(self.timepoints[-1])
+    #     df = self.store.select(
+    #         "/main/{}/counts".format(label),
+    #         "columns in ['c_0', c_last]"
+    #     )
+    #
+    #     if self.logr_method == "wt":
+    #         if "variants" in self.labels:
+    #             wt_label = "variants"
+    #         elif "identifiers" in self.labels:
+    #             wt_label = "identifiers"
+    #         else:
+    #             raise ValueError('Failed to use wild type log '
+    #                              'ratio method, suitable data '
+    #                              'table not present [{}]'.format(self.name))
+    #
+    #         shared_counts = self.store.select(
+    #             "/main/{}/counts".format(wt_label),
+    #             "columns in ['c_0', c_last] & index='{}'".format(
+    #                 WILD_TYPE_VARIANT))
+    #
+    #         # wild type not found
+    #         if len(shared_counts) == 0:
+    #             raise ValueError('Failed to use wild type log '
+    #                              'ratio method, wild type '
+    #                              'sequence not present [{}]'.format(self.name))
+    #
+    #         shared_counts = shared_counts.values + 0.5
+    #
+    #     elif self.logr_method == "complete":
+    #         shared_counts = self.store.select(
+    #             "/main/{}/counts".format(label),
+    #             "columns in ['c_0', c_last]").sum(axis="index").values + 0.5
+    #
+    #     elif self.logr_method == "full":
+    #         shared_counts = self.store.select(
+    #             "/main/{}/counts_unfiltered".format(label),
+    #             "columns in ['c_0', c_last]").sum(
+    #             axis="index", skipna=True).values + 0.5
+    #     else:
+    #         raise ValueError('Invalid log ratio method "{}" '
+    #                          '[{}]'.format(self.logr_method, self.name))
+    #
+    #     ratios = np.log(df[['c_0', c_last]].values + 0.5) - \
+    #              np.log(shared_counts)
+    #     ratios = ratios[:, 1] - ratios[:, 0]    # selected - input
+    #     ratios = pd.DataFrame(ratios, index=df.index, columns=['logratio'])
+    #
+    #     shared_variance = np.sum(1. / shared_counts)
+    #     summed = np.sum(1. / (df[['c_0', c_last]].values + 0.5), axis=1)
+    #
+    #     ratios['variance'] = summed + shared_variance
+    #     ratios['score'] = ratios['logratio']
+    #     ratios['SE'] = np.sqrt(ratios['variance'])
+    #
+    #     # re-order columns
+    #     ratios = ratios[['score', 'SE', 'logratio', 'variance']]
+    #     self.store.put(
+    #         "/main/{}/scores".format(label), ratios,
+    #         format="table", data_columns=ratios.columns)
+    #
+    # def calc_log_ratios(self, label):
+    #     """
+    #     Calculate the log ratios that will be fit using the linear models.
+    #     """
+    #     if self.check_store("/main/{}/log_ratios".format(label)):
+    #         return
+    #
+    #     logging.info(
+    #         "Calculating log ratios ({})".format(label),
+    #         extra={'oname' : self.name}
+    #     )
+    #     ratios = self.store.select("/main/{}/counts".format(label))
+    #     index = ratios.index
+    #     c_n = ['c_{}'.format(x) for x in self.timepoints]
+    #     ratios = np.log(ratios + 0.5)
+    #
+    #     # perform operations on the numpy values of the data
+    #     # frame for easier broadcasting
+    #     ratios = ratios[c_n].values
+    #     if self.logr_method == "wt":
+    #         if "variants" in self.labels:
+    #             wt_label = "variants"
+    #         elif "identifiers" in self.labels:
+    #             wt_label = "identifiers"
+    #         else:
+    #             raise ValueError('Failed to use wild type log ratio method, '
+    #                              'suitable data table not '
+    #                              'present [{}]'.format(self.name))
+    #         wt_counts = self.store.select(
+    #             "/main/{}/counts".format(wt_label),
+    #             "columns=c_n & index='{}'".format(WILD_TYPE_VARIANT))
+    #
+    #         if len(wt_counts) == 0: # wild type not found
+    #             raise ValueError('Failed to use wild type log ratio method, '
+    #                              'wild type sequence not '
+    #                              'present [{}]'.format(self.name))
+    #         ratios = ratios - np.log(wt_counts.values + 0.5)
+    #
+    #     elif self.logr_method == "complete":
+    #         ratios = ratios - np.log(
+    #             self.store.select("/main/{}/counts".format(label),
+    #                               "columns=c_n").sum(axis="index").values + 0.5)
+    #     elif self.logr_method == "full":
+    #         ratios = ratios - np.log(self.store.select(
+    #             "/main/{}/counts_unfiltered".format(label),
+    #             "columns=c_n").sum(axis="index", skipna=True).values + 0.5)
+    #     else:
+    #         raise ValueError('Invalid log ratio method "{}" [{}]'.format(
+    #             self.logr_method, self.name)
+    #         )
+    #
+    #     # make it a data frame again
+    #     columns = ['L_{}'.format(x) for x in self.timepoints]
+    #     ratios = pd.DataFrame(data=ratios, index=index, columns=columns)
+    #     self.store.put(
+    #         "/main/{}/log_ratios".format(label), ratios,
+    #         format="table", data_columns=ratios.columns)
+    #
+    # def calc_weights(self, label):
+    #     """
+    #     Calculate the regression weights (1 / variance).
+    #     """
+    #     if self.check_store("/main/{}/weights".format(label)):
+    #         return
+    #
+    #     logging.info(
+    #         "Calculating regression weights ({})".format(label),
+    #         extra={'oname' : self.name}
+    #     )
+    #     variances = self.store.select("/main/{}/counts".format(label))
+    #     c_n = ['c_{}'.format(x) for x in self.timepoints]
+    #     index = variances.index
+    #
+    #     # perform operations on the numpy values of the
+    #     # data frame for easier broadcasting
+    #     # var_left = 1.0 / (variances[c_n].values + 0.5)
+    #     # var_right = 1.0 / (variances[['c_0']].values + 0.5)
+    #     # variances = var_left + var_right
+    #     variances = 1.0 / (variances[c_n].values + 0.5)
+    #
+    #     # -------------------------- WT NORM ----------------------------- #
+    #     if self.logr_method == "wt":
+    #         if "variants" in self.labels:
+    #             wt_label = "variants"
+    #         elif "identifiers" in self.labels:
+    #             wt_label = "identifiers"
+    #         else:
+    #             raise ValueError(
+    #                 'Failed to use wild type log ratio method, '
+    #                 'suitable data table not present [{}]'.format(self.name)
+    #             )
+    #         wt_counts = self.store.select(
+    #             "/main/{}/counts".format(wt_label),
+    #             "columns=c_n & index='{}'".format(WILD_TYPE_VARIANT)
+    #         )
+    #
+    #         # wild type not found
+    #         if len(wt_counts) == 0:
+    #             raise ValueError(
+    #                 'Failed to use wild type log ratio method, wild type '
+    #                 'sequence not present [{}]'.format(self.name)
+    #             )
+    #         variances = variances + 1.0 / (wt_counts.values + 0.5)
+    #
+    #     #---------------------- COMPLETE NORM ----------------------------- #
+    #     elif self.logr_method == "complete":
+    #         variances = variances + 1.0 / (self.store.select(
+    #             "/main/{}/counts".format(label),
+    #             "columns=c_n"
+    #         ).sum(axis="index").values + 0.5)
+    #
+    #     # ------------------------- FULL NORM ----------------------------- #
+    #     elif self.logr_method == "full":
+    #         variances = variances + 1.0 / (self.store.select(
+    #                 "/main/{}/counts_unfiltered".format(label),
+    #                 "columns=c_n"
+    #             ).sum(axis="index", skipna=True).values + 0.5)
+    #
+    #     # ---------------------------- WUT? ------------------------------- #
+    #     else:
+    #         raise ValueError('Invalid log ratio method "{}" [{}]'.format(
+    #             self.logr_method, self.name))
+    #
+    #     # weights are reciprocal of variances
+    #     variances = 1.0 / variances
+    #
+    #     # make it a data frame again
+    #     variances = pd.DataFrame(
+    #         data=variances, index=index,
+    #         columns=['W_{}'.format(x) for x in self.timepoints]
+    #     )
+    #     self.store.put(
+    #         "/main/{}/weights".format(label),
+    #         variances, format="table",
+    #         data_columns=variances.columns
+    #     )
+    #
+    # def calc_regression(self, label):
+    #     """
+    #     Calculate least squares regression for *label*. If *weighted* is
+    #     ``True``, calculates weighted least squares; else ordinary least
+    #     squares.
+    #
+    #     Regression results are stored in ``'/main/label/scores'``
+    #
+    #     """
+    #     if self.check_store("/main/{}/scores".format(label)):
+    #         return
+    #     elif "/main/{}/scores".format(label) in list(self.store.keys()):
+    #         # need to remove the current keys because we are using append
+    #         self.store.remove("/main/{}/scores".format(label))
+    #
+    #     logging.info("Calculating {} regression coefficients ({})".format(
+    #         self.scoring_method, label), extra={'oname' : self.name}
+    #     )
+    #
+    #     # append is required because it takes the
+    #     # "min_itemsize" argument, and put doesn't
+    #     longest = self.store.select(
+    #         "/main/{}/log_ratios".format(label),
+    #         "columns='index'"
+    #     ).index.map(len).max()
+    #     chunk = 1
+    #
+    #     # -------------------- WLS COMPUTATION --------------------------- #
+    #     if self.scoring_method == "WLS":
+    #         selection = [
+    #             "/main/{}/log_ratios".format(label),
+    #             "/main/{}/weights".format(label)
+    #         ]
+    #         store_selection = self.store.select_as_multiple(
+    #             selection, chunksize=self.chunksize
+    #         )
+    #         for data in store_selection:
+    #             logging.info(
+    #                 "Calculating weighted least "
+    #                 "squares for chunk {} ({} rows)".format(
+    #                     chunk, len(data.index)), extra={'oname' : self.name}
+    #             )
+    #             result = data.apply(
+    #                 regression_apply,
+    #                 args=[self.timepoints, True], axis="columns"
+    #             )
+    #             self.store.append(
+    #                 "/main/{}/scores".format(label), result,
+    #                 min_itemsize={"index" : longest}
+    #             )
+    #             chunk += 1
+    #
+    #     # -------------------- OLS COMPUTATION --------------------------- #
+    #     elif self.scoring_method == "OLS":
+    #         data_selection = self.store.select(
+    #             "/main/{}/log_ratios".format(label), chunksize=self.chunksize)
+    #         for data in data_selection:
+    #             logging.info(
+    #                 "Calculating ordinary least squares "
+    #                 "for chunk {} ({} rows)".format(chunk, len(data.index)),
+    #                 extra={'oname' : self.name}
+    #             )
+    #             result = data.apply(
+    #                 regression_apply,
+    #                 args=[self.timepoints, False],
+    #                 axis="columns"
+    #             )
+    #             self.store.append(
+    #                 "/main/{}/scores".format(label), result,
+    #                 min_itemsize={"index" : longest}
+    #             )
+    #             chunk += 1
+    #     # -------------------------- WUT? -------------------------------- #
+    #     else:
+    #         raise ValueError(
+    #             'Invalid regression scoring method "{}" [{}]'.format(
+    #                 self.scoring_method, self.name)
+    #         )
+    #
+    #     # ----------------------- POST ------------------------------------ #
+    #     # need to read from the file, calculate percentiles, and rewrite it
+    #     logging.info("Calculating slope "
+    #                  "standard error percentiles ({})".format(
+    #         label), extra={'oname' : self.name}
+    #     )
+    #     data = self.store['/main/{}/scores'.format(label)]
+    #     data['score'] = data['slope']
+    #     data['SE'] = data['SE_slope']
+    #     data['SE_pctile'] = [
+    #         stats.percentileofscore(data['SE'], x, "weak") for x in data['SE']
+    #     ]
+    #
+    #     # reorder columns
+    #     reorder_selector = [
+    #         'score', 'SE', 'SE_pctile',
+    #         'slope', 'intercept', 'SE_slope',
+    #         't', 'pvalue_raw'
+    #     ]
+    #     data = data[reorder_selector]
+    #     self.store.put(
+    #         "/main/{}/scores".format(label), data,
+    #         format="table", data_columns=data.columns
+    #     )
 
     def wt_plot(self, pdf):
         """

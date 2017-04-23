@@ -606,6 +606,7 @@ class Experiment(StoreManager):
             sfmap_plot(df=data, pdf=pdf, style="scores", df_se=data_se,
                        dimensions="tall", wt=wtseq, title=title)
 
+
     def correlation_plot(self, pdf, label):
         """
         Create a triangular heatmap showing the Pearson correlation coefficient

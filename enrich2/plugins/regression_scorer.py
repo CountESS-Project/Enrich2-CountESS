@@ -20,8 +20,8 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
-from enrich2.plugins.scoring import BaseScoringPlugin, ScoringOptions
-from enrich2.base.constants import WILD_TYPE_VARIANT
+from .scoring import BaseScorerPlugin, ScoringOptions
+from ..base.constants import WILD_TYPE_VARIANT
 
 
 options = ScoringOptions()
@@ -29,24 +29,33 @@ options.add_option(
     name="Normalization Method",
     varname="logr_method",
     dtype=str,
-    default='full',
+    default='wt',
     choices=['wt', 'full', 'complete'],
     tooltip="Method used to normalise count data in the ratios."
 )
+options.add_option(
+    name="Weighted",
+    varname="weighted",
+    dtype=bool,
+    default=True,
+    choices=[False, True],
+    tooltip="True for WLS or False for OLS."
+)
 
 
-class OLSScoring(BaseScoringPlugin):
+class RegressionScorer(BaseScorerPlugin):
 
-    def __init__(self, store, options):
-        super(OLSScoring, self).__init__(store, options)
+    def __init__(self, store_manager, options):
+        super().__init__(store_manager, options)
 
     def compute_scores(self):
         for label in self.store_labels():
             self.calc_log_ratios(label)
-            self.calc_weights(label)
+            if self.weighted:
+                self.calc_weights(label)
             self.calc_regression(label)
 
-    def row_apply_function(self, **kwargs):
+    def row_apply_function(self, *args, **kwargs):
         """
         :py:meth:`pandas.DataFrame.apply` apply function for calculating 
         enrichment using linear regression. If *weighted* is ``True`` perform
@@ -57,8 +66,7 @@ class OLSScoring(BaseScoringPlugin):
         Returns a :py:class:`pandas.Series` containing regression coefficients,
         residuals, and statistics.
         """
-        row = kwargs['row']
-        timepoints = kwargs['timepoints']
+        row, timepoints, weighted = args
 
         # retrieve log ratios from the row
         y = row[['L_{}'.format(t) for t in timepoints]]
@@ -68,7 +76,11 @@ class OLSScoring(BaseScoringPlugin):
 
         # perform the fit
         X = sm.add_constant(xvalues)  # fit intercept
-        fit = sm.OLS(y, X).fit()
+        if weighted:
+            W = row[['W_{}'.format(t) for t in timepoints]]
+            fit = sm.WLS(y, X, weights=W).fit()
+        else:
+            fit = sm.OLS(y, X).fit()
 
         # re-format as a data frame row
         values = np.concatenate([fit.params, [fit.bse['x1'], fit.tvalues['x1'],
@@ -88,7 +100,8 @@ class OLSScoring(BaseScoringPlugin):
             "Calculating log ratios ({})".format(label),
             extra={'oname': self.name}
         )
-        ratios = self.store_select("/main/{}/counts".format(label))
+        ratios = self.store_select(
+            "/main/{}/counts".format(label))
         index = ratios.index
         c_n = ['c_{}'.format(x) for x in self.store_timepoints()]
         ratios = np.log(ratios + 0.5)
@@ -105,9 +118,11 @@ class OLSScoring(BaseScoringPlugin):
                 raise ValueError('Failed to use wild type log ratio method, '
                                  'suitable data table not '
                                  'present [{}]'.format(self.name))
+
             wt_counts = self.store_select(
                 "/main/{}/counts".format(wt_label),
-                "columns=c_n & index='{}'".format(WILD_TYPE_VARIANT))
+                "columns={} & index=='{}'".format(c_n, WILD_TYPE_VARIANT)
+            )
 
             if len(wt_counts) == 0:  # wild type not found
                 raise ValueError('Failed to use wild type log ratio method, '
@@ -116,25 +131,25 @@ class OLSScoring(BaseScoringPlugin):
             ratios = ratios - np.log(wt_counts.values + 0.5)
 
         elif self.logr_method == "complete":
-            ratios = ratios - np.log(
-                self.store_select("/main/{}/counts".format(label),
-                                  "columns=c_n").sum(
-                    axis="index").values + 0.5)
+            ratios = ratios - np.log(self.store_select(
+                "/main/{}/counts".format(label),
+                "columns={}".format(c_n)
+            ).sum(axis="index").values + 0.5)
         elif self.logr_method == "full":
             ratios = ratios - np.log(self.store_select(
                 "/main/{}/counts_unfiltered".format(label),
-                "columns=c_n").sum(axis="index", skipna=True).values + 0.5)
+                "columns={}".format(c_n)
+            ).sum(axis="index", skipna=True).values + 0.5)
         else:
             raise ValueError('Invalid log ratio method "{}" [{}]'.format(
-                self.logr_method, self.name)
-            )
+                self.logr_method, self.name))
 
         # make it a data frame again
         columns = ['L_{}'.format(x) for x in self.store_timepoints()]
         ratios = pd.DataFrame(data=ratios, index=index, columns=columns)
         self.store_put(
             key="/main/{}/log_ratios".format(label),
-            data=ratios,
+            value=ratios,
             columns=ratios.columns,
             format='table'
         )
@@ -174,8 +189,8 @@ class OLSScoring(BaseScoringPlugin):
                         self.name)
                 )
             wt_counts = self.store_select(
-                "/main/{}/counts".format(wt_label),
-                "columns=c_n & index='{}'".format(WILD_TYPE_VARIANT)
+                key="/main/{}/counts".format(wt_label),
+                where="columns={} & index='{}'".format(c_n, WILD_TYPE_VARIANT)
             )
 
             # wild type not found
@@ -189,15 +204,15 @@ class OLSScoring(BaseScoringPlugin):
         # ---------------------- COMPLETE NORM ----------------------------- #
         elif self.logr_method == "complete":
             variances = variances + 1.0 / (self.store_select(
-                "/main/{}/counts".format(label),
-                "columns=c_n"
+                key="/main/{}/counts".format(label),
+                where="columns={}".format(c_n)
             ).sum(axis="index").values + 0.5)
 
         # ------------------------- FULL NORM ----------------------------- #
         elif self.logr_method == "full":
             variances = variances + 1.0 / (self.store_select(
-                "/main/{}/counts_unfiltered".format(label),
-                "columns=c_n"
+                key="/main/{}/counts_unfiltered".format(label),
+                where="columns={}".format(c_n)
             ).sum(axis="index", skipna=True).values + 0.5)
 
         # ---------------------------- WUT? ------------------------------- #
@@ -215,7 +230,7 @@ class OLSScoring(BaseScoringPlugin):
         )
         self.store_put(
             key="/main/{}/weights".format(label),
-            data=variances,
+            value=variances,
             columns=variances.columns,
             format='table'
         )
@@ -229,10 +244,10 @@ class OLSScoring(BaseScoringPlugin):
         Regression results are stored in ``'/main/label/scores'``
 
         """
-        req_tables = [
-            "/main/{}/log_ratios".format(label),
-            "/main/{}/weights".format(label)
-        ]
+        req_tables = ["/main/{}/log_ratios".format(label)]
+        if self.weighted:
+            req_tables.append("/main/{}/weights".format(label))
+
         for req_table in req_tables:
             if not self.store_check(req_table):
                 raise ValueError("Required table {} does not "
@@ -244,34 +259,44 @@ class OLSScoring(BaseScoringPlugin):
             # need to remove the current keys because we are using append
             self.store_remove("/main/{}/scores".format(label))
 
+        method = "WLS" if self.weighted else 'OLS'
         logging.info(
-            "Calculating WLS regression coefficients ({})".format(label),
+            "Calculating {} regression coefficients ({})".format(method, label),
             extra={'oname' : self.name}
         )
 
         longest = self.store_select(
-            "/main/{}/log_ratios".format(label),
-            "columns='index'"
+            key="/main/{}/log_ratios".format(label),
+            where="columns='index'"
         ).index.map(len).max()
         chunk = 1
 
-        # -------------------- OLS COMPUTATION --------------------------- #
-        data_selection = self.store_select("/main/{}/log_ratios".format(label))
-        for data in data_selection:
+        # -------------------- REG COMPUTATION --------------------------- #
+        selection = ["/main/{}/log_ratios".format(label)]
+        if self.weighted:
+            selection.append("/main/{}/weights".format(label))
+
+        selection = self.store_select_as_multiple(
+            selection, chunksize=self.store_default_chunksize()
+        )
+
+        for data in selection:
             logging.info(
-                "Calculating ordinary least squares "
-                "for chunk {} ({} rows)".format(chunk, len(data.index)),
-                extra={'oname': self.name}
+                "Calculating {} for chunk {} ({} rows)".format(
+                    method, chunk, len(data.index)),
+                extra={'oname' : self.name}
             )
             result = data.apply(
                 self.row_apply_function,
                 axis="columns",
-                timepoints = self.store_timepoints()
+                args=[self.store_timepoints(), self.weighted]
             )
+            # append is required because it takes the
+            # "min_itemsize" argument, and put doesn't
             self.store_append(
                 key="/main/{}/scores".format(label),
-                data=result,
-                min_itemsize={"index": longest}
+                value=result,
+                min_itemsize={"index" : longest}
             )
             chunk += 1
 
@@ -297,7 +322,7 @@ class OLSScoring(BaseScoringPlugin):
         data = data[reorder_selector]
         self.store_put(
             key="/main/{}/scores".format(label),
-            data=data,
+            value=data,
             columns=data.columns,
             format='table'
         )

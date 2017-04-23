@@ -40,26 +40,26 @@ from abc import ABC, abstractclassmethod
 from ..base.storemanager import StoreManager
 
 
-class BaseScoringPlugin(ABC):
+class BaseScorerPlugin(ABC):
     """
     Base class which outlines required functions that should be 
     overloaded by the user writing a new plugin. It provides a thin
     API that wraps over the StoreManager class and HDF5 class.
     """
 
-    def __init__(self, store, options):
+    def __init__(self, store_manager, options):
         """
         
         Parameters
         ----------
-        store : 
+        store_manager : 
         options : 
         """
-        if not isinstance(store, StoreManager):
+        if not isinstance(store_manager, StoreManager):
             raise TypeError("`store` parameter must be of type StoreManager"
                             "[{}].".format(self.__class__.__name__))
         self.name = self.__class__.__name__
-        self._store = store
+        self._store_manager = store_manager
         self._load_scoring_options(options)
 
     @abstractclassmethod
@@ -69,7 +69,7 @@ class BaseScoringPlugin(ABC):
         pass
 
     @abstractclassmethod
-    def row_apply_function(self, **kwargs):
+    def row_apply_function(self, *args, **kwargs):
         """
         """
         pass
@@ -103,14 +103,14 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        if not self._store.check_store(key):
+        if not self._store_manager.check_store(key):
             raise ValueError("Store {} does not exist [{}]".format(
                 key, self.name
             ))
         else:
-            return self._store.store[key]
+            return self._store_manager.store[key]
 
-    def store_put(self, key, data, columns, **kwargs):
+    def store_put(self, *args, **kwargs):
         """
         
         Parameters
@@ -124,9 +124,9 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        return self._store.store.put(key, data, columns, **kwargs)
+        return self._store_manager.store.put(*args, **kwargs)
 
-    def store_remove(self, key, **kwargs):
+    def store_remove(self, *args, **kwargs):
         """
         
         Parameters
@@ -138,14 +138,10 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        if not self._store.check_store(key):
-            raise ValueError("Store {} does not exist [{}]".format(
-                key, self.name
-            ))
-        self._store.store.remove(key, **kwargs)
+        self._store_manager.store.remove(*args, **kwargs)
         return self
 
-    def store_append(self, key, data, **kwargs):
+    def store_append(self, *args, **kwargs):
         """
         
         Parameters
@@ -158,7 +154,7 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        return self._store.store.append(key, data, **kwargs)
+        return self._store_manager.store.append(*args, **kwargs)
 
     def store_check(self, key):
         """
@@ -171,29 +167,23 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        return self._store.check_store(key)
+        return self._store_manager.check_store(key)
 
-    def store_select(self, key, where=None, **kwargs):
+    def store_select(self, *args, **kwargs):
         """
         
         Parameters
         ----------
         key : 
-        where : 
         kwargs : 
 
         Returns
         -------
 
         """
-        if not self._store.check_store(key):
-            raise ValueError("Store {} does not exist [{}]".format(
-                key, self.name
-            ))
-        return self._store.store.select(
-            key, where, chunksize=self._store.chunksize, **kwargs)
+        return self._store_manager.store.select(*args, **kwargs)
 
-    def store_select_multiple(self, keys, **kwargs):
+    def store_select_as_multiple(self, *args, **kwargs):
         """
         
         Parameters
@@ -205,13 +195,7 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        for key in keys:
-            if not self._store.check_store(key):
-                raise ValueError("Store {} does not exist [{}]".format(
-                    key, self.name
-                ))
-        return self._store.store.select_as_multiple(
-            keys, chunksize=self._store.chunksize, **kwargs)
+        return self._store_manager.store.select_as_multiple(*args, **kwargs)
 
     def store_labels(self):
         """
@@ -220,7 +204,7 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        return self._store.labels
+        return self._store_manager.labels
 
     def store_roots(self):
         """
@@ -229,7 +213,7 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        return set([k.split('/')[0] for k in self._store.store])
+        return set([k.split('/')[0] for k in self._store_manager.store])
 
     def store_keys(self):
         """
@@ -238,7 +222,7 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        return [k for k in self._store.store]
+        return [k for k in self._store_manager.store]
 
     def store_timepoints(self):
         """
@@ -247,8 +231,8 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        if hasattr(self._store, 'timepoints'):
-            return self._store.timepoints
+        if hasattr(self._store_manager, 'timepoints'):
+            return self._store_manager.timepoints
         else:
             return []
 
@@ -259,10 +243,19 @@ class BaseScoringPlugin(ABC):
         -------
 
         """
-        if hasattr(self._store, 'timepoints'):
-            return ['c_{}'.format(t) for t in self._store.timepoints]
+        if hasattr(self._store_manager, 'timepoints'):
+            return ['c_{}'.format(t) for t in self._store_manager.timepoints]
         else:
             return []
+
+    def store_default_chunksize(self):
+        """
+        
+        Returns
+        -------
+
+        """
+        return self._store_manager.chunksize
 
 
 class Option(object):
