@@ -37,7 +37,7 @@ Attributes
 
 
 from abc import ABC, abstractclassmethod
-from ..base.storemanager import StoreManager
+from ..selection.selection import Selection
 
 
 class BaseScorerPlugin(ABC):
@@ -46,6 +46,7 @@ class BaseScorerPlugin(ABC):
     overloaded by the user writing a new plugin. It provides a thin
     API that wraps over the StoreManager class and HDF5 class.
     """
+    _base_name = 'BaseScorerPlugin'
 
     def __init__(self, store_manager, options):
         """
@@ -55,8 +56,8 @@ class BaseScorerPlugin(ABC):
         store_manager : 
         options : 
         """
-        if not isinstance(store_manager, StoreManager):
-            raise TypeError("`store` parameter must be of type StoreManager"
+        if not isinstance(store_manager, Selection):
+            raise TypeError("`store` parameter must be of type Selection"
                             "[{}].".format(self.__class__.__name__))
         self.name = self.__class__.__name__
         self._store_manager = store_manager
@@ -73,6 +74,13 @@ class BaseScorerPlugin(ABC):
         """
         """
         pass
+
+    def run(self):
+        try:
+            self.compute_scores()
+        except BaseException as err:
+            raise Exception("The following error occured when trying"
+                            "to run plugin {}.".format(err))
 
     def _load_scoring_options(self, options):
         """
@@ -256,65 +264,3 @@ class BaseScorerPlugin(ABC):
 
         """
         return self._store_manager.chunksize
-
-
-class Option(object):
-    """
-    Utility class to represent a user defined option. Mainly used by the 
-    GUI to render to a dialogue box.
-    """
-
-    def __init__(self, name, varname, dtype, default,
-                 choices=None, tooltip="No information"):
-        """
-        
-        Parameters
-        ----------
-        name : 
-        varname : 
-        dtype : 
-        default : 
-        choices : 
-        tooltip : 
-        """
-        self.name = name
-        self.varname = varname
-        self.dtype = dtype
-        self.default = default
-        self.choices = [] if choices is None else choices
-        self.tooltip = tooltip
-
-
-class ScoringOptions(object):
-    """
-    Utility class that is to be used by a plugin developer to add options
-    to their scoring script.
-    """
-
-    def __init__(self):
-        """
-        
-        """
-        self.options = []
-
-    def add_option(self, name, varname, dtype,
-                   default, choices=None, tooltip=""):
-        """
-        
-        Parameters
-        ----------
-        name : 
-        varname : 
-        dtype : 
-        default : 
-        choices : 
-        tooltip : 
-
-        Returns
-        -------
-
-        """
-        self.options.append(
-            Option(name, varname, dtype, default, choices, tooltip)
-        )
-        return self
