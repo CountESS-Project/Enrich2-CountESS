@@ -18,7 +18,8 @@
 import logging
 import numpy as np
 import pandas as pd
-from .scoring import BaseScorerPlugin, ScoringOptions
+from .scoring import BaseScorerPlugin
+from .options import ScoringOptions
 from ..base.constants import WILD_TYPE_VARIANT
 
 
