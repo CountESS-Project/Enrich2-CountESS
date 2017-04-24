@@ -564,14 +564,14 @@ class Selection(StoreManager):
                 store_manager=self,
                 options={'logr_method': self.logr_method}
             )
-            scorer.compute_scores()
+            scorer.run()
 
         elif self.scoring_method == "simple":
             scorer = SimpleScorer(
                 store_manager=self,
                 options={}
             )
-            scorer.compute_scores()
+            scorer.run()
 
         elif self.scoring_method == "OLS":
             if len(self.timepoints) <= 2:
@@ -581,7 +581,7 @@ class Selection(StoreManager):
                 store_manager=self,
                 options={'logr_method': self.logr_method, 'weighted': False}
             )
-            scorer.compute_scores()
+            scorer.run()
 
         elif self.scoring_method == "WLS":
             if len(self.timepoints) <= 2:
@@ -591,7 +591,7 @@ class Selection(StoreManager):
                 store_manager=self,
                 options={'logr_method': self.logr_method, 'weighted': True}
             )
-            scorer.compute_scores()
+            scorer.run()
 
         else:
             raise ValueError('Invalid scoring method "{}" '
