@@ -36,6 +36,9 @@ Attributes
 
 """
 
+# TODO: Making a config file when files will exist on a server. How to avoid
+# TODO: Throwing an error?
+
 import re
 import os
 import sys

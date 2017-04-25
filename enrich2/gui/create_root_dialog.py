@@ -25,6 +25,27 @@ from .create_seqlib_dialog import seqlib_label_text
 from .dialog_elements import FileEntry, StringEntry, DEFAULT_COLUMNS
 
 
+from ..experiment.experiment import Experiment
+from ..experiment.condition import Condition
+from ..selection.selection import Selection
+from ..libraries.barcode import BarcodeSeqLib
+from ..libraries.barcodeid import BcidSeqLib
+from ..libraries.barcodevariant import BcvSeqLib
+from ..libraries.basic import BasicSeqLib
+from ..libraries.idonly import IdOnlySeqLib
+from ..libraries.overlap import OverlapSeqLib
+
+globals()['Selection'] = Selection
+globals()['Condition'] = Condition
+globals()['Experiment'] = Experiment
+globals()['BarcodeSeqLib'] = BarcodeSeqLib
+globals()['BcidSeqLib'] = BcidSeqLib
+globals()['BcvSeqLib'] = BcvSeqLib
+globals()['BasicSeqLib'] = BasicSeqLib
+globals()['IdOnlySeqLib'] = IdOnlySeqLib
+globals()['OverlapSeqLib'] = OverlapSeqLib
+
+
 class CreateRootDialog(tkinter.simpledialog.Dialog):
     """
     Dialog box for creating a new root element.
@@ -32,39 +53,49 @@ class CreateRootDialog(tkinter.simpledialog.Dialog):
     def __init__(self, parent_window, title="Create Root Object"):
         self.element_tkstring = tk.StringVar()
         self.cfg_dict = dict()
-        self.output_directory_tk = FileEntry("Output Directory", self.cfg_dict, 'output directory', optional=False, directory=True)
-        self.name_tk = StringEntry("Name", self.cfg_dict, 'name', optional=False)
+        self.output_directory_tk = FileEntry(
+            "Output Directory", self.cfg_dict,
+            'output directory', optional=False, directory=True
+        )
+        self.name_tk = StringEntry(
+            "Name", self.cfg_dict, 'name', optional=False
+        )
         self.element = None
         tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
-
 
     def body(self, master):
         row_no = self.name_tk.body(master, 0)
         row_no += self.output_directory_tk.body(master, row_no)
 
         element_types = tkinter.ttk.Frame(master, padding=(3, 3, 12, 12))
-        element_types.grid(column=0, row=row_no, sticky="nsew", columnspan=DEFAULT_COLUMNS)
+        element_types.grid(
+            column=0, row=row_no, sticky="nsew", columnspan=DEFAULT_COLUMNS)
 
         message = tkinter.ttk.Label(element_types, text="Root object type:")
         message.grid(column=0, row=0)
 
         label = tkinter.ttk.Label(element_types, text="Experiment")
         label.grid(column=0, row=1, sticky="w")
-        rb = tkinter.ttk.Radiobutton(element_types, text="Experiment", variable=self.element_tkstring, value="Experiment")
+        rb = tkinter.ttk.Radiobutton(
+            element_types, text="Experiment",
+            variable=self.element_tkstring, value="Experiment")
         rb.grid(column=0, row=2, sticky="w")
         rb.invoke()
 
         label = tkinter.ttk.Label(element_types, text="Selection")
         label.grid(column=0, row=3, sticky="w")
-        rb = tkinter.ttk.Radiobutton(element_types, text="Selection", variable=self.element_tkstring, value="Selection")
+        rb = tkinter.ttk.Radiobutton(
+            element_types, text="Selection",
+            variable=self.element_tkstring, value="Selection")
         rb.grid(column=0, row=4, sticky="w")
 
         label = tkinter.ttk.Label(element_types, text="SeqLib")
         label.grid(column=0, row=5, sticky="w")
         for i, k in enumerate(seqlib_label_text.keys()):
-            rb = tkinter.ttk.Radiobutton(element_types, text=seqlib_label_text[k], variable=self.element_tkstring, value=k)
+            rb = tkinter.ttk.Radiobutton(
+                element_types, text=seqlib_label_text[k],
+                variable=self.element_tkstring, value=k)
             rb.grid(column=0, row=(i + 6), sticky="w")
-
 
     def buttonbox(self):
         """
@@ -72,18 +103,17 @@ class CreateRootDialog(tkinter.simpledialog.Dialog):
         """
         box = tk.Frame(self)
 
-        w = tk.Button(box, text="OK", width=10, command=self.ok, default="active")
+        w = tk.Button(box, text="OK", width=10,
+                      command=self.ok, default="active")
         w.pack(side="left", padx=5, pady=5)
 
         self.bind("<Return>", self.ok)
 
         box.pack()
 
-
     def validate(self):
         # check the fields
         return self.output_directory_tk.validate() and self.name_tk.validate()
-
 
     def apply(self):
         # apply the fields
@@ -92,9 +122,11 @@ class CreateRootDialog(tkinter.simpledialog.Dialog):
 
         # create the object
         try:
+            print('Selection' in globals())
             self.element = globals()[self.element_tkstring.get()]()
         except KeyError:
-            raise KeyError("Unrecognized element type '{}'".format(self.element_tkstring.get()))
+            raise KeyError("Unrecognized element type '{}'".format(
+                self.element_tkstring.get()))
 
         # set the properties from this dialog
         self.element.output_dir_override = False

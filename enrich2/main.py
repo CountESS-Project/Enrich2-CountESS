@@ -26,6 +26,7 @@ from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from .base.storemanager import SCORING_METHODS, LOGR_METHODS
 from .experiment.experiment import Experiment
+from .experiment.condition import Condition
 from .selection.selection import Selection
 from .base.sfmap import parse_aa_list
 from .config import config_check
@@ -43,6 +44,17 @@ __license__ = "GPLv3"
 __version__ = "2.0.0"
 __maintainer__ = "Alan F Rubin"
 __email__ = "alan.rubin@wehi.edu.au"
+
+
+globals()['Selection'] = Selection
+globals()['Condition'] = Condition
+globals()['Experiment'] = Experiment
+globals()['BarcodeSeqLib'] = BarcodeSeqLib
+globals()['BcidSeqLib'] = BcidSeqLib
+globals()['BcvSeqLib'] = BcvSeqLib
+globals()['BasicSeqLib'] = BasicSeqLib
+globals()['IdOnlySeqLib'] = IdOnlySeqLib
+globals()['OverlapSeqLib'] = OverlapSeqLib
 
 
 #: Name of the driver script. Used for logging output.

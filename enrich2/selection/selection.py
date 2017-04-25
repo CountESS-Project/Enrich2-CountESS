@@ -491,7 +491,7 @@ class Selection(StoreManager):
 
         Returns
         -------
-        bool: True if table exists but is empty.
+        rtype: `bool`, True if table exists but is empty.
 
         """
         if not self.table_exists_for_key(key):
@@ -499,6 +499,31 @@ class Selection(StoreManager):
                              "not exist.".format(key))
         empty = self.store[key].empty
         return not empty
+
+
+    def score_index_has_been_modified(self, label):
+        """
+        Check to see if the index of a dataframe has been modified when
+        going from counts to scores dataframes.
+        
+        Parameters
+        ----------
+        label : `str`, label pointing to /main/{}/scores.
+
+        Returns
+        -------
+        rtype: `bool`, True if index of scores matches counts for label.
+        """
+        scores_key = '/main/{}/scores'.format(label)
+        counts_key = '/main/{}/counts'.format(label)
+        if self.table_exists_for_key(scores_key):
+            scores_index = self.get_table(scores_key).index
+            counts_index = self.get_table(counts_key).index
+            return scores_index.equals(counts_index)
+        else:
+            raise ValueError("Table {} does not exist [{}].".format(
+                scores_key, self.name
+            ))
 
     def table_exists_for_key(self, key):
         """
@@ -510,7 +535,7 @@ class Selection(StoreManager):
 
         Returns
         -------
-        bool: True if table exists but is empty.
+        rtype: `bool`, True if table exists but is empty.
 
         """
         exists = self.check_store(key)
