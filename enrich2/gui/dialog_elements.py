@@ -138,7 +138,8 @@ class MyEntry(object):
         if not self.enabled:
             return True
         elif not self.optional and len(self.value.get()) == 0:
-            tkinter.messagebox.showwarning("", "{} not specified.".format(self.text))
+            tkinter.messagebox.showwarning("", "{} not specified.".format(
+                self.text))
             return False
         else:
             return True
@@ -223,8 +224,10 @@ class FileEntry(MyEntry):
                            self.extensions):
                         return True
                     else:
-                        tkinter.messagebox.showwarning("", "Invalid file extension "
-                                                 "for {}.".format(self.text))
+                        tkinter.messagebox.showwarning(
+                            "",
+                            "Invalid file extension for {}.".format(self.text)
+                        )
                         return False
                 else:  # no extension restriction
                     return True
@@ -309,7 +312,8 @@ class IntegerEntry(MyEntry):
         label = tkinter.ttk.Label(master, text=self.text)
         label.grid(row=row, column=label_column, columnspan=label_width,
                    sticky=label_sticky)
-        self.entry = tkinter.ttk.Entry(master, textvariable=self.value, width=width)
+        self.entry = tkinter.ttk.Entry(master,
+                                       textvariable=self.value, width=width)
         self.entry.grid(row=row, column=entry_column, columnspan=entry_width,
                         sticky=entry_sticky)
         return 1
@@ -340,8 +344,9 @@ class IntegerEntry(MyEntry):
                     return False
             else:
                 if intvalue < self.minvalue:
-                    tkinter.messagebox.showwarning("", "{} lower than minimum value "
-                                             "({}).".format(self.text,
+                    tkinter.messagebox.showwarning(
+                        "",
+                        "{} lower than minimum value ({}).".format(self.text,
                                                             self.minvalue))
                     return False
                 else:

@@ -142,11 +142,13 @@ class CountsToggle(object):
 
 class EditDialog(tkinter.simpledialog.Dialog):
     """
-    Dialog box for editing elements. Also used to set properties on newly-created elements.
+    Dialog box for editing elements. Also used to set properties 
+    on newly-created elements.
 
     *parent_window* is the Tk window that owns this child window
     *tree* is the object containing the config tree and associated Treeview
-    *new* is ``True`` if we are creating a new child of the focused item or ``False`` if we are editing the focused item
+    *new* is ``True`` if we are creating a new child of the focused item or 
+    ``False`` if we are editing the focused item
     """
     def __init__(self, parent_window, tree, element, title="Configure Object"):
         self.tree = tree
@@ -160,18 +162,32 @@ class EditDialog(tkinter.simpledialog.Dialog):
 
         # dialog options common to all elements
         self.frame_dict['main'] = list()
-        self.name_entry = StringEntry("Name", self.element_cfg, 'name', optional=False)
+        self.name_entry = StringEntry(
+            "Name", self.element_cfg, 'name', optional=False
+        )
         self.frame_dict['main'].append(self.name_entry)
         if 'output directory' in self.element_cfg:
-            self.frame_dict['main'].append(FileEntry("Output Directory", self.element_cfg, 'output directory', optional=self.element != self.tree.root_element, directory=True))
+            self.frame_dict['main'].append(
+                FileEntry(
+                    "Output Directory", self.element_cfg, 'output directory',
+                    optional=self.element != self.tree.root_element,
+                    directory=True
+                )
+            )
         if isinstance(self.element, SeqLib):
             self.frame_dict['counts'] = list()
 
             self.frame_dict['main'].append(SectionLabel("SeqLib Options"))
-            self.frame_dict['main'].append(IntegerEntry("Time Point", self.element_cfg, 'timepoint'))
+            self.frame_dict['main'].append(
+                IntegerEntry("Time Point", self.element_cfg, 'timepoint'))
 
             self.frame_dict['counts'].append(SectionLabel("Counts Options"))
-            self.frame_dict['counts'].append(FileEntry("Counts File", self.element_cfg, 'counts file', extensions=[".h5", ".txt", ".tsv", ".csv"]))
+            self.frame_dict['counts'].append(
+                FileEntry(
+                    "Counts File", self.element_cfg,
+                    'counts file', extensions=[".h5", ".txt", ".tsv", ".csv"]
+                )
+            )
 
             if not isinstance(self.element, IdOnlySeqLib):
                 self.toggle = CountsToggle(self.frame_dict)
@@ -180,55 +196,176 @@ class EditDialog(tkinter.simpledialog.Dialog):
                 self.frame_dict['fastq'] = list()
                 self.frame_dict['filters'] = list()
 
-                self.frame_dict['filters'].append(SectionLabel("FASTQ Filtering"))
-                self.frame_dict['filters'].append(IntegerEntry("Minimum Quality", self.element_cfg['fastq']['filters'], 'min quality', optional=True))
-                self.frame_dict['filters'].append(IntegerEntry("Average Quality", self.element_cfg['fastq']['filters'], 'avg quality', optional=True))
-                self.frame_dict['filters'].append(IntegerEntry("Maximum N's", self.element_cfg['fastq']['filters'], 'max N', optional=True))
-
+                self.frame_dict['filters'].append(
+                    SectionLabel("FASTQ Filtering"))
+                self.frame_dict['filters'].append(
+                    IntegerEntry(
+                        "Minimum Quality",
+                        self.element_cfg['fastq']['filters'],
+                        'min quality', optional=True)
+                )
+                self.frame_dict['filters'].append(
+                    IntegerEntry(
+                        "Average Quality",
+                        self.element_cfg['fastq']['filters'],
+                        'avg quality', optional=True)
+                )
+                self.frame_dict['filters'].append(
+                    IntegerEntry(
+                        "Maximum N's", self.element_cfg['fastq']['filters'],
+                        'max N', optional=True)
+                )
                 self.frame_dict['fastq'].append(SectionLabel("FASTQ Options"))
 
             if isinstance(self.element, OverlapSeqLib):
-                self.frame_dict['fastq'].append(FileEntry("Forward Reads", self.element_cfg['fastq'], 'forward reads', extensions=_FASTQ_SUFFIXES))
-                self.frame_dict['fastq'].append(FileEntry("Reverse Reads", self.element_cfg['fastq'], 'reverse reads', extensions=_FASTQ_SUFFIXES))
+                self.frame_dict['fastq'].append(
+                    FileEntry(
+                        "Forward Reads", self.element_cfg['fastq'],
+                        'forward reads', extensions=_FASTQ_SUFFIXES
+                    )
+                )
+                self.frame_dict['fastq'].append(
+                    FileEntry(
+                        "Reverse Reads", self.element_cfg['fastq'],
+                        'reverse reads', extensions=_FASTQ_SUFFIXES
+                    )
+                )
                 self.frame_dict['overlap'] = list()
-                self.frame_dict['overlap'].append(IntegerEntry("Forward Start", self.element_cfg['overlap'], 'forward start', minvalue=1))
-                self.frame_dict['overlap'].append(IntegerEntry("Reverse Start", self.element_cfg['overlap'], 'reverse start', minvalue=1))
-                self.frame_dict['overlap'].append(IntegerEntry("Overlap Length", self.element_cfg['overlap'], 'length', minvalue=1))
-                self.frame_dict['overlap'].append(IntegerEntry("Maximum Mismatches", self.element_cfg['overlap'], 'max mismatches'))
-                self.frame_dict['overlap'].append(Checkbox("Overlap Only", self.element_cfg['overlap'], 'trim'))
-                self.frame_dict['filters'].append(Checkbox("Remove Unresolvable Overlaps", self.element_cfg['fastq']['filters'], 'remove unresolvable'))
-            elif 'fastq' in self.frame_dict:
-                self.frame_dict['fastq'].append(FileEntry("Reads", self.element_cfg['fastq'], 'reads', extensions=_FASTQ_SUFFIXES))
-                self.frame_dict['fastq'].append(Checkbox("Reverse", self.element_cfg['fastq'], 'reverse'))
+                self.frame_dict['overlap'].append(
+                    IntegerEntry(
+                        "Forward Start", self.element_cfg['overlap'],
+                        'forward start', minvalue=1
+                    )
+                )
+                self.frame_dict['overlap'].append(
+                    IntegerEntry(
+                        "Reverse Start", self.element_cfg['overlap'],
+                        'reverse start', minvalue=1
+                    )
+                )
+                self.frame_dict['overlap'].append(
+                    IntegerEntry(
+                        "Overlap Length", self.element_cfg['overlap'],
+                        'length', minvalue=1
+                    )
+                )
+                self.frame_dict['overlap'].append(
+                    IntegerEntry(
+                        "Maximum Mismatches", self.element_cfg['overlap'],
+                        'max mismatches')
+                )
+                self.frame_dict['overlap'].append(
+                    Checkbox(
+                        "Overlap Only", self.element_cfg['overlap'], 'trim'
+                    )
+                )
+                self.frame_dict['filters'].append(
+                    Checkbox(
+                        "Remove Unresolvable Overlaps",
+                        self.element_cfg['fastq']['filters'],
+                        'remove unresolvable'
+                    )
+                )
 
-            if isinstance(self.element, BarcodeSeqLib) or isinstance(self.element, BasicSeqLib):
+            elif 'fastq' in self.frame_dict:
+                self.frame_dict['fastq'].append(
+                    FileEntry(
+                        "Reads", self.element_cfg['fastq'],
+                        'reads', extensions=_FASTQ_SUFFIXES
+                    )
+                )
+                self.frame_dict['fastq'].append(
+                    Checkbox("Reverse", self.element_cfg['fastq'], 'reverse'))
+
+            if isinstance(self.element, BarcodeSeqLib) or \
+                    isinstance(self.element, BasicSeqLib):
                 self.frame_dict['trimming'] = list()
-                self.frame_dict['trimming'].append(SectionLabel("Read Trimming Options"))
-                self.frame_dict['trimming'].append(IntegerEntry("Trim Start", self.element_cfg['fastq'], 'start', optional=True, minvalue=1))
-                self.frame_dict['trimming'].append(IntegerEntry("Trim Length", self.element_cfg['fastq'], 'length', optional=True, minvalue=1))
+                self.frame_dict['trimming'].append(
+                    SectionLabel("Read Trimming Options"))
+                self.frame_dict['trimming'].append(
+                    IntegerEntry(
+                        "Trim Start", self.element_cfg['fastq'],
+                        'start', optional=True, minvalue=1
+                    )
+                )
+                self.frame_dict['trimming'].append(
+                    IntegerEntry(
+                        "Trim Length", self.element_cfg['fastq'],
+                        'length', optional=True, minvalue=1
+                    )
+                )
 
             if isinstance(self.element, BarcodeSeqLib):
                 self.frame_dict['barcodes'] = list()
-                self.frame_dict['barcodes'].append(SectionLabel("Barcode Options"))
-                if isinstance(self.element, BcvSeqLib) or isinstance(self.element, BcidSeqLib):
-                    self.frame_dict['barcodes'].append(FileEntry("Barcode-variant File", self.element_cfg['barcodes'], 'map file'))
-                self.frame_dict['barcodes'].append(IntegerEntry("Minimum Count", self.element_cfg['barcodes'], 'min count', optional=True))
+                self.frame_dict['barcodes'].append(
+                    SectionLabel("Barcode Options"))
+                if isinstance(self.element, BcvSeqLib) or \
+                        isinstance(self.element, BcidSeqLib):
+                    self.frame_dict['barcodes'].append(
+                        FileEntry(
+                            "Barcode-variant File",
+                            self.element_cfg['barcodes'], 'map file'
+                        )
+                    )
+                self.frame_dict['barcodes'].append(
+                    IntegerEntry(
+                        "Minimum Count", self.element_cfg['barcodes'],
+                        'min count', optional=True
+                    )
+                )
 
-            if isinstance(self.element, BcidSeqLib) or isinstance(self.element, IdOnlySeqLib):
+            if isinstance(self.element, BcidSeqLib) or \
+                    isinstance(self.element, IdOnlySeqLib):
                 self.frame_dict['identifiers'] = list()
-                self.frame_dict['identifiers'].append(SectionLabel("Identifier Options"))
-                self.frame_dict['identifiers'].append(IntegerEntry("Minimum Count", self.element_cfg['identifiers'], 'min count', optional=True))
+                self.frame_dict['identifiers'].append(
+                    SectionLabel("Identifier Options"))
+                self.frame_dict['identifiers'].append(
+                    IntegerEntry(
+                        "Minimum Count", self.element_cfg['identifiers'],
+                        'min count', optional=True
+                    )
+                )
 
             if isinstance(self.element, VariantSeqLib):
                 self.frame_dict['variants'] = list()
-                self.frame_dict['variants'].append(SectionLabel("Variant Options"))
-                self.frame_dict['variants'].append(StringEntry("Wild Type Sequence", self.element_cfg['variants']['wild type'], 'sequence'))
-                self.frame_dict['variants'].append(IntegerEntry("Wild Type Offset", self.element_cfg['variants']['wild type'], 'reference offset', optional=True, minvalue=-maxsize))
-                self.frame_dict['variants'].append(Checkbox("Protein Coding", self.element_cfg['variants']['wild type'], 'coding'))
-                self.frame_dict['variants'].append(IntegerEntry("Minimum Count", self.element_cfg['variants'], 'min count', optional=True))
-                self.frame_dict['variants'].append(IntegerEntry("Maximum Mutations", self.element_cfg['variants'], 'max mutations', optional=True))
-                self.frame_dict['variants'].append(Checkbox("Use Aligner", self.element_cfg['variants'], 'use aligner'))
-
+                self.frame_dict['variants'].append(
+                    SectionLabel("Variant Options"))
+                self.frame_dict['variants'].append(
+                    StringEntry(
+                        "Wild Type Sequence",
+                        self.element_cfg['variants']['wild type'], 'sequence'
+                    )
+                )
+                self.frame_dict['variants'].append(
+                    IntegerEntry(
+                        "Wild Type Offset",
+                        self.element_cfg['variants']['wild type'],
+                        'reference offset', optional=True, minvalue=-maxsize
+                    )
+                )
+                self.frame_dict['variants'].append(
+                    Checkbox(
+                        "Protein Coding",
+                        self.element_cfg['variants']['wild type'], 'coding')
+                )
+                self.frame_dict['variants'].append(
+                    IntegerEntry(
+                        "Minimum Count", self.element_cfg['variants'],
+                        'min count', optional=True
+                    )
+                )
+                self.frame_dict['variants'].append(
+                    IntegerEntry(
+                        "Maximum Mutations", self.element_cfg['variants'],
+                        'max mutations', optional=True
+                    )
+                )
+                self.frame_dict['variants'].append(
+                    Checkbox(
+                        "Use Aligner",
+                        self.element_cfg['variants'], 'use aligner'
+                    )
+                )
         tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
 
     def body(self, master):
@@ -265,8 +402,10 @@ class EditDialog(tkinter.simpledialog.Dialog):
 
         if self.element.parent is not None:
             if self.element not in self.element.parent.children:
-                if self.name_entry.value.get() in self.element.parent.child_names():
-                    tkinter.messagebox.showwarning("", "Sibling names must be unique.")
+                if self.name_entry.value.get() in \
+                        self.element.parent.child_names():
+                    tkinter.messagebox.showwarning(
+                        "", "Sibling names must be unique.")
                     return False
 
         return True
@@ -284,11 +423,10 @@ class EditDialog(tkinter.simpledialog.Dialog):
         if isinstance(self.element, SeqLib):
             self.element.configure(clear_nones(self.element_cfg))
         else:
-            self.element.configure(clear_nones(self.element_cfg), configure_children=False)
+            self.element.configure(clear_nones(self.element_cfg),
+                                   configure_children=False)
 
         # insert into the object if necessary
         if self.element.parent is not None:
             if self.element not in self.element.parent.children:
                 self.element.parent.add_child(self.element)
-
-
