@@ -67,3 +67,4 @@ docs/notebooks/.ipynb_checkpoints/
 
 # PyCharm project files
 .idea/
+/.ipynb_checkpoints/

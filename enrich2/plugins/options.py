@@ -85,6 +85,10 @@ class ScoringOptions(object):
     def __iter__(self):
         return iter(self.options)
 
+    def __getitem__(self, item):
+        return self.options[item]
+
+
 
 def make_attribute_dictionary(options_value_tuple):
     """

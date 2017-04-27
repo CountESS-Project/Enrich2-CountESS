@@ -23,22 +23,36 @@ from tkinter.ttk import *
 from ..plugins.options import ScoringOptions, Option
 
 
-class OptionFrame(Frame):
-    def __init__(self, options: ScoringOptions, master, **kw):
-        super().__init__(master, **kw)
+class OptionsFrame(Frame):
+    def __init__(self, parent, options: ScoringOptions, **config):
+        super().__init__(parent, **config)
         self.row = 1
         self.widgets = []
+        self.option_vars = []
         self.labels = []
         self.parse_options(options)
 
+        # ------------ debug ------------- #
         def get_vars():
             print(self.get_option_cfg())
 
         Button(master=self, text='Validate', command=get_vars).grid(
             sticky=E, column=1, row=self.row)
+        # ------------ debug ------------- #
 
     def parse_options(self, options: ScoringOptions) -> None:
         for option in options:
+            try:
+                option.validate(option.default)
+            except TypeError:
+                warn = "The default value for option {} has type" \
+                       "{} and does not match the specified expected " \
+                       "type {}. The program may behave unexpectedly."
+                messagebox.showwarning(
+                    title="Default type does not match",
+                    message=warn.format(option.name,
+                                        type(option.default).__name__,
+                                        option.dtype.__name__))
             self.create_widget_from_option(option)
             self.row += 1
 
@@ -54,7 +68,7 @@ class OptionFrame(Frame):
         elif option.dtype in ('bool', bool, 'boolean'):
             self.make_bool_entry_widget(option)
         else:
-            raise ValueError("Unrecognised option "
+            raise ValueError("Unrecognised attribute in option "
                              "dtype {}.".format(option.dtype))
 
     def make_choice_menu_widget(self, option: Option) -> None:
@@ -69,7 +83,8 @@ class OptionFrame(Frame):
             self, menu_var, option.default, *option.choices)
         popup_menu.grid(sticky=E, column=1, row=self.row)
 
-        self.widgets.append((option, menu_var))
+        self.option_vars.append((option, menu_var))
+        self.widgets.append(popup_menu)
         self.labels.append(label)
 
     def make_entry(self, variable: Variable, option: Option) -> Entry:
@@ -84,11 +99,10 @@ class OptionFrame(Frame):
                 variable.set(option.dtype(value))
             except (TclError, TypeError):
                 messagebox.showwarning(
-                    title="Invalid Entry",
+                    title="Invalid {} Entry".format(option.name),
                     message="Invalid type for entry {}. "
                             "Expected type {}.".format(option.name,
-                                                       option.dtype.__name__)
-                )
+                                                       option.dtype.__name__))
                 variable.set(option.dtype(option.default))
                 return False
             return True
@@ -98,7 +112,8 @@ class OptionFrame(Frame):
             validate="focusout", validatecommand=validate_entry
         )
         entry.grid(sticky=E, column=1, row=self.row)
-        self.widgets.append((option, variable))
+        self.option_vars.append((option, variable))
+        self.widgets.append(entry)
         self.labels.append(label)
         return entry
 
@@ -128,13 +143,34 @@ class OptionFrame(Frame):
         checkbox = Checkbutton(self, variable=variable)
         checkbox.grid(sticky=E, column=1, row=self.row)
 
-        self.widgets.append((option, variable))
+        self.option_vars.append((option, variable))
+        self.widgets.append(checkbox)
         self.labels.append(label)
+
+    def min_frame_width(self) -> int:
+        col0_max_width = max(*[l.winfo_width() for l in self.labels])
+        col1_max_width = max(*[w.winfo_width() for w in self.widgets])
+        return col0_max_width + col1_max_width
+
+    def max_frame_width(self) -> int:
+        col0_max_width = max(*[l.winfo_width() for l in self.labels])
+        col1_max_width = max(*[w.winfo_width() for w in self.widgets])
+        return (col0_max_width + col1_max_width) * 2
+
+    def min_frame_height(self) -> int:
+        col0_height = sum([l.winfo_height() for l in self.labels])
+        col1_height = sum([w.winfo_height() for w in self.widgets])
+        return max(*[col0_height, col1_height])
+
+    def max_frame_height(self) -> int:
+        col0_height = sum([l.winfo_height() for l in self.labels])
+        col1_height = sum([w.winfo_height() for w in self.widgets])
+        return max(*[col0_height, col1_height]) * 2
 
     def get_option_cfg(self) -> dict:
         cfg = {}
-        for option, menu_var in self.widgets:
-            value = menu_var.get()
+        for option, var in self.option_vars:
+            value = var.get()
             option.validate(value)
-            cfg[option.varname] = menu_var.get()
+            cfg[option.varname] = var.get()
         return cfg
