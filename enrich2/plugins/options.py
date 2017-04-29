@@ -100,6 +100,10 @@ class ScorerOptions(object):
     def __getitem__(self, item):
         return self.options[item]
 
+    def append(self, option):
+        self.options.append(option)
+        return self
+
 
 class OptionsFile(object):
     """
