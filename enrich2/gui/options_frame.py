@@ -20,16 +20,39 @@ from tkinter import *
 import tkinter.messagebox as messagebox
 from tkinter.ttk import *
 
-from ..plugins.options import ScoringOptions, Option
+from ..plugins.options import ScorerOptions, Option
+from ..plugins.options import ScorerOptionsFiles, OptionsFile
 
 
-class OptionsFrame(Frame):
-    def __init__(self, parent, options: ScoringOptions, **config):
+class OptionsFileFrame(Frame):
+
+    def __init__(self, parent, options_files: ScorerOptionsFiles, **config):
         super().__init__(parent, **config)
+        self.row = 1
+        self.widgets = []
+        self.labels = []
+        self.make_buttons(options_files)
+
+    def make_buttons(self, options_files: ScorerOptionsFiles):
+        options_file: OptionsFile
+        for options_file in options_files:
+            pass
+
+    def make_label_button_frame(self, options_file: OptionsFile):
+        pass
+
+
+class OptionFrame(Frame):
+    def __init__(self, parent, options: ScorerOptions, **kw):
+        super().__init__(parent, **kw)
+        self.parent = parent
         self.row = 1
         self.widgets = []
         self.option_vars = []
         self.labels = []
+
+        Label(self, text="Script Options: ", relief=RIDGE).grid(columnspan=2)
+        self.row += 1
         self.parse_options(options)
 
         # ------------ debug ------------- #
@@ -40,20 +63,24 @@ class OptionsFrame(Frame):
             sticky=E, column=1, row=self.row)
         # ------------ debug ------------- #
 
-    def parse_options(self, options: ScoringOptions) -> None:
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(1, weight=3)
+
+    def parse_options(self, options: ScorerOptions) -> None:
         for option in options:
             try:
                 option.validate(option.default)
             except TypeError:
                 warn = "The default value for option {} has type" \
-                       "{} and does not match the specified expected " \
-                       "type {}. The program may behave unexpectedly."
+                       " '{}' and does not match the specified expected " \
+                       "type '{}'. The program may behave unexpectedly."
                 messagebox.showwarning(
-                    title="Default type does not match",
+                    title="Default option type does not match dtype.",
                     message=warn.format(option.name,
                                         type(option.default).__name__,
                                         option.dtype.__name__))
             self.create_widget_from_option(option)
+            self.rowconfigure(self.row, weight=1)
             self.row += 1
 
     def create_widget_from_option(self, option: Option) -> None:
@@ -76,8 +103,8 @@ class OptionsFrame(Frame):
         menu_var.set(option.default)
 
         label_text = "{}: ".format(option.name)
-        label = Label(self, text=label_text, justify=LEFT)
-        label.grid(sticky=W, column=0, row=self.row)
+        label = Label(self, text=label_text, justify=LEFT, relief=RIDGE)
+        label.grid(sticky=EW, column=0, row=self.row)
 
         popup_menu = OptionMenu(
             self, menu_var, option.default, *option.choices)
@@ -89,8 +116,8 @@ class OptionsFrame(Frame):
 
     def make_entry(self, variable: Variable, option: Option) -> Entry:
         label_text = "{}: ".format(option.name)
-        label = Label(self, text=label_text, justify=LEFT)
-        label.grid(sticky=W, column=0, row=self.row)
+        label = Label(self, text=label_text, justify=LEFT, relief=RIDGE)
+        label.grid(sticky=EW, column=0, row=self.row)
 
         def validate_entry():
             try:
@@ -111,7 +138,7 @@ class OptionsFrame(Frame):
             self, textvariable=variable,
             validate="focusout", validatecommand=validate_entry
         )
-        entry.grid(sticky=E, column=1, row=self.row)
+        entry.grid(sticky=EW, column=1, row=self.row)
         self.option_vars.append((option, variable))
         self.widgets.append(entry)
         self.labels.append(label)
@@ -137,8 +164,8 @@ class OptionsFrame(Frame):
         variable.set(option.default)
 
         label_text = "{}: ".format(option.name)
-        label = Label(self, text=label_text, justify=LEFT)
-        label.grid(sticky=W, column=0, row=self.row)
+        label = Label(self, text=label_text, justify=LEFT, relief=RIDGE)
+        label.grid(sticky=EW, column=0, row=self.row)
 
         checkbox = Checkbutton(self, variable=variable)
         checkbox.grid(sticky=E, column=1, row=self.row)
