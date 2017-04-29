@@ -16,48 +16,110 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
+from tkinter import *
+from tkinter.messagebox import askyesno
+from tkinter.filedialog import asksaveasfile
 import logging
-from tkinter import END, N, S, E, W, Scrollbar, Text
-from tkinter import ttk
 
 
 LOG_FORMAT = "%(asctime)-15s [%(oname)s] %(message)s"
 
 
-class LoggingHandler(logging.Handler):
+class ScrolledText(Frame):
 
-    def __init__(self, widget):
-        logging.Handler.__init__(self)
-        self.setFormatter(logging.Formatter(LOG_FORMAT))
-        self.widget = widget
-        self.widget.config(state='disabled')
+    def __init__(self, parent=None):
+        Frame.__init__(self, parent)
+        self.parent = parent
+        self.text = self._make_scrolling_text()
+        self.pack(expand=YES, fill=BOTH)
+
+        self.menu = Menu(self, tearoff=0)
+        self.menu.add_command(label="Copy", command=self.copy_text)
+        self.parent.bind_class("Text", "<Button-2>", self.show_menu)
+
+    def _make_scrolling_text(self):
+        sbar = Scrollbar(self)
+        text = Text(self, relief=SUNKEN)
+        # Cross-link and move scrollbar to follow text
+        sbar.config(command=text.yview)
+        text.config(yscrollcommand=sbar.set)
+        sbar.pack(side=RIGHT, fill=Y)
+        text.pack(side=LEFT, expand=YES, fill=BOTH)
+        return text
+
+    def show_menu(self, event):
+        self.menu.post(event.x_root, event.y_root)
+        return self
+
+    def copy_text(self):
+        try:
+            selection = self.text.selection_get()
+            self.parent.clipboard_clear()
+            self.parent.clipboard_append(str(selection))
+        except TclError:
+            return
+        return self
+
+    def set_text(self, text=''):
+        self.set_text_widget_state("normal")
+        self.text.insert(END, text)
+        self.text.see(END)
+        self.set_text_widget_state("disabled")
+        return self
+
+    def get_text(self):
+        return self.text.get('1.0', END + '-1c')
+
+    def save_text(self):
+        fp = asksaveasfile()
+        if fp is not None:
+            fp.write(self.get_text())
+            fp.close()
+        return self
+
+    def set_text_widget_state(self, state):
+        self.text.config(state=state)
+        return self
+
+
+class WindowLoggingHandler(logging.Handler):
+    def __init__(self, window=None, level=logging.NOTSET):
+        logging.Handler.__init__(self, level)
+
+        if window is None:
+            self.window = Tk()
+        else:
+            self.window = window
+
+        self.scrolling_text = ScrolledText(parent=self.window)
+        self.scrolling_text.set_text_widget_state("disabled")
+        self.scrolling_text.pack(side=TOP, expand=YES, fill=BOTH)
+
+        save_btn = Button(
+            master=self.window,
+            text='Save As...',
+            command=self.scrolling_text.save_text
+        )
+        save_btn.pack(side=RIGHT, anchor=S, padx=2, pady=2)
+
+        close_btn = Button(
+            master=self.window,
+            text='Close',
+            command=self.close_window
+        )
+        close_btn.pack(side=RIGHT, anchor=S, padx=2, pady=2)
+        self.window.protocol("WM_DELETE_WINDOW", self.close_window)
+
+    def close_window(self):
+        if askyesno('Verify', 'Do you really want to quit?'):
+            self.close()
+            logger = logging.getLogger()
+            logger.removeHandler(self)
+            self.window.destroy()
 
     def emit(self, record):
-        self.widget.config(state='normal')
-        self.widget.insert(END, self.format(record) + "\n")
-        self.widget.see(END)
-        self.widget.config(state='disabled')
+        text = self.format(record) + '\n'
+        self.scrolling_text.set_text(text)
 
-
-class LoggingFrame(ttk.Frame):
-
-    def __init__(self, *args, **kwargs):
-        ttk.Frame.__init__(self, *args, **kwargs)
-
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=0)
-        self.rowconfigure(0, weight=1)
-
-        self.scrollbar = Scrollbar(self)
-        self.scrollbar.grid(row=0, column=1, sticky=(N, S, E))
-
-        self.text = Text(self, yscrollcommand=self.scrollbar.set)
-        self.text.grid(row=0, column=0, sticky=(N, S, E, W))
-
-        self.scrollbar.config(command=self.text.yview)
-
-        self.logging_handler = LoggingHandler(self.text)
-
-    def log(self, msg):
-        self.logging_handler.emit(msg)
+    def mainloop(self):
+        self.window.mainloop()
