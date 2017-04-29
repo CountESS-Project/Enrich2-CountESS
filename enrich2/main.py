@@ -67,14 +67,17 @@ LOG_FORMAT = "%(asctime)-15s [%(oname)s] %(message)s"
 
 def start_logging(log_file, log_level):
     """
-    Begin logging. This function should be called by the driver at the start of program execution. 
+    Begin logging. This function should be called by the driver at the start 
+    of program execution. 
     Message format is defined by :py:const:`LOG_FORMAT`.
 
     Args:
-        log_file (str): Name of the log output file, or ``None`` to output to console.
+        log_file (str): Name of the log output file, or 
+        ``None`` to output to console.
 
         log_level: Requested logging level. 
-            See :py:class:`~logging.Logger` for a detailed description of the options. Most program 
+            See :py:class:`~logging.Logger` for a detailed 
+            description of the options. Most program 
             status messages are output at the ``INFO`` level.
 
     """
