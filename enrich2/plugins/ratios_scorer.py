@@ -19,11 +19,11 @@ import logging
 import numpy as np
 import pandas as pd
 from .scoring import BaseScorerPlugin
-from .options import ScoringOptions
+from .options import ScorerOptions
 from ..base.constants import WILD_TYPE_VARIANT
 
 
-options = ScoringOptions()
+options = ScorerOptions()
 options.add_option(
     name="Normalization Method",
     varname="logr_method",

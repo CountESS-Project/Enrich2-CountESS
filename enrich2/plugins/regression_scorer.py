@@ -21,11 +21,11 @@ import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
 from .scoring import BaseScorerPlugin
-from .options import ScoringOptions
+from .options import ScorerOptions
 from ..base.constants import WILD_TYPE_VARIANT
 
 
-options = ScoringOptions()
+options = ScorerOptions()
 options.add_option(
     name="Normalization Method",
     varname="logr_method",
