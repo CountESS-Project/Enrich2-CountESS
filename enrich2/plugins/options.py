@@ -143,28 +143,22 @@ class OptionsFile(object):
             raise TypeError("Argument 'valid_kwargs' must be a dictionary.")
 
     def parse_to_dict(self, file_path):
-        try:
-            return self._parser_func(file_path, **self.parse_kwargs)
-        except Exception as e:
-            raise Exception(e)
+        return self._parser_func(file_path, **self.parse_kwargs)
 
-    def is_valid(self, file_path):
-        try:
-            return self._validator_func(file_path, **self.valid_kwargs)
-        except Exception as e:
-            raise Exception(e)
+    def validate_cfg(self, cfg):
+        self._validator_func(cfg, **self.valid_kwargs)
 
 
 class ScorerOptionsFiles(object):
 
     def __init__(self):
-        self.option_files = []
+        self.options_files = []
 
     def __iter__(self):
-        return iter(self.option_files)
+        return iter(self.options_files)
 
     def __getitem__(self, item):
-        return self.option_files[item]
+        return self.options_files[item]
 
     def add_options_file(self, name, parsing_func, parsing_func_kwargs,
                          validator_func, validator_func_kwargs):
@@ -175,5 +169,9 @@ class ScorerOptionsFiles(object):
             validator_func=validator_func,
             validator_func_kwargs=validator_func_kwargs
         )
-        self.option_files.append(options_file)
+        self.options_files.append(options_file)
+
+    def append(self, options_file):
+        self.options_files.append(options_file)
+        return self
 

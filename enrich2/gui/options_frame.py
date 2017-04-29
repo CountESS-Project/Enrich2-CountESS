@@ -15,31 +15,76 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-
+import logging
 from tkinter import *
-import tkinter.messagebox as messagebox
 from tkinter.ttk import *
+import tkinter.messagebox as messagebox
+from tkinter.filedialog import askopenfilename
 
 from ..plugins.options import ScorerOptions, Option
 from ..plugins.options import ScorerOptionsFiles, OptionsFile
 
 
 class OptionsFileFrame(Frame):
-
     def __init__(self, parent, options_files: ScorerOptionsFiles, **config):
         super().__init__(parent, **config)
         self.row = 1
         self.widgets = []
         self.labels = []
-        self.make_buttons(options_files)
+        self.scorer_parameter_dicts = []
+        self.make_widgets(options_files)
+        self.columnconfigure(0, weight=3)
+        self.columnconfigure(1, weight=1)
 
-    def make_buttons(self, options_files: ScorerOptionsFiles):
-        options_file: OptionsFile
+    def make_widgets(self, options_files: ScorerOptionsFiles):
         for options_file in options_files:
-            pass
+            self._make_label(options_file)
+            self._make_button(options_file)
+            self.rowconfigure(self.row, weight=1)
+            self.row += 1
 
-    def make_label_button_frame(self, options_file: OptionsFile):
-        pass
+    def _make_label(self, options_file: OptionsFile):
+        label_text = "{}: ".format(options_file.name)
+        label = Label(self, text=label_text, justify=LEFT, relief=RIDGE)
+        label.grid(row=self.row, column=0, sticky=EW)
+
+    def _make_button(self, options_file: OptionsFile):
+        command = lambda opt=options_file: self.load_file(opt)
+        button = Button(self, text='Choose...', command=command)
+        button.grid(row=self.row, column=1, sticky=E)
+
+    def load_file(self, options_file: OptionsFile):
+        file_path = askopenfilename()
+        if not file_path:
+            return
+        cfg_error_msg = "There was an error parsing file {}. " \
+                        "\n\nPlease see log for details.".format(file_path)
+        validation_error_msg = "There was an error during validation. " \
+                               "\n\nPlease see log for details."
+        type_error = "Parsing functions must return a python dictionary."
+        empty_error = "Parsing function returned an empty dictionary"
+
+        try:
+            cfg = options_file.parse_to_dict(file_path)
+            if not isinstance(cfg, dict):
+                raise TypeError(type_error)
+            if not cfg:
+                raise ValueError(empty_error)
+        except BaseException as error:
+            logging.exception(error)
+            messagebox.showerror('Parse Error', cfg_error_msg)
+            return
+
+        try:
+            options_file.validate_cfg(cfg)
+            self.scorer_parameter_dicts.append(cfg)
+        except BaseException as error:
+            logging.exception(error)
+            messagebox.showerror('Validation Error', validation_error_msg)
+            return
+
+    def get_scorer_parameters_dicts(self):
+        return self.scorer_parameter_dicts
 
 
 class OptionFrame(Frame):
