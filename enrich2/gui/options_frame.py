@@ -33,6 +33,11 @@ class OptionsFileFrame(Frame):
         self.labels = []
         self.scorer_parameter_dicts = []
         self.make_widgets(options_files)
+
+        btn = Button(self, text='Show Parameters', command=self.log_parameters)
+        btn.grid(row=self.row, column=1, sticky=E)
+        self.rowconfigure(self.row, weight=1)
+        self.row += 1
         self.columnconfigure(0, weight=3)
         self.columnconfigure(1, weight=1)
 
@@ -77,7 +82,7 @@ class OptionsFileFrame(Frame):
 
         try:
             options_file.validate_cfg(cfg)
-            self.scorer_parameter_dicts.append(cfg)
+            self.scorer_parameter_dicts.append((options_file.name, cfg))
         except BaseException as error:
             logging.exception(error)
             messagebox.showerror('Validation Error', validation_error_msg)
@@ -85,6 +90,22 @@ class OptionsFileFrame(Frame):
 
     def get_scorer_parameters_dicts(self):
         return self.scorer_parameter_dicts
+
+    def log_parameters(self):
+        if not self.scorer_parameter_dicts:
+            messagebox.showinfo(
+                "Nothing to see here...", "Please select files to parse first."
+            )
+            return
+        messagebox.showinfo(
+            "Parameters logged!", "See log for loaded parameters."
+        )
+        for name, cfg in self.scorer_parameter_dicts:
+            msg = "{}:\n".format(name)
+            for k, v in cfg.items():
+                msg += "\t{}: {} || type: {}\n".format(
+                    str(k), str(v), type(v).__name__)
+            logging.info(msg)
 
 
 class OptionFrame(Frame):
