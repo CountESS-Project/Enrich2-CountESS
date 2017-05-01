@@ -150,6 +150,7 @@ class Configurator(tk.Tk):
                                            command=self.delete_button_press)
         delete_button.grid(row=0, column=2)
 
+        # ------------------------------------------------------- #
         # Frame for Analysis Options
         options_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
         options_frame.grid(row=0, column=1, rowspan=2, sticky="nsew")
@@ -185,6 +186,7 @@ class Configurator(tk.Tk):
             row += 1
             if i == 0:
                 rb.invoke()
+        # ------------------------------------------------------- #
 
         other_heading = tkinter.ttk.Label(options_frame, text="Other Options")
         other_heading.grid(column=0, row=row)

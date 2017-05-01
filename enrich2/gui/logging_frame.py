@@ -85,11 +85,9 @@ class ScrolledText(Frame):
 class WindowLoggingHandler(logging.Handler):
     def __init__(self, window=None, level=logging.NOTSET):
         logging.Handler.__init__(self, level)
-
+        self.window = window
         if window is None:
             self.window = Tk()
-        else:
-            self.window = window
 
         self.scrolling_text = ScrolledText(parent=self.window)
         self.scrolling_text.set_text_widget_state("disabled")
@@ -105,17 +103,24 @@ class WindowLoggingHandler(logging.Handler):
         close_btn = Button(
             master=self.window,
             text='Close',
-            command=self.close_window
+            command=self.close
         )
         close_btn.pack(side=RIGHT, anchor=S, padx=2, pady=2)
-        self.window.protocol("WM_DELETE_WINDOW", self.close_window)
+        self.window.protocol("WM_DELETE_WINDOW", self.close)
 
-    def close_window(self):
+    def close(self):
         if askyesno('Verify', 'Do you really want to quit?'):
             self.close()
             logger = logging.getLogger()
             logger.removeHandler(self)
             self.window.destroy()
+
+    def show(self):
+        self.window.update()
+        self.window.deiconify()
+
+    def hide(self):
+        self.window.withdraw()
 
     def emit(self, record):
         text = self.format(record) + '\n'
@@ -123,3 +128,11 @@ class WindowLoggingHandler(logging.Handler):
 
     def mainloop(self):
         self.window.mainloop()
+
+    @classmethod
+    def basic_handler(cls, toplevel=None,
+                      fmt=LOG_FORMAT, level=logging.NOTSET):
+        handler = cls(window=toplevel, level=level)
+        formatter = logging.Formatter(fmt=fmt)
+        handler.setFormatter(formatter)
+        return handler

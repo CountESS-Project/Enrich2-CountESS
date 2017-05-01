@@ -18,8 +18,8 @@
 import sys
 import logging
 
-import tkinter as tk
-import tkinter.ttk
+from tkinter import *
+import tkinter.ttk as ttk
 import tkinter.simpledialog
 import tkinter.messagebox
 import tkinter.filedialog
@@ -32,23 +32,20 @@ class RunnerSavePrompt(tkinter.simpledialog.Dialog):
     def __init__(self, parent_window, title="Enrich2"):
         self.pw = parent_window
 
-        self.dialog_text = tk.StringVar()
+        self.dialog_text = StringVar()
         self.dialog_text.set("Would you like to save your config changes?")
 
         tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
 
-
     def body(self, master):
-        frame = tkinter.ttk.Frame(master, padding=(12, 6, 12, 6))
+        frame = ttk.Frame(master, padding=(12, 6, 12, 6))
         frame.pack()
 
-        dialog_text_label = tkinter.tkk.Label(frame, textvariable=self.dialog_text)
+        dialog_text_label = ttk.Label(frame, textvariable=self.dialog_text)
         dialog_text_label.grid(column=0, row=0, sticky="nsew")
-
 
     def apply(self):
         self.pw.menu_save()
-
 
 
 class RunnerWindow(tkinter.simpledialog.Dialog):
@@ -59,22 +56,21 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
         self.pw = parent_window
         self.run_button = None
 
-        self.dialog_text = tk.StringVar()
+        self.dialog_text = StringVar()
         self.dialog_text.set("Ready to start analysis...")
 
         tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
 
-
     def body(self, master):
-        frame = tkinter.tkk.Frame(master, padding=(12, 6, 12, 6))
+        frame = ttk.Frame(master, padding=(12, 6, 12, 6))
         frame.pack()
 
-        dialog_text_label = tkinter.tkk.Label(frame, textvariable=self.dialog_text)
+        dialog_text_label = ttk.Label(frame, textvariable=self.dialog_text)
         dialog_text_label.grid(column=0, row=0, sticky="nsew")
 
-        self.run_button = tk.Button(frame, text="Begin", width=10, command=self.runner, default="active")
+        self.run_button = Button(frame, text="Begin", width=10,
+                                    command=self.runner, default="active")
         self.run_button.grid(column=0, row=1, sticky="nsew")
-
 
     def buttonbox(self):
         """
@@ -82,15 +78,16 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
         """
         pass
 
-
     def runner(self):
         # gray out the "Run" button
         self.run_button.config(state='disabled')
         self.update_idletasks()
 
         # set the analysis options
-        self.pw.root_element.force_recalculate = self.pw.force_recalculate.get()
-        self.pw.root_element.component_outliers = self.pw.component_outliers.get()
+        self.pw.root_element.force_recalculate = \
+            self.pw.force_recalculate.get()
+        self.pw.root_element.component_outliers = \
+            self.pw.component_outliers.get()
         self.pw.root_element.scoring_method = self.pw.scoring_method.get()
         self.pw.root_element.logr_method = self.pw.logr_method.get()
         self.pw.root_element.plots_requested = self.pw.plots_requested.get()
@@ -109,8 +106,9 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
 
         except Exception as e:
             # display error
-            logging.error(e, extra={'oname' : self.pw.root_element.name})
-            tkinter.messagebox.showerror("Enrich2 Error", "Enrich2 encountered an error:\n{}".format(e))
+            logging.error(e, extra={'oname': self.pw.root_element.name})
+            tkinter.messagebox.showerror(
+                "Enrich2 Error", "Enrich2 encountered an error:\n{}".format(e))
 
         else:
             # no exception occurred during calculation and setup
@@ -119,12 +117,16 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
                 try:
                     self.pw.root_element.make_plots()
                 except Exception as e:
-                    tkinter.messagebox.showwarning(None, "Calculations completed, but plotting failed:\n{}".format(e))
+                    tkinter.messagebox.showwarning(
+                        None, "Calculations completed, "
+                              "but plotting failed:\n{}".format(e))
             if self.pw.tsv_requested.get():
                 try:
                     self.pw.root_element.write_tsv()
                 except Exception as e:
-                    tkinter.messagebox.showwarning(None, "Calculations completed, but tsv output failed:\n{}".format(e))
+                    tkinter.messagebox.showwarning(
+                        None, "Calculations completed, "
+                              "but tsv output failed:\n{}".format(e))
 
             # show the dialog box
             tkinter.messagebox.showinfo("", "Analysis completed.")
@@ -135,6 +137,3 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
 
             # close this window
             self.destroy()
-
-
-
