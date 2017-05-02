@@ -21,7 +21,8 @@ import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
 from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import ScorerOptions
+from enrich2.plugins.options import ScorerOptions, ScorerOptionsFiles
+from enrich2.plugins.options import Option, OptionsFile
 from enrich2.base.constants import WILD_TYPE_VARIANT
 
 options = ScorerOptions()
@@ -29,8 +30,8 @@ options.add_option(
     name="Normalization Method",
     varname="logr_method",
     dtype=str,
-    default='wt',
-    choices=['wt', 'full', 'complete'],
+    default='Wild Type',
+    choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
     tooltip="Method used to normalise count data in the ratios."
 )
 options.add_option(
@@ -38,9 +39,45 @@ options.add_option(
     varname="weighted",
     dtype=bool,
     default=True,
-    choices=[],
+    choices={},
     tooltip="True for WLS or False for OLS."
 )
+options.add_option(
+    name="Reference Sequence",
+    varname="ref_seq",
+    dtype=str,
+    default='Input Reference Sequence...',
+    choices={},
+    tooltip=""
+)
+options.add_option(
+    name="Alpha",
+    varname="alpha",
+    dtype=int,
+    default=0,
+    choices={},
+    tooltip=""
+)
+options.add_option(
+    name="Beta",
+    varname="beta",
+    dtype=float,
+    default=0.0,
+    choices={},
+    tooltip=""
+)
+options.add_option(
+    name="Use threading",
+    varname="threading",
+    dtype=bool,
+    default=False,
+    choices={},
+    tooltip=""
+)
+
+options_files = ScorerOptionsFiles()
+options_files.append(OptionsFile.default_json_options_file())
+options_files.append(OptionsFile.default_yaml_options_file())
 
 
 class RegressionScorer(BaseScorerPlugin):

@@ -18,6 +18,7 @@
 
 import json
 import yaml
+from collections import Iterable
 
 
 def parse(file_path, backend=json):
@@ -51,13 +52,26 @@ class Option(object):
         self.varname = varname
         self.dtype = dtype
         self.default = default
-        self.choices = [] if choices is None else choices
+        self.choices = {} if choices is None else choices
         self.tooltip = tooltip
+
+        if not isinstance(self.choices, Iterable):
+            raise TypeError("Parameter 'choices' in option '{}' must be an "
+                            "iterable.".format(self.name))
+
+        if isinstance(self.choices, Iterable) and \
+                not isinstance(self.choices, dict):
+            self.choices = {x: x for x in self.choices}
+
+        if self.choices:
+            if self.default not in self.choices:
+                raise AttributeError("Parameter 'default' in option '{}' not "
+                                     "found in 'choices'.".format(self.name))
 
     def validate(self, value):
         if not isinstance(value, self.dtype):
-            raise TypeError("Option type {} does not match "
-                            "input type {}.".format(self.dtype, type(value)))
+            raise TypeError("Option '{}' type {} does not match input type "
+                            "{}.".format(self.name, self.dtype, type(value)))
 
 
 class ScorerOptions(object):
@@ -96,6 +110,9 @@ class ScorerOptions(object):
 
     def __iter__(self):
         return iter(self.options)
+
+    def __len__(self):
+        return len(self.options)
 
     def __getitem__(self, item):
         return self.options[item]
@@ -163,6 +180,9 @@ class ScorerOptionsFiles(object):
 
     def __getitem__(self, item):
         return self.options_files[item]
+
+    def __len__(self):
+        return len(self.options_files)
 
     def add_options_file(self, name, parsing_func, parsing_func_kwargs,
                          validator_func, validator_func_kwargs):
