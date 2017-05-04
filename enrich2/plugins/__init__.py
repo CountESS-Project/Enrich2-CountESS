@@ -25,7 +25,7 @@ from .options import ScorerOptions, ScorerOptionsFiles
 class ModuleLoader(object):
     def __init__(self, path):
         if not isinstance(path, str):
-            raise TypeError("`path` needs to be a string.")
+            raise TypeError("Argument `path` needs to be a string.")
         if not os.path.exists(path):
             raise IOError("Invalid plugin path {}.".format(path))
 
@@ -41,7 +41,7 @@ class ModuleLoader(object):
             self.module_name = module_name
             self.module_folder = module_folder
             self.module = getattr(top_module, self.module_name)
-        except (ModuleNotFoundError, AttributeError, ImportError) as err:
+        except Exception as err:
             raise ImportError(err)
 
     def get_module_attrs(self):
@@ -66,13 +66,14 @@ def load_scoring_class_and_options(path):
     if len(scorers) > 1:
         raise ImportError("Found Multiple classes implementing "
                           "the required BaseScorerPlugin interface.")
-    scorer_options = []
-    scorer_options_files = []
+
+    scorer_options = ScorerOptions()
+    scorer_options_files = ScorerOptionsFiles()
     for attr_name, attr in loader.get_module_attrs():
         if isinstance(attr, ScorerOptions):
-            scorer_options.append(attr)
+            scorer_options = attr
         if isinstance(attr, ScorerOptionsFiles):
-            scorer_options_files.append(attr)
+            scorer_options_files = attr
 
     scorer_class = scorers[-1]
     return scorer_class, scorer_options, scorer_options_files

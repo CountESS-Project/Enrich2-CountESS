@@ -83,14 +83,43 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
         self.run_button.config(state='disabled')
         self.update_idletasks()
 
+        scoring_class = self.pw.get_selected_scorer_class()
+        scoring_class_attrs = self.pw.get_selected_scorer_attrs()
+
+        # -------------------- temp code --------------------------- #
+        if scoring_class.__name__ == 'RegressionScorer':
+            logr_method = scoring_class_attrs['logr_method']
+            weighted = scoring_class_attrs['weighted']
+            if weighted:
+                scoring_method = 'WLS'
+            else:
+                scoring_method = 'OLS'
+
+        elif scoring_class.__name__ == 'RatiosScorer':
+            logr_method = scoring_class_attrs['logr_method']
+            scoring_method = 'ratios'
+
+        elif scoring_class.__name__ == 'SimpleScorer':
+            logr_method = 'wt'
+            scoring_method = 'simple'
+        else:
+            raise ValueError("Can't use any other plugins at the moment")
+
+        print(scoring_method, logr_method)
+        # -------------------- end temp code ------------------------ #
+
         # set the analysis options
         self.pw.root_element.force_recalculate = \
             self.pw.force_recalculate.get()
         self.pw.root_element.component_outliers = \
             self.pw.component_outliers.get()
-        self.pw.root_element.scoring_method = self.pw.scoring_method.get()
-        self.pw.root_element.logr_method = self.pw.logr_method.get()
-        self.pw.root_element.plots_requested = self.pw.plots_requested.get()
+
+        # self.pw.root_element.scoring_method = self.pw.scoring_method.get()
+        self.pw.root_element.scoring_class = scoring_class
+        self.pw.root_element.scoring_class_attrs = scoring_class_attrs
+
+        self.pw.root_element.scoring_method = scoring_method
+        self.pw.root_element.logr_method = logr_method
         self.pw.root_element.tsv_requested = self.pw.tsv_requested.get()
 
         # run the analysis, catching any errors to display in a dialog box
@@ -113,13 +142,6 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
         else:
             # no exception occurred during calculation and setup
             # generate desired output
-            if self.pw.plots_requested.get():
-                try:
-                    self.pw.root_element.make_plots()
-                except Exception as e:
-                    tkinter.messagebox.showwarning(
-                        None, "Calculations completed, "
-                              "but plotting failed:\n{}".format(e))
             if self.pw.tsv_requested.get():
                 try:
                     self.pw.root_element.write_tsv()
@@ -129,7 +151,7 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
                               "but tsv output failed:\n{}".format(e))
 
             # show the dialog box
-            tkinter.messagebox.showinfo("", "Analysis completed.")
+            tkinter.messagebox.showinfo("Analysis", "Analysis completed.")
 
         finally:
             # close the HDF5 files

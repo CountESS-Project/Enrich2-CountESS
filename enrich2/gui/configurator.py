@@ -37,6 +37,7 @@ from ..config.config_check import is_seqlib, is_experiment
 from ..libraries.overlap import OverlapSeqLib
 from ..libraries.seqlib import SeqLib
 from ..experiment.experiment import Experiment
+from .options_frame import ScorerScriptsDropDown
 
 available_scoring_methods = SCORING_METHODS
 available_logr_methods = LOGR_METHODS
@@ -70,7 +71,6 @@ class Configurator(tk.Tk):
         self.logr_method = tk.StringVar()
         self.force_recalculate = tk.BooleanVar()
         self.component_outliers = tk.BooleanVar()
-        self.plots_requested = tk.BooleanVar()
         self.tsv_requested = tk.BooleanVar()
 
         # allow resizing
@@ -78,6 +78,9 @@ class Configurator(tk.Tk):
         self.columnconfigure(0, weight=1)
 
         # create UI elements
+        self.scorer_plugin = None
+        self.scorer = None
+        self.scorer_attrs = None
         self.create_main_frame()
         self.create_menubar()
         self.create_treeview_context_menu()
@@ -152,45 +155,10 @@ class Configurator(tk.Tk):
 
         # ------------------------------------------------------- #
         # Frame for Analysis Options
-        options_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
-        options_frame.grid(row=0, column=1, rowspan=2, sticky="nsew")
-
         row = 0
-        heading = tkinter.ttk.Label(options_frame, text="Analysis Options")
-        heading.grid(column=0, row=row)
-        row += 1
-
-        scoring_heading = tkinter.ttk.Label(
-            options_frame, text="Scoring Method")
-        scoring_heading.grid(column=0, row=row)
-        row += 1
-        for i, k in enumerate(SCORING_METHODS.keys()):
-            rb = tkinter.ttk.Radiobutton(
-                options_frame, text=available_scoring_methods[k].title(),
-                variable=self.scoring_method, value=k
-            )
-            rb.grid(column=0, row=row, sticky="w")
-            row += 1
-            if i == 0:
-                rb.invoke()
-
-        logr_heading = tkinter.ttk.Label(options_frame,
-                                         text="Normalization Method")
-        logr_heading.grid(column=0, row=row)
-        row += 1
-        for i, k in enumerate(LOGR_METHODS.keys()):
-            rb = tkinter.ttk.Radiobutton(
-                options_frame, text=available_logr_methods[k].title(),
-                variable=self.logr_method, value=k)
-            rb.grid(column=0, row=row, sticky="w")
-            row += 1
-            if i == 0:
-                rb.invoke()
-        # ------------------------------------------------------- #
-
-        other_heading = tkinter.ttk.Label(options_frame, text="Other Options")
-        other_heading.grid(column=0, row=row)
-        row += 1
+        options_frame = tkinter.ttk.LabelFrame(
+            main, text="Analysis Options", padding=(3, 3, 12, 12))
+        options_frame.grid(row=0, column=2, rowspan=1, sticky="nsew", pady=8)
 
         # force recalculate
         force_recalculate = tkinter.ttk.Checkbutton(
@@ -210,16 +178,6 @@ class Configurator(tk.Tk):
         component_outliers.grid(column=0, row=row, sticky="w")
         row += 1
 
-        # make plots
-        plots_requested = tkinter.ttk.Checkbutton(
-            options_frame,
-            text="Make Plots",
-            variable=self.plots_requested
-        )
-        plots_requested.grid(column=0, row=row, sticky="w")
-        plots_requested.invoke()
-        row += 1
-
         # write tsv
         tsv_requested = tkinter.ttk.Checkbutton(
             options_frame,
@@ -234,10 +192,28 @@ class Configurator(tk.Tk):
             options_frame, text="Run Analysis", command=self.go_button_press)
         go_button.grid(column=0, row=row, sticky="sew")
 
+        # ------------------------------------------------------- #
+        scoring_plugin = ScorerScriptsDropDown(main, padding=(3, 3, 12, 12))
+        scoring_plugin.grid(row=0, column=1, sticky="nsew")
+        self.scorer_plugin = scoring_plugin
+
+    def get_selected_scorer_class(self):
+        return self.scorer
+
+    def get_selected_scorer_attrs(self):
+        return self.scorer_attrs
+
     def go_button_press(self):
-        if self.root_element is None:
+        self.scorer, self.scorer_attrs = \
+            self.scorer_plugin.get_class_and_attrs()
+        if self.scorer is None or self.scorer_attrs is None:
             tkinter.messagebox.showwarning(
-                "", "No experimental design specified."
+                "Incomplete Configuration", "No scoring plugin selected."
+            )
+        elif self.root_element is None:
+            print(self.scorer, self.scorer_attrs)
+            tkinter.messagebox.showwarning(
+                "Incomplete Configuration", "No experimental design specified."
             )
         else:
             RunnerSavePrompt(self)
@@ -566,5 +542,3 @@ class Configurator(tk.Tk):
         If no elements are selected, it returns an empty list.
         """
         return [self.get_element(x) for x in self.treeview.selection()]
-
-

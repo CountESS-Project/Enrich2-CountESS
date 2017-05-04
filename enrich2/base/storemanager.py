@@ -104,24 +104,23 @@ class StoreManager(object):
         # output locations
         self._output_dir = None
         self._output_dir_override = None
-        self._plot_dir = None
         self._tsv_dir = None
 
         # analysis parameters
         self._scoring_method = None
         self._logr_method = None
 
+        # analysis parameters
+        self.scoring_class = None
+        self.scoring_class_attrs = None
+
         self._force_recalculate = None
         self._component_outliers = None
-        self._plots_requested = None
         self._tsv_requested = None
 
         # GUI variables
         self.treeview_id = None
         self.treeview_info = None
-
-        # Plotting options
-        self.plot_options = None
 
     def child_labels(self):
         """
@@ -204,34 +203,6 @@ class StoreManager(object):
             self._component_outliers = value
         else:
             raise ValueError("Invalid setting '{}' for component_outliers "
-                             "[{}]".format(value, self.name))
-
-    @property
-    def plots_requested(self):
-        """
-        This property should only be set for the root element. All other
-        elements in the analysis should have ``None``.
-
-        Recursively traverses up the config tree to find the root element.
-        """
-        if self._plots_requested is None:
-            if self.parent is not None:
-                return self.parent.plots_requested
-            else:
-                raise ValueError("Make plots option not specified at root "
-                                 "[{}]".format(self.name))
-        else:
-            return self._plots_requested
-
-    @plots_requested.setter
-    def plots_requested(self, value):
-        """
-        Make sure the *value* is valid and set it.
-        """
-        if value in (True, False):
-            self._plots_requested = value
-        else:
-            raise ValueError("Invalid setting '{}' for plots_requested "
                              "[{}]".format(value, self.name))
 
     @property
@@ -351,25 +322,6 @@ class StoreManager(object):
         else:
             raise ValueError("Invalid setting '{}' for output_dir_override "
                              "[{}]".format(value, self.name))
-
-    @property
-    def plot_dir(self):
-        """
-        Creates the plot directory when first requested if it doesn't exist.
-
-        The plot directory is ``<output directory>/plots/<object name>/``.
-        """
-        if self._plot_dir is None:
-            dirname = os.path.join(self.output_dir, "plots", "{}_{}".format(
-                    fix_filename(self.name), self.store_suffix))
-            try:
-                if not os.path.exists(dirname):
-                    os.makedirs(dirname)
-            except OSError as e:
-                raise OSError("Failed to create plotting directory: "
-                              "{}".format(e))
-            self._plot_dir = dirname
-        return self._plot_dir
 
     @property
     def tsv_dir(self):
@@ -648,12 +600,6 @@ class StoreManager(object):
     def calculate(self):
         """
         Pure virtual method that defines how the data are calculated.
-        """
-        raise NotImplementedError("must be implemented by subclass")
-
-    def make_plots(self, subdirectory=None, keys=None):
-        """
-        Pure virtual method for creating plots.
         """
         raise NotImplementedError("must be implemented by subclass")
 

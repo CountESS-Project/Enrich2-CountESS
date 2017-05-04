@@ -28,7 +28,6 @@ from .base.storemanager import SCORING_METHODS, LOGR_METHODS
 from .experiment.experiment import Experiment
 from .experiment.condition import Condition
 from .selection.selection import Selection
-from .base.sfmap import parse_aa_list
 from .config import config_check
 from .gui.configurator import Configurator
 from .libraries.barcode import BarcodeSeqLib
@@ -37,6 +36,7 @@ from .libraries.barcodevariant import BcvSeqLib
 from .libraries.basic import BasicSeqLib
 from .libraries.idonly import IdOnlySeqLib
 from .libraries.overlap import OverlapSeqLib
+
 
 __author__ = "Alan F Rubin"
 __copyright__ = "Copyright 2016-2017, Alan F Rubin"
@@ -129,9 +129,6 @@ def main_cmd():
     # add analysis options
     parser.add_argument("--log", metavar="FILE", dest="log_file",
                         help="path to log file")
-    parser.add_argument("--no-plots", dest="plots_requested",
-                        action="store_false", default=True,
-                        help="don't make plots")
     parser.add_argument("--no-tsv", dest="tsv_requested",
                         action="store_false", default=True,
                         help="don't generate tsv files")
@@ -144,10 +141,6 @@ def main_cmd():
     parser.add_argument("--output-dir", metavar="DIR",
                         dest="output_dir_override",
                         help="override the config file's output directory")
-    parser.add_argument("--sfmap-aa-file", metavar="FILE",
-                        dest="sfmap_aa_file",
-                        help="amino acid groups for sequence-function maps")
-
     args = parser.parse_args()
 
     # start the logs
@@ -199,7 +192,6 @@ def main_cmd():
     obj.component_outliers = args.component_outliers
     obj.scoring_method = args.scoring_method
     obj.logr_method = args.logr_method
-    obj.plots_requested = args.plots_requested
     obj.tsv_requested = args.tsv_requested
 
     if args.output_dir_override is not None:
@@ -207,11 +199,6 @@ def main_cmd():
         obj.output_dir = args.output_dir_override
     else:
         obj.output_dir_override = False
-
-    if args.sfmap_aa_file is not None:
-        obj.plot_options = dict()
-        obj.plot_options['aa_list'], obj.plot_options['aa_label_groups'] = \
-            parse_aa_list(args.sfmap_aa_file)
 
     # configure the object
     obj.configure(cfg)
@@ -229,13 +216,6 @@ def main_cmd():
         # perform the analysis
         obj.calculate()
 
-        # generate desired output
-        obj.make_plots()
-        try:
-            obj.make_plots()
-        except Exception:
-            logging.exception("Calculations completed, but plotting failed.",
-                              extra={'oname': DRIVER_NAME})
         try:
             obj.write_tsv()
         except Exception:

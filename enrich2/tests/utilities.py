@@ -19,7 +19,6 @@ import os
 import json
 import pandas as pd
 
-
 TOP_LEVEL = os.path.dirname(__file__)
 
 def create_file_path(fname, direc='data/result/'):
@@ -141,5 +140,7 @@ DEFAULT_STORE_PARAMS = {
     'logr_method': 'wt',
     'plots_requested': False,
     'tsv_requested': False,
-    'output_dir_override': False
+    'output_dir_override': False,
+    'scoring_class': '',
+    'scoring_class_attrs': ''
 }

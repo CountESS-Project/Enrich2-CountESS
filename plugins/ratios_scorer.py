@@ -28,11 +28,10 @@ options.add_option(
     name="Normalization Method",
     varname="logr_method",
     dtype=str,
-    default='wt',
-    choices=['wt', 'full', 'complete'],
+    default='Wild Type',
+    choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
     tooltip="Method used to normalise count data in the ratios."
 )
-
 
 class RatiosScorer(BaseScorerPlugin):
 

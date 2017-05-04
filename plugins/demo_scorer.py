@@ -42,8 +42,45 @@ options.add_option(
     choices={},
     tooltip="True for WLS or False for OLS."
 )
+options.add_option(
+    name="Reference Sequence",
+    varname="ref_seq",
+    dtype=str,
+    default='Input Reference Sequence...',
+    choices={},
+    tooltip=""
+)
+options.add_option(
+    name="Alpha",
+    varname="alpha",
+    dtype=int,
+    default=0,
+    choices={},
+    tooltip=""
+)
+options.add_option(
+    name="Beta",
+    varname="beta",
+    dtype=float,
+    default=0.0,
+    choices={},
+    tooltip=""
+)
+options.add_option(
+    name="Use threading",
+    varname="threading",
+    dtype=bool,
+    default=False,
+    choices={},
+    tooltip=""
+)
 
-class RegressionScorer(BaseScorerPlugin):
+options_files = ScorerOptionsFiles()
+options_files.append(OptionsFile.default_json_options_file())
+options_files.append(OptionsFile.default_yaml_options_file())
+
+
+class DemoScorer(BaseScorerPlugin):
 
     def __init__(self, store_manager, options):
         super().__init__(store_manager, options)

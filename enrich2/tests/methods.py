@@ -77,6 +77,8 @@ class HDF5TestComponent(unittest.TestCase):
         obj.plots_requested = self.params['plots_requested']
         obj.tsv_requested = self.params['tsv_requested']
         obj.output_dir_override = self.params['output_dir_override']
+        obj.scoring_class = self.params['scoring_class']
+        obj.scoring_class_attrs = self.params['scoring_class_attrs']
 
         # perform the analysis
         obj.configure(self.cfg)

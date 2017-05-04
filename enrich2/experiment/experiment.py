@@ -17,16 +17,12 @@
 
 
 import logging
-import os.path
 
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
-from matplotlib.backends.backend_pdf import PdfPages
 
 from enrich2.base.constants import WILD_TYPE_VARIANT
-from enrich2.base.dataframe import singleton_dataframe
-from enrich2.base.sfmap import sfmap_plot
 from enrich2.base.storemanager import StoreManager
 from enrich2.statistics.random_effects import rml_estimator
 from .condition import Condition
@@ -205,7 +201,6 @@ class Experiment(StoreManager):
             bcm.sort_values("value", inplace=True)
             self.store.put("/main/barcodemap", bcm, format="table",
                            data_columns=bcm.columns)
-
 
     def calc_counts(self, label):
         """
@@ -490,31 +485,6 @@ class Experiment(StoreManager):
         self.store.put("/main/{}/scores_pvalues".format(label), result_df,
                        format="table")
 
-    def make_plots(self):
-        if self.plots_requested:
-            logging.info("Creating plots", extra={'oname': self.name})
-
-            # sequence-function maps
-            if self.scoring_method != "counts":
-                if "synonymous" in self.labels:
-                    pdf = PdfPages(os.path.join(self.plot_dir,
-                                                "sequence_function_map_aa.pdf")
-                                   )
-                    for condition in self.children:
-                        self.sfmap_wrapper(condition=condition.name, pdf=pdf,
-                                           coding=True)
-                    pdf.close()
-                if "variants" in self.labels:
-                    pdf = PdfPages(os.path.join(self.plot_dir,
-                                   "sequence_function_map_nt.pdf"))
-                    for condition in self.children:
-                        self.sfmap_wrapper(condition=condition.name, pdf=pdf,
-                                           coding=False)
-                    pdf.close()
-
-        for s in self.selection_list():
-            s.make_plots()
-
     def write_tsv(self):
         """
         Write each table from the store to its own tab-separated file.
@@ -530,87 +500,3 @@ class Experiment(StoreManager):
                 self.write_table_tsv(k)
         for s in self.selection_list():
             s.write_tsv()
-
-    def is_coding(self):
-        """
-        Return ``True`` if the all :py:class:`~selection.Selection` in the 
-        :py:class:`~experiment.Experiment` score protein-coding variants, else 
-        ``False``.
-        """
-        return all(x.is_coding() for x in self.selection_list())
-
-    def sfmap_wrapper(self, condition, pdf, coding):
-        """
-        Create a sequence function map for scores in *condition*.
-
-        Uses :py:func:`~sfmap.sfmap_plot` for the plotting.
-        """
-        plot_options = self.get_root().plot_options
-
-        if coding:
-            label = "amino acid"
-        else:
-            label = "nucleotide"
-
-        logging.info("Creating sequence-function map ({}, {})"
-                     "".format(condition, label), extra={'oname': self.name})
-
-        idx = pd.IndexSlice
-
-        if coding:
-            df_name = '/main/synonymous/scores'
-        else:
-            df_name = '/main/variants/scores'
-
-        if plot_options is not None:
-            data, wtseq = singleton_dataframe(self.store[df_name][
-                                              idx[condition, 'score']],
-                                              self.wt, coding=coding,
-                                              aa_list=plot_options['aa_list'])
-            data_se, _ = singleton_dataframe(self.store[df_name][
-                                             idx[condition, 'SE']],
-                                             self.wt, coding=coding,
-                                             aa_list=plot_options['aa_list'])
-        else:
-            data, wtseq = singleton_dataframe(self.store[df_name][
-                                              idx[condition, 'score']],
-                                              self.wt, coding=coding)
-            data_se, _ = singleton_dataframe(self.store[df_name][
-                                             idx[condition, 'SE']],
-                                             self.wt, coding=coding)
-
-        # format the title
-        if coding:
-            title = "Amino Acid"
-        else:
-            title = "Nucleotide"
-
-        if self.scoring_method in ("WLS", "OLS"):
-            title += " Sequence-Function Map\n{} ({} Slope)".format(
-                condition, self.scoring_method)
-        elif self.scoring_method == "ratios":
-            title += " Sequence-Function Map\n{} ({})".format(
-                condition, "Enrich2 Ratio")
-        elif self.scoring_method == "simple":
-            title += " Sequence-Function Map\n{} ({})".format(
-                condition, "Simplified Ratio")
-        else:
-            raise ValueError("Invalid scoring method", self.name)
-
-        if plot_options is not None:
-            sfmap_plot(df=data, pdf=pdf, style="scores", df_se=data_se,
-                       dimensions="tall", wt=wtseq, title=title,
-                       aa_list=plot_options['aa_list'],
-                       aa_label_groups=plot_options['aa_label_groups'])
-        else:
-            sfmap_plot(df=data, pdf=pdf, style="scores", df_se=data_se,
-                       dimensions="tall", wt=wtseq, title=title)
-
-
-    def correlation_plot(self, pdf, label):
-        """
-        Create a triangular heatmap showing the Pearson correlation coefficient
-        for each pairwise comparison of replicate scores.
-        """
-        pass
-
