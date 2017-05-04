@@ -17,16 +17,10 @@
 
 
 import logging
-import os.path
-
 import pandas as pd
-from matplotlib.backends.backend_pdf import PdfPages
 
 from ..libraries.barcodemap import BarcodeMap
-from ..plotting.plots import barcodemap_plot
-
 from .barcode import BarcodeSeqLib
-from .seqlib import SeqLib
 from .variant import VariantSeqLib
 
 
@@ -168,18 +162,3 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             self.save_filter_stats()
         
         self.count_synonymous()
-
-    def make_plots(self):
-        """
-        Make plots for :py:class:`~seqlib.seqlib.BcvSeqLib` objects.
-
-        Creates plot of the number of barcodes mapping to each variant.
-        """
-        if self.plots_requested:
-            SeqLib.make_plots(self)
-            # open the PDF file
-            path = os.path.join(self.plot_dir, "barcodes_per_variant.pdf")
-            pdf = PdfPages(path)
-            barcodemap_plot(self, pdf)
-            pdf.close()
-

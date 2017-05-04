@@ -17,16 +17,10 @@
 
 
 import logging
-import os.path
-
 import pandas as pd
-from matplotlib.backends.backend_pdf import PdfPages
 
 from ..libraries.barcodemap import BarcodeMap
-from ..plotting.plots import barcodemap_plot
-
 from .barcode import BarcodeSeqLib
-from .seqlib import SeqLib
 
 
 class BcidSeqLib(BarcodeSeqLib):
@@ -152,16 +146,3 @@ class BcidSeqLib(BarcodeSeqLib):
             del barcode_identifiers
             #self.report_filter_stats()
             self.save_filter_stats()
-
-    def make_plots(self, subdirectory=None, keys=None):
-        """
-        Make plots for :py:class:`~seqlib.seqlib.BcidSeqLib` objects.
-        Creates plot of the number of barcodes mapping to each identifier.
-        """
-        if self.plots_requested:
-            SeqLib.make_plots(self)
-            # open the PDF file
-            path = os.path.join(self.plot_dir, "barcodes_per_identifier.pdf")
-            pdf = PdfPages(path)
-            barcodemap_plot(self, pdf)
-            pdf.close()

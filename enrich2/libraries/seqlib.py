@@ -23,10 +23,8 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-from matplotlib.backends.backend_pdf import PdfPages
 
 from ..base.storemanager import StoreManager, fix_filename, ELEMENT_LABELS
-from ..plotting.plots import counts_plot
 
 
 class SeqLib(StoreManager):
@@ -322,22 +320,6 @@ class SeqLib(StoreManager):
             return False
         else:
             return True
-
-    def make_plots(self):
-        """
-        Make plots that are shared by all :py:class:`~seqlib.seqlib.SeqLib`
-        objects.
-
-        Creates counts histograms for all labels.
-        """
-        if self.plots_requested:
-            logging.info("Creating plots", extra={'oname': self.name})
-
-            pdf = PdfPages(os.path.join(self.plot_dir, "counts.pdf"))
-            for label in self.labels:
-                counts_plot(self, label, pdf, log=True)
-                counts_plot(self, label, pdf, log=False)
-            pdf.close()
 
     def write_tsv(self):
         """
