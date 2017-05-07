@@ -15,13 +15,45 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-def pretty_class_str(obj):
-    cls_name = str(obj.__class__).split('.')[-1][:-2]
-    string = "{}\n{}\n".format(cls_name, '-'*len(cls_name))
-    for (attr, value) in obj.__dict__.items():
-        if not(attr.startswith("__") and attr.endswith("__")):
-            string += "{}={}\n".format(attr, value)
-    return string
+
+def nested_format(data, tab_level=1):
+    """
+    Print a human readable nested dictionary or nested list.
+    
+    Parameters
+    ----------
+    data : Data to print.
+    tab_level : Number of tabs to indent with.  
+
+    Returns
+    -------
+    rtype : A formatted string.
+
+    """
+    msg = ""
+    if isinstance(data, list) or isinstance(data, tuple):
+        if not data:
+            msg += 'Empty Iterable'
+        else:
+            msg += "-> Iterable"
+            for i, item in enumerate(data):
+                msg += '\n' + '\t' * tab_level + '@index {}: '.format(i)
+                msg += nested_format(item, tab_level)
+            msg += '\n' + '\t' * tab_level + '@end of list'
+    elif isinstance(data, dict):
+        if not data:
+            msg += 'Empty Dictionary'
+        else:
+            msg += "-> Dictionary"
+            for key, value in data.items():
+                msg += '\n' + "\t" * tab_level + "{}: ".format(key)
+                msg += nested_format(value, tab_level + 1)
+    else:
+        if isinstance(data, str):
+            data = "'{}'".format(data)
+        dtype = type(data).__name__
+        msg += "({}, {})".format(data, dtype)
+    return msg
 
 
     

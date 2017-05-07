@@ -17,15 +17,18 @@
 
 import os
 import glob
+import json
+import yaml
 import logging
 from tkinter import *
 import tkinter.ttk as ttk
 import tkinter.messagebox as messagebox
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfile
 
-from ..plugins.options import ScorerOptions, Option
-from ..plugins.options import ScorerOptionsFiles, OptionsFile
+from ..plugins.options import Options, Option
+from ..plugins.options import OptionsFile
 from ..plugins import load_scoring_class_and_options
+from ..base.utils import nested_format
 
 
 LabelFrame = ttk.LabelFrame
@@ -38,18 +41,20 @@ OptionMenu = ttk.OptionMenu
 
 
 class OptionFrame(LabelFrame):
-    def __init__(self, parent, options: ScorerOptions, **kw):
+    def __init__(self, parent, options: Options, show_btn=False, **kw):
         super().__init__(parent, **kw)
         self.parent = parent
         self.row = 0
         self.widgets = []
-        self.option_vars = []
+        self.vname_option_tkvars_map = {}
         self.labels = []
-        self.parse_options(options)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=3)
+        self.show_btn = show_btn
+        if options is not None:
+            self.parse_options(options)
+            self.columnconfigure(0, weight=1)
+            self.columnconfigure(1, weight=3)
 
-    def parse_options(self, options: ScorerOptions) -> None:
+    def parse_options(self, options: Options) -> None:
         if not len(options):
             label_text = "No options found."
             label = Label(self, text=label_text, justify=LEFT)
@@ -73,10 +78,11 @@ class OptionFrame(LabelFrame):
             self.rowconfigure(self.row, weight=1)
             self.row += 1
 
-        btn = Button(self, text='Show Parameters', command=self.log_parameters)
-        btn.grid(row=self.row, column=1, sticky=SE, padx=5, pady=5)
-        self.rowconfigure(self.row, weight=1)
-        self.row += 1
+        if self.show_btn:
+            btn = Button(self, text='Show', command=self.log_parameters)
+            btn.grid(row=self.row, column=1, sticky=SE, padx=5, pady=5)
+            self.rowconfigure(self.row, weight=1)
+            self.row += 1
         return
 
     def create_widget_from_option(self, option: Option) -> None:
@@ -109,7 +115,7 @@ class OptionFrame(LabelFrame):
             self, menu_var, option.default, *choices)
         popup_menu.grid(sticky=E, column=1, row=self.row, padx=5, pady=5)
 
-        self.option_vars.append((option, menu_var))
+        self.vname_option_tkvars_map[option.varname] = (option, menu_var)
         self.widgets.append(popup_menu)
         self.labels.append(label)
 
@@ -140,7 +146,7 @@ class OptionFrame(LabelFrame):
             validate="focusout", validatecommand=validate_entry
         )
         entry.grid(sticky=EW, column=1, row=self.row, padx=5, pady=5)
-        self.option_vars.append((option, variable))
+        self.vname_option_tkvars_map[option.varname] = (option, variable)
         self.widgets.append(entry)
         self.labels.append(label)
         return entry
@@ -171,18 +177,18 @@ class OptionFrame(LabelFrame):
         checkbox = Checkbutton(self, variable=variable)
         checkbox.grid(sticky=E, column=1, row=self.row, padx=5, pady=5)
 
-        self.option_vars.append((option, variable))
+        self.vname_option_tkvars_map[option.varname] = (option, variable)
         self.widgets.append(checkbox)
         self.labels.append(label)
 
     def get_option_cfg(self) -> dict:
         cfg = {}
-        for option, var in self.option_vars:
+        for vname, (option, var) in self.vname_option_tkvars_map.items():
             value = var.get()
             if option.choices:
                 value = option.choices[var.get()]
             option.validate(value)
-            cfg[option.varname] = value
+            cfg[vname] = value
         return cfg
 
     def log_parameters(self):
@@ -191,149 +197,188 @@ class OptionFrame(LabelFrame):
             return
 
         msg = "Parsing parameters...\n"
-        for opt, var in self.option_vars:
-            v = var.get()
-            if opt.choices:
-                v = opt.choices[v]
-            n = opt.varname
-            n, v, t = str(n), str(v), type(v).__name__
-            msg += "{}: (value, type) -> ({}, {})\n".format(n, v, t)
+        for vname, (option, var) in self.vname_option_tkvars_map.items():
+            value = var.get()
+            if option.choices:
+                value = option.choices[value]
+            vname, value, t = str(vname), str(value), type(value).__name__
+            msg += "{}: (value, type) -> ({}, {})\n".format(vname, value, t)
 
-        logging.info(msg)
+        logging.info(msg, extra={'oname': self.__class__.__name__})
         messagebox.showinfo("Parameters logged!",
                             "See log for loaded parameters.")
 
     def has_options(self):
-        return bool(self.option_vars)
+        return bool(self.labels)
 
 
 class OptionsFileFrame(LabelFrame):
-    def __init__(self, parent, options_files: ScorerOptionsFiles, **config):
+    def __init__(self, parent, options_file: OptionsFile,
+                 show_btn=False, **config):
         super().__init__(parent, **config)
         self.row = 0
         self.widgets = []
         self.labels = []
-        self.scorer_parameter_dicts = []
-        self.make_widgets(options_files)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=1)
+        self.active_cfg = {}
+        self.option_frame = None
+        self.show_btn = show_btn
+        if options_file is not None:
+            self._make_widgets(options_file)
+            self.columnconfigure(0, weight=1)
+            self.columnconfigure(1, weight=3)
 
-    def make_widgets(self, options_files: ScorerOptionsFiles):
-        if not len(options_files):
-            label_text = "No options found."
-            label = Label(self, text=label_text, justify=LEFT)
-            label.grid(sticky=EW, columnspan=1, row=self.row, padx=5, pady=5)
-            self.rowconfigure(self.row, weight=1)
-            self.row += 1
+    def _make_widgets(self, options_file: OptionsFile):
+        self._make_label(options_file)
+        self._make_button(options_file)
+        self.rowconfigure(self.row, weight=1)
+        self.row += 1
 
-            btn = Button(self, text='Show Parameters',
-                         command=self.no_options_message)
+        if self.show_btn:
+            btn = Button(self, text='Show', command=self.log_parameters)
             btn.grid(row=self.row, column=1, sticky=SE, padx=5, pady=5)
             self.rowconfigure(self.row, weight=1)
             self.row += 1
-            return
-
-        for options_file in options_files:
-            self._make_label(options_file)
-            self._make_button(options_file)
-            self.rowconfigure(self.row, weight=1)
-            self.row += 1
-
-        btn = Button(self, text='Show Parameters', command=self.log_parameters)
-        btn.grid(row=self.row, column=1, sticky=SE, padx=5, pady=5)
-        self.rowconfigure(self.row, weight=1)
-        self.row += 1
         return
 
     def _make_label(self, options_file: OptionsFile):
         label_text = "{}: ".format(options_file.name)
         label = Label(self, text=label_text, justify=LEFT)
         label.grid(row=self.row, column=0, sticky=EW, padx=5, pady=5)
+        self.labels.append(label)
 
     def _make_button(self, options_file: OptionsFile):
-        command = lambda opt=options_file: self.load_file(opt)
+        command = lambda opt=options_file: self.load_from_file(opt)
         button = Button(self, text='Choose...', command=command)
         button.grid(row=self.row, column=1, sticky=E, padx=5, pady=5)
+        self.widgets.append(button)
 
-    def load_file(self, options_file: OptionsFile):
+    def load_from_cfg(self, cfg):
+        if 'scorer' in cfg:
+            if 'scorer_options' in cfg:
+                return cfg['scorer']['scorer_options']
+        elif 'scorer_options' in cfg:
+            return cfg['scorer_options']
+        else:
+            raise ValueError("Unrecognised config file, couldn't find "
+                             "expected keys. File requires the nested key"
+                             "'scorer/scorer_options' "
+                             "or the key 'scorer_options'")
+
+        success = 'Successfully parsed and validated config.'
+        if self.option_frame:
+            if self.update_option_frame(cfg):
+                self.active_cfg = cfg
+                if not self.options_file_incomplete():
+                    messagebox.showinfo('Success!', success)
+        else:
+            self.active_cfg = cfg
+            messagebox.showinfo('Success!', success)
+
+
+    def load_from_file(self, options_file: OptionsFile):
         file_path = askopenfilename()
+        self.active_cfg = {}
         if not file_path:
             return
         cfg_error_msg = "There was an error parsing file {}. " \
                         "\n\nPlease see log for details.".format(file_path)
         validation_error_msg = "There was an error during validation. " \
                                "\n\nPlease see log for details."
-        type_error = "Parsing functions must return a python dictionary."
-        empty_error = "Parsing function returned an empty dictionary"
         success = 'Successfully parsed and validated file: \n\n{}'.format(
             file_path)
 
         try:
             cfg = options_file.parse_to_dict(file_path)
-            if not isinstance(cfg, dict):
-                raise TypeError(type_error)
-            if not cfg:
-                raise ValueError(empty_error)
         except BaseException as error:
-            logging.exception(error)
+            logging.exception(error, extra={'oname': self.__class__.__name__})
             messagebox.showerror('Parse Error', cfg_error_msg)
             return
 
         try:
             options_file.validate_cfg(cfg)
-            self.scorer_parameter_dicts.append((options_file.name, cfg))
         except BaseException as error:
-            logging.exception(error)
+            logging.exception(error, extra={'oname': self.__class__.__name__})
             messagebox.showerror('Validation Error', validation_error_msg)
             return
-        messagebox.showinfo('Success!', success)
 
-    def get_option_cfgs(self):
-        return self.scorer_parameter_dicts
+        if self.option_frame:
+            if self.update_option_frame(cfg):
+                self.active_cfg = cfg
+                if not self.options_file_incomplete():
+                    messagebox.showinfo('Success!', success)
+        else:
+            self.active_cfg = cfg
+            messagebox.showinfo('Success!', success)
 
-    def no_options_message(self):
-        msg = "No options were found in the loaded plugin script."
-        messagebox.showinfo("Nothing to see here...", msg)
+    def options_file_incomplete(self):
+        if self.option_frame and self.active_cfg:
+            mapping = self.option_frame.vname_option_tkvars_map
+            option_vnames = list(mapping.keys())
+            cfg_vnames = self.active_cfg.keys()
+            unique_vnames = [n for n in option_vnames if n not in cfg_vnames]
+            unique_names = [mapping[n][0].name for n in unique_vnames]
+            if unique_vnames:
+                unique_str = '\n'.join(["'{}'".format(n) for n in unique_names])
+                message = "There were options in the GUI not found in the " \
+                          "loaded configuration file. The following " \
+                          "options have not been altered: \n\n" \
+                          "{}".format(unique_str)
+                messagebox.showwarning(
+                    "Incomplete configuration file...",
+                    message
+                )
+                return True
+            return False
+        return False
+
+    def update_option_frame(self, cfg):
+        for option_varname, value in cfg.items():
+            try:
+                self.update_option_frame_tkvar(option_varname, value)
+            except BaseException as err:
+                logging.exception(
+                    err, extra={"oname": self.__class__.__name__})
+                messagebox.showerror(
+                    'Setting Override Error...',
+                    "Couldn't set option with variable name '{}'. "
+                    "Aborting parse, see log for further "
+                    "details.".format(option_varname)
+                )
+                return False
+        return True
+
+    def update_option_frame_tkvar(self, option_varname, value):
+        mapping = self.option_frame.vname_option_tkvars_map
+        option, tkvar = mapping.get(option_varname, (None, None))
+        if tkvar is not None:
+            current_value = tkvar.get()
+            try:
+                if option.choices:
+                    value = option.get_choice_key(value)
+                option.validate(value)
+                tkvar.set(value)
+            except (TypeError, ValueError) as err:
+                tkvar.set(current_value)
+                raise BaseException(err)
         return
 
-    def str_nested(self, data, tab_level=1):
-        msg = ""
-        if isinstance(data, list) or isinstance(data, tuple):
-            if not data:
-                msg += 'Empty Iterable'
-            else:
-                msg += "-> Iterable"
-                for i, item in enumerate(data):
-                    msg += '\n' + '\t' * tab_level + '@index {}: '.format(i)
-                    msg += self.str_nested(item, tab_level)
-                msg += '\n' + '\t' * tab_level + '@end of list'
-        elif isinstance(data, dict):
-            if not data:
-                msg += 'Empty Dictionary'
-            else:
-                msg += "-> Dictionary"
-                for key, value in data.items():
-                    msg += '\n' + "\t" * tab_level + "{}: ".format(key)
-                    msg += self.str_nested(value, tab_level + 1)
-        else:
-            if isinstance(data, str):
-                data = "'{}'".format(data)
-            dtype = type(data).__name__
-            msg += "({}, {})".format(data, dtype)
-        return msg
+    def get_option_cfg(self):
+        return self.active_cfg
 
     def log_parameters(self):
-        if not self.scorer_parameter_dicts:
+        if not self.active_cfg:
             messagebox.showinfo(
                 "Nothing to see here...",
                 "Please select files to parse first.")
             return
-        for name, cfg in self.scorer_parameter_dicts:
-            msg = "Parsing parameters...\n{}: (value, type) ".format(name)
-            msg += self.str_nested(cfg, tab_level=0)
-            logging.info(msg)
+        msg = "Parsing parameters...\nFormat: (value, type) "
+        msg += nested_format(self.active_cfg, tab_level=0)
+        logging.info(msg, extra={'oname': self.__class__.__name__})
         messagebox.showinfo("Parameters logged!",
                             "See log for loaded parameters.")
+
+    def link_to_options_frame(self, options_frame: OptionFrame):
+        self.option_frame = options_frame
 
     def has_options(self):
         return bool(self.labels)
@@ -344,11 +389,14 @@ class ScorerScriptsDropDown(Frame):
         super().__init__(parent, **config)
         self.parent = parent
         self.row = 0
-        self.current = ''
+        self.current = 'Regression'
+        self.plugins_frame = None
+        self.diagnostics_frame = None
 
         self.plugins = {}
         for path in glob.glob("{}/*.py".format(scripts_dir)):
             path = path.replace("\\", '/')
+            full_path = os.path.join(os.getcwd(), path)
             if "__init__.py" in path:
                 continue
             try:
@@ -358,35 +406,50 @@ class ScorerScriptsDropDown(Frame):
                 messagebox.showerror(
                     "Error loading plugin...",
                     "There was an error loading the script:\n\n{}." \
-                    "\n\nSee log for details.".format(
-                        os.path.join(os.getcwd(), path))
-                )
+                    "\n\nSee log for details.".format(full_path))
                 continue
             klass, options_frame, options_file_frame = result
-            self.plugins[klass.__name__] = (
-                klass, options_frame, options_file_frame)
+
+            key = klass.name
+            if key in self.plugins:
+                same_name = [n for n in self.plugins.keys()
+                             if n.split('[')[0].strip() == key]
+                num = len(same_name)
+                key = "{} [{}]".format(key, num)
+            self.plugins[key] = (klass, options_frame,
+                                 options_file_frame, full_path)
 
         if not self.plugins:
             raise ImportError("No plugins could be loaded.")
 
         self.make_drop_down_menu(self.plugins)
-        self.update_options_view('RegressionScorer')
+        _, options_frame, options_file_frame, _ = self.plugins[self.current]
+        self.show_frame(options_frame)
+        self.show_frame(options_file_frame)
 
     def increment_row(self):
         # self.rowconfigure(self.row, weight=1)
         self.row += 1
 
     def get_class_and_attrs(self):
-        klass, options_frame, options_file_frame = self.plugins[self.current]
-        options_cfg = [options_frame.get_option_cfg()]
-        options_files_cfgs = [cfg for _, cfg in
-                              options_file_frame.get_option_cfgs()]
+        klass, opt_frame, opt_file_frame, _ = self.plugins[self.current]
+        options_cfg = opt_frame.get_option_cfg()
+        options_files_cfg = opt_file_frame.get_option_cfg()
+
+        # Options takes precendence
         attrs = {}
-        cfgs = options_cfg + options_files_cfgs
-        for dict_ in cfgs:
-            for k, v in dict_.items():
-                attrs[k] = v
+        for k, v in options_files_cfg.items():
+            attrs[k] = v
+        for k, v in options_cfg.items():
+            attrs[k] = v
         return klass, attrs
+
+    def save_config(self):
+        fp = asksaveasfile()
+        if fp:
+            _, attrs = self.get_class_and_attrs()
+            json_cfg = {'scorer_options': attrs}
+            json.dump(json_cfg, fp)
 
     def load_plugin(self, path):
         result = load_scoring_class_and_options(path)
@@ -394,42 +457,88 @@ class ScorerScriptsDropDown(Frame):
         options_frame = OptionFrame(self, options, text='Options')
         options_file_frame = OptionsFileFrame(
             self, options_files, text='Option Files')
+        options_file_frame.link_to_options_frame(options_frame)
         return klass, options_frame, options_file_frame
 
     def make_drop_down_menu(self, plugins):
-        switch = lambda v: self.update_options_view(v)
         choices = [n for n, _ in plugins.items()]
         menu_var = StringVar(self)
 
         frame = ttk.LabelFrame(self, text='Plugins')
         label = Label(frame, text="Variant Scorer: ", justify=LEFT)
         label.grid(sticky=EW, column=0, row=0, padx=5, pady=5)
-        popup_menu = OptionMenu(frame, menu_var, 'RegressionScorer', *choices,
+
+        switch = lambda v: self.update_options_view(v)
+        popup_menu = OptionMenu(frame, menu_var, 'Regression', *choices,
                                 command=switch)
         popup_menu.grid(sticky=E, column=1, row=0, padx=5, pady=5)
+
+        details = lambda v=menu_var: self.show_plugin_details(v.get())
+        btn = Button(frame, text='Details', command=details)
+        btn.grid(sticky=E, column=1, row=1, padx=5, pady=5)
 
         frame.grid(sticky=NSEW, columnspan=1, row=self.row, padx=5, pady=5)
         frame.rowconfigure(0, weight=1)
         frame.columnconfigure(0, weight=1)
         frame.columnconfigure(1, weight=3)
+
+        self.plugins_frame = frame
         self.row += 1
+
+        frame = LabelFrame(self, text='')
+        frame.rowconfigure(0, weight=1)
+        frame.columnconfigure(0, weight=1)
+
+        btn = Button(frame, text='Save Options...',
+                     command=self.save_config)
+        btn.grid(row=0, column=0, sticky=E)
+        btn = Button(frame, text='Log Options...',
+                     command=self.log_parameters)
+        btn.grid(row=0, column=1, sticky=E)
+
+        self.diagnostics_frame = frame
+
+    def log_parameters(self):
+        _, cfg = self.get_class_and_attrs()
+        msg = "Parsing parameters...\nFormat: (value, type) "
+        msg += nested_format(cfg, tab_level=0)
+        logging.info(msg, extra={'oname': self.__class__.__name__})
+        messagebox.showinfo("Parameters logged!",
+                            "See log for loaded parameters.")
+
+    def show_plugin_details(self, name):
+        klass, _, _, path = self.plugins[name]
+        messagebox.showinfo(
+            '{} Information\n\n'.format(name),
+            'Name: {}\n\nVersion: {}\n\nAuthors: '
+            '{}\n\nPath: {}'.format(klass.name,
+                                    klass.version, klass.author, path)
+        )
 
     def update_options_view(self, new_name):
         if self.current:
-            _, options_frame, options_file_frame = self.plugins[self.current]
+            _, options_frame, options_file_frame, _ = \
+                self.plugins[self.current]
             self.hide_frame(options_frame)
             self.hide_frame(options_file_frame)
 
-        _, options_frame, options_file_frame = self.plugins[new_name]
+        _, options_frame, options_file_frame, _ = self.plugins[new_name]
         self.show_frame(options_frame)
         self.show_frame(options_file_frame)
 
         self.current = new_name
 
     def hide_frame(self, frame):
-        frame.grid_forget()
-        self.row -= 1
+        if frame.has_options():
+            frame.grid_forget()
+            self.row -= 1
+            self.diagnostics_frame.grid_forget()
+            self.row -= 1
 
     def show_frame(self, frame):
-        frame.grid(sticky=NSEW, row=self.row)
-        self.increment_row()
+        if frame.has_options():
+            frame.grid(sticky=NSEW, row=self.row, column=0, pady=8)
+            self.increment_row()
+            self.diagnostics_frame.grid(
+                sticky=NSEW, row=self.row, column=0, pady=8)
+            self.increment_row()

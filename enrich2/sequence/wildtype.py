@@ -20,7 +20,6 @@ import logging
 import re
 
 from ..base.constants import CODON_TABLE
-from ..base.utils import pretty_class_str
 
 
 class WildTypeSequence(object):
@@ -38,9 +37,6 @@ class WildTypeSequence(object):
         self.protein_seq = None
         self.dna_offset = None
         self.protein_offset = None
-
-    def __str__(self):
-        return pretty_class_str(self)
 
     def __eq__(self, other):
         # note we don't need to check protein_offset, since it depends on dna_offset and protein_seq

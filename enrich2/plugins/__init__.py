@@ -19,7 +19,7 @@
 import os
 import sys
 from .scoring import BaseScorerPlugin
-from .options import ScorerOptions, ScorerOptionsFiles
+from .options import Options, OptionsFile
 
 
 class ModuleLoader(object):
@@ -67,16 +67,19 @@ def load_scoring_class_and_options(path):
         raise ImportError("Found Multiple classes implementing "
                           "the required BaseScorerPlugin interface.")
 
-    scorer_options = ScorerOptions()
-    scorer_options_files = ScorerOptionsFiles()
+    options_ = None
+    options_file_ = None
     for attr_name, attr in loader.get_module_attrs():
-        if isinstance(attr, ScorerOptions):
-            scorer_options = attr
-        if isinstance(attr, ScorerOptionsFiles):
-            scorer_options_files = attr
+        if isinstance(attr, Options):
+            options_ = attr
+        if isinstance(attr, OptionsFile):
+            options_file_ = attr
+
+    if options_ is not None and options_file_ is None:
+        options_file_ = OptionsFile.default_json_options_file()
 
     scorer_class = scorers[-1]
-    return scorer_class, scorer_options, scorer_options_files
+    return scorer_class, options_, options_file_
 
 
 def implements_methods(class_):

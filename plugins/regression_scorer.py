@@ -21,11 +21,11 @@ import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
 from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import ScorerOptions, ScorerOptionsFiles
+from enrich2.plugins.options import Options, OptionsFile
 from enrich2.plugins.options import Option, OptionsFile
 from enrich2.base.constants import WILD_TYPE_VARIANT
 
-options = ScorerOptions()
+options = Options()
 options.add_option(
     name="Normalization Method",
     varname="logr_method",
@@ -44,6 +44,10 @@ options.add_option(
 )
 
 class RegressionScorer(BaseScorerPlugin):
+
+    name = 'Regression'
+    version = '1.0'
+    author = 'Alan Rubin, Daniel Esposito'
 
     def __init__(self, store_manager, options):
         super().__init__(store_manager, options)

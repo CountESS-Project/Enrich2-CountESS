@@ -56,7 +56,7 @@ def write_json(d, handle):
 class Configurator(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
-        self.title("Enrich 2 Configurator")
+        self.title("Enrich 2")
 
         self.treeview = None
         self.treeview_popup_target_id = None
@@ -105,8 +105,10 @@ class Configurator(tk.Tk):
         main = tkinter.ttk.Frame(self, padding=(3, 3, 12, 12))
         main.rowconfigure(0, weight=1)
         main.columnconfigure(0, weight=1)
+        main.columnconfigure(1, weight=0)
         main.grid(row=0, column=0, sticky="nsew")
 
+        # ------------------------------------------------------- #
         # Frame for the Treeview and its scrollbars
         tree_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
         tree_frame.rowconfigure(0, weight=1)
@@ -115,6 +117,7 @@ class Configurator(tk.Tk):
         tree_frame.columnconfigure(1, weight=0)
         tree_frame.grid(row=0, column=0, sticky="nsew")
 
+        # ------------------------------------------------------- #
         # Treeview with column headings
         self.treeview = tkinter.ttk.Treeview(tree_frame)
         self.treeview["columns"] = ("class", "barcodes", "variants")
@@ -140,6 +143,7 @@ class Configurator(tk.Tk):
         tree_xsb.grid(row=1, column=0, sticky="ewn")
         self.treeview.config(yscroll=tree_ysb.set, xscroll=tree_xsb.set)
 
+        # ------------------------------------------------------- #
         # Frame for New/Edit/Delete buttons
         button_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
         button_frame.grid(row=1, column=0)
@@ -154,11 +158,27 @@ class Configurator(tk.Tk):
         delete_button.grid(row=0, column=2)
 
         # ------------------------------------------------------- #
-        # Frame for Analysis Options
+        # Frame for Plugin and Analysis Options
+        right_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
+        right_frame.rowconfigure(0, weight=1)
+        right_frame.rowconfigure(1, weight=0)
+        right_frame.columnconfigure(0, weight=1)
+        right_frame.columnconfigure(1, weight=0)
+        right_frame.grid(row=0, column=1, sticky="nsew")
+
+        # ------------------------------------------------------- #
+        # LabelFrame for plugin and options
+        scoring_plugin = ScorerScriptsDropDown(
+            right_frame, padding=(3, 3, 12, 12))
+        scoring_plugin.grid(row=0, column=0, sticky="nsew")
+        self.scorer_plugin = scoring_plugin
+
+        # ------------------------------------------------------- #
+        # LabelFrame for Analysis Options
         row = 0
         options_frame = tkinter.ttk.LabelFrame(
-            main, text="Analysis Options", padding=(3, 3, 12, 12))
-        options_frame.grid(row=0, column=2, rowspan=1, sticky="nsew", pady=8)
+            right_frame, text="Analysis Options", padding=(3, 3, 12, 12))
+        options_frame.grid(row=0, column=1, sticky="nsew", pady=8)
 
         # force recalculate
         force_recalculate = tkinter.ttk.Checkbutton(
@@ -188,14 +208,13 @@ class Configurator(tk.Tk):
         tsv_requested.invoke()
         row += 1
 
-        go_button = tkinter.ttk.Button(
-            options_frame, text="Run Analysis", command=self.go_button_press)
-        go_button.grid(column=0, row=row, sticky="sew")
-
         # ------------------------------------------------------- #
-        scoring_plugin = ScorerScriptsDropDown(main, padding=(3, 3, 12, 12))
-        scoring_plugin.grid(row=0, column=1, sticky="nsew")
-        self.scorer_plugin = scoring_plugin
+        # Run Analysis button frame
+        go_button_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
+        go_button_frame.grid(row=1, column=1, sticky='e')
+        go_button = tkinter.ttk.Button(
+            go_button_frame, text="Run Analysis", command=self.go_button_press)
+        go_button.grid(column=0, row=0, sticky="e")
 
     def get_selected_scorer_class(self):
         return self.scorer

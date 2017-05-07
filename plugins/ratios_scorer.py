@@ -19,11 +19,11 @@ import logging
 import numpy as np
 import pandas as pd
 from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import ScorerOptions
+from enrich2.plugins.options import Options
 from enrich2.base.constants import WILD_TYPE_VARIANT
 
 
-options = ScorerOptions()
+options = Options()
 options.add_option(
     name="Normalization Method",
     varname="logr_method",
@@ -34,6 +34,10 @@ options.add_option(
 )
 
 class RatiosScorer(BaseScorerPlugin):
+
+    name = 'Ratios'
+    version = '1.0'
+    author = 'Alan Rubin, Daniel Esposito'
 
     def __init__(self, store_manager, options):
         super().__init__(store_manager, options)

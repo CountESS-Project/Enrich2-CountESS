@@ -22,11 +22,24 @@ from collections import Iterable
 
 
 def parse(file_path, backend=json):
-    return backend.load(open(file_path, 'r'))
+    cfg = backend.load(open(file_path, 'r'))
+    if 'scorer' in cfg:
+        if 'scorer_options' in cfg:
+            return cfg['scorer']['scorer_options']
+    if 'scorer_options' in cfg:
+        return cfg['scorer_options']
+    else:
+        raise ValueError("Unrecognised config file, couldn't find "
+                         "expected keys. File requires the nested key"
+                         "'scorer/scorer_options' or the key 'scorer_options'")
 
-
-def valid(cfg_dict):
-    return bool(cfg_dict)
+def validate(cfg_dict):
+    if not isinstance(cfg_dict, dict):
+        raise TypeError("Expected parsed configuration to be type 'dict'"
+                        " Found {}.".format(type(cfg_dict).__name__))
+    if not bool(cfg_dict):
+        empty_error = "Parsing function returned an empty dictionary"
+        raise ValueError(empty_error)
 
 
 class Option(object):
@@ -38,21 +51,23 @@ class Option(object):
     def __init__(self, name, varname, dtype, default,
                  choices=None, tooltip="No information"):
         """
+        Option Constructor.
 
         Parameters
         ----------
-        name : 
-        varname : 
-        dtype : 
+        name : `str` like
+        varname : `str` like
+        dtype :
         default : 
-        choices : 
-        tooltip : 
+        choices : `dict` or `Iterable` like
+        tooltip : `str` like
         """
         self.name = name
         self.varname = varname
         self.dtype = dtype
         self.default = default
         self.choices = {} if choices is None else choices
+        self.rev_choices = {} if choices is None else choices
         self.tooltip = tooltip
 
         if not isinstance(self.choices, Iterable):
@@ -67,14 +82,54 @@ class Option(object):
             if self.default not in self.choices:
                 raise AttributeError("Parameter 'default' in option '{}' not "
                                      "found in 'choices'.".format(self.name))
+        self.rev_choices = {v: k for k, v in self.choices.items()}
 
     def validate(self, value):
+        """
+        Validate a potential value that will be set as in the config for this
+        option.
+
+        Parameters
+        ----------
+        value : 
+            A value that must match the dtype attribute.
+
+        Returns
+        -------
+        rtype : None
+        """
         if not isinstance(value, self.dtype):
             raise TypeError("Option '{}' type {} does not match input type "
                             "{}.".format(self.name, self.dtype, type(value)))
+        if self.choices:
+            if value not in self.choices.keys() and \
+                            value not in self.rev_choices.keys():
+                raise ValueError("Trying to set 'choices' with an undefined "
+                                 "value '{}'.".format(value))
+
+    def get_choice_key(self, value):
+        """
+        Allow a user to set a config option with wither the GUI key or
+        value key.
+        
+        Parameters
+        ----------
+        value : `str` like
+            A string value appearing in either the keys of choices or the 
+            values of choices.
+
+        Returns
+        -------
+        rtype : `str` like
+            The key value of a choice.
+        """
+        self.validate(value)
+        if value in self.rev_choices:
+            return self.rev_choices[value]
+        return value
 
 
-class ScorerOptions(object):
+class Options(object):
     """
     Utility class that is to be used by a plugin developer to add options
     to their scoring script.
@@ -121,6 +176,9 @@ class ScorerOptions(object):
         self.options.append(option)
         return self
 
+    def has_options(self):
+        return bool(self.options)
+
 
 class OptionsFile(object):
     """
@@ -133,7 +191,7 @@ class OptionsFile(object):
             name=name,
             parsing_func=parse,
             parsing_func_kwargs={'backend': json},
-            validator_func=valid,
+            validator_func=validate,
             validator_func_kwargs={}
         )
         return options_file
@@ -144,7 +202,7 @@ class OptionsFile(object):
             name=name,
             parsing_func=parse,
             parsing_func_kwargs={'backend': yaml},
-            validator_func=valid,
+            validator_func=validate,
             validator_func_kwargs={}
         )
         return options_file
@@ -168,34 +226,3 @@ class OptionsFile(object):
 
     def validate_cfg(self, cfg):
         self._validator_func(cfg, **self.valid_kwargs)
-
-
-class ScorerOptionsFiles(object):
-
-    def __init__(self):
-        self.options_files = []
-
-    def __iter__(self):
-        return iter(self.options_files)
-
-    def __getitem__(self, item):
-        return self.options_files[item]
-
-    def __len__(self):
-        return len(self.options_files)
-
-    def add_options_file(self, name, parsing_func, parsing_func_kwargs,
-                         validator_func, validator_func_kwargs):
-        options_file = OptionsFile(
-            name=name,
-            parsing_func=parsing_func,
-            parsing_func_kwargs=parsing_func_kwargs,
-            validator_func=validator_func,
-            validator_func_kwargs=validator_func_kwargs
-        )
-        self.options_files.append(options_file)
-
-    def append(self, options_file):
-        self.options_files.append(options_file)
-        return self
-

@@ -20,18 +20,18 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
-from .scoring import BaseScorerPlugin
-from .options import ScorerOptions
-from ..base.constants import WILD_TYPE_VARIANT
+from enrich2.plugins.scoring import BaseScorerPlugin
+from enrich2.plugins.options import Options, OptionsFile
+from enrich2.plugins.options import Option, OptionsFile
+from enrich2.base.constants import WILD_TYPE_VARIANT
 
-
-options = ScorerOptions()
+options = Options()
 options.add_option(
     name="Normalization Method",
     varname="logr_method",
     dtype=str,
-    default='wt',
-    choices=['wt', 'full', 'complete'],
+    default='Wild Type',
+    choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
     tooltip="Method used to normalise count data in the ratios."
 )
 options.add_option(
@@ -39,12 +39,15 @@ options.add_option(
     varname="weighted",
     dtype=bool,
     default=True,
-    choices=[False, True],
+    choices={},
     tooltip="True for WLS or False for OLS."
 )
 
-
 class RegressionScorer(BaseScorerPlugin):
+
+    name = 'Regression'
+    version = '1.0'
+    author = 'Alan Rubin, Daniel Esposito'
 
     def __init__(self, store_manager, options):
         super().__init__(store_manager, options)

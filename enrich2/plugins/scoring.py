@@ -82,6 +82,18 @@ class BaseScorerPlugin(ABC):
             raise Exception("The following error occured when trying"
                             "to run plugin {}.".format(err))
 
+    @classmethod
+    def validate(cls):
+        if not hasattr(cls, 'name'):
+            raise AttributeError("All plugins "
+                                 "require 'name' to be specified.")
+        if hasattr(cls, 'version'):
+            raise AttributeError("All plugins "
+                                 "require 'version' to be specified.")
+        if hasattr(cls, 'author'):
+            raise AttributeError("All plugins "
+                                 "require 'author' to be specified.")
+
     def _load_scoring_options(self, options):
         """
         
