@@ -22,8 +22,11 @@ import statsmodels.api as sm
 import scipy.stats as stats
 from enrich2.plugins.scoring import BaseScorerPlugin
 from enrich2.plugins.options import Options, OptionsFile
+from enrich2.plugins.options import HiddenOption, HiddenOptions
 from enrich2.base.constants import WILD_TYPE_VARIANT
 
+
+# Options that will be rendered to the GUI for easy access
 options = Options()
 options.add_option(
     name="Normalization Method",
@@ -42,10 +45,10 @@ options.add_option(
     tooltip="True for WLS or False for OLS."
 )
 options.add_option(
-    name="Reference Sequence",
-    varname="ref_seq",
+    name="Example String Input",
+    varname="ex_string",
     dtype=str,
-    default='Input Reference Sequence...',
+    default='Default String...',
     choices={},
     tooltip=""
 )
@@ -74,7 +77,28 @@ options.add_option(
     tooltip=""
 )
 
-options_file = OptionsFile.default_json_options_file()
+# Advanced options that are found in configuration files only
+hidden_options = HiddenOptions()
+hidden_options.add_option(
+    varname='h_string',
+    dtype=str,
+    default='This is a hidden string'
+)
+hidden_options.add_option(
+    varname='h_float',
+    dtype=float,
+    default=6.0
+)
+hidden_options.add_option(
+    varname='h_int',
+    dtype=int,
+    default=5
+)
+hidden_options.add_option(
+    varname='h_list',
+    dtype=list,
+    default=[1, 2, 3, 4]
+)
 
 
 class DemoScorer(BaseScorerPlugin):
