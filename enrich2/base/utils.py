@@ -16,13 +16,14 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-def nested_format(data, tab_level=1):
+def nested_format(data, default, tab_level=1):
     """
     Print a human readable nested dictionary or nested list.
     
     Parameters
     ----------
     data : Data to print.
+    default:     
     tab_level : Number of tabs to indent with.  
 
     Returns
@@ -36,23 +37,40 @@ def nested_format(data, tab_level=1):
             msg += 'Empty Iterable'
         else:
             msg += "-> Iterable"
-            for i, item in enumerate(data):
-                msg += '\n' + '\t' * tab_level + '@index {}: '.format(i)
-                msg += nested_format(item, tab_level)
+            if default:
+                msg += "-> Iterable [Default]"
+            try:
+                for i, (value, default) in enumerate(data):
+                    msg += '\n' + '\t' * tab_level + '@index {}: '.format(i)
+                    msg += nested_format(value, default, tab_level)
+            except (TypeError, ValueError):
+                for i, value in enumerate(data):
+                    msg += '\n' + '\t' * tab_level + '@index {}: '.format(i)
+                    msg += nested_format(value, False, tab_level)
             msg += '\n' + '\t' * tab_level + '@end of list'
     elif isinstance(data, dict):
         if not data:
             msg += 'Empty Dictionary'
         else:
             msg += "-> Dictionary"
-            for key, value in data.items():
-                msg += '\n' + "\t" * tab_level + "{}: ".format(key)
-                msg += nested_format(value, tab_level + 1)
+            if default:
+                msg += "-> Dictionary [Default]"
+            try:
+                for key, (value, default) in data.items():
+                    msg += '\n' + "\t" * tab_level + "{}: ".format(key)
+                    msg += nested_format(value, default, tab_level + 1)
+            except (TypeError, ValueError):
+                for key, value in data.items():
+                    msg += '\n' + "\t" * tab_level + "{}: ".format(key)
+                    msg += nested_format(value, False, tab_level + 1)
     else:
         if isinstance(data, str):
             data = "'{}'".format(data)
         dtype = type(data).__name__
-        msg += "({}, {})".format(data, dtype)
+        if default:
+            msg += "({} [Default], {})".format(data, dtype)
+        else:
+            msg += "({}, {})".format(data, dtype)
     return msg
 
 
