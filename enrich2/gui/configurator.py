@@ -164,13 +164,13 @@ class Configurator(tk.Tk):
         right_frame.rowconfigure(1, weight=0)
         right_frame.columnconfigure(0, weight=1)
         right_frame.columnconfigure(1, weight=0)
-        right_frame.grid(row=0, column=1, sticky="nsew")
+        right_frame.grid(row=0, column=1, sticky="new")
 
         # ------------------------------------------------------- #
         # LabelFrame for plugin and options
         scoring_plugin = ScorerScriptsDropDown(
             right_frame, padding=(3, 3, 12, 12))
-        scoring_plugin.grid(row=0, column=0, sticky="nsew")
+        scoring_plugin.grid(row=0, column=0, sticky="new")
         self.scorer_plugin = scoring_plugin
 
         # ------------------------------------------------------- #
@@ -178,7 +178,7 @@ class Configurator(tk.Tk):
         row = 0
         options_frame = tkinter.ttk.LabelFrame(
             right_frame, text="Analysis Options", padding=(3, 3, 12, 12))
-        options_frame.grid(row=0, column=1, sticky="nsew", pady=8)
+        options_frame.grid(row=1, column=0, sticky="new", pady=4)
 
         # force recalculate
         force_recalculate = tkinter.ttk.Checkbutton(
@@ -211,10 +211,10 @@ class Configurator(tk.Tk):
         # ------------------------------------------------------- #
         # Run Analysis button frame
         go_button_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
-        go_button_frame.grid(row=1, column=1, sticky='e')
+        go_button_frame.grid(row=1, column=1)
         go_button = tkinter.ttk.Button(
             go_button_frame, text="Run Analysis", command=self.go_button_press)
-        go_button.grid(column=0, row=0, sticky="e")
+        go_button.grid(column=0, row=0)
 
     def get_selected_scorer_class(self):
         return self.scorer
