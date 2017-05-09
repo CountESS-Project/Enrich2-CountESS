@@ -39,7 +39,7 @@ Checkbutton = ttk.Checkbutton
 OptionMenu = ttk.OptionMenu
 
 
-class OptionFrame(Frame):
+class OptionsFrame(Frame):
     def __init__(self, parent, options: Options, hidden_options: HiddenOptions,
                  show_btn=False, **kw):
         super().__init__(parent, **kw)
@@ -241,7 +241,8 @@ class OptionFrame(Frame):
                             "See log for loaded parameters.")
 
     def has_options(self):
-        return bool(self.labels)
+        return self.options.has_options() or \
+               self.hidden_options.has_options()
 
 
 class OptionsFileFrame(Frame):
@@ -266,7 +267,8 @@ class OptionsFileFrame(Frame):
         self.row += 1
 
         if self.show_btn:
-            btn = Button(self, text='Print to Log', command=self.log_parameters)
+            btn = Button(self, text='Print to Log',
+                         command=self.log_parameters)
             btn.grid(row=self.row, column=1, sticky=SE)
             self.rowconfigure(self.row, weight=1)
             self.row += 1
@@ -354,9 +356,11 @@ class OptionsFileFrame(Frame):
                 incomplete_opt = self.options_file_incomplete()
                 incomplete_hopt = self.hidden_options_file_incomplete()
                 if not (incomplete_opt and incomplete_hopt):
-                    messagebox.showinfo('Apply Options', success)
+                    messagebox.showinfo('Apply configuration to GUI', success)
         else:
-            messagebox.showinfo('Apply Options', "Nothing to apply.")
+            messagebox.showinfo('Apply configuration to GUI',
+                                "No configuration to apply. Please load a "
+                                "configuration file first.")
 
     def options_file_incomplete(self):
         if self.option_frame and self.active_cfg:
@@ -470,38 +474,46 @@ class OptionsFileFrame(Frame):
         messagebox.showinfo("Parameters logged!",
                             "See log for loaded parameters.")
 
-    def link_to_options_frame(self, options_frame: OptionFrame):
+    def link_to_options_frame(self, options_frame: OptionsFrame):
         self.option_frame = options_frame
 
     def has_options(self):
         return bool(self.labels)
 
 
-class ScorerScriptsDropDown(Frame):
+class ScorerScriptsDropDown(LabelFrame):
     def __init__(self, parent=None, scripts_dir='plugins/', **config):
         super().__init__(parent, **config)
-        self.parent = parent
         self.row = 0
-        self.current = 'Regression'
-        self.plugins_frame = None
-        self.diagnostics_frame = None
+        self.current_view = 'Regression'
+        self.btn_frame = None
         self.apply_btn = None
-
         self.plugins = {}
+
+        self.parse_directory(scripts_dir)
+        self.make_widgets()
+        self.make_buttons()
+        self.show_new_view(self.current_view)
+
+    def parse_directory(self, scripts_dir):
         for path in glob.glob("{}/*.py".format(scripts_dir)):
             path = path.replace("\\", '/')
             full_path = os.path.join(os.getcwd(), path)
             if "__init__.py" in path:
                 continue
             try:
-                result = self.load_plugin(path)
-                klass, options_frame, options_file_frame = result
+                result = load_scoring_class_and_options(path)
+                klass, options, hidden_options, options_file = result
+                options_frame, options_file_frame = self.make_options_frames(
+                    options, hidden_options, options_file
+                )
             except Exception as e:
                 logging.error(e, extra={'oname': self.__class__.__name__})
                 messagebox.showerror(
                     "Error loading plugin...",
                     "There was an error loading the script:\n\n{}." \
-                    "\n\nSee log for details.".format(full_path))
+                    "\n\nSee log for details\n\n{}.".format(full_path, e)
+                )
                 continue
 
             # Rename plugins with the same 'name' attribute.
@@ -514,35 +526,91 @@ class ScorerScriptsDropDown(Frame):
             self.plugins[key] = (klass, options_frame,
                                  options_file_frame, full_path)
 
+    def make_options_frames(self, options, hidden_options, options_file):
+        options_frame = OptionsFrame(self, options, hidden_options)
+        options_file_frame = OptionsFileFrame(self, options_file)
+        options_file_frame.link_to_options_frame(options_frame)
+        return options_frame, options_file_frame
+
+    def make_widgets(self):
+        # Main Scoring plugin frame
+        label = Label(self, text="Scoring Plugin: ", justify=LEFT)
+        label.grid(sticky=EW, column=0, row=self.row)
+
         if not self.plugins:
-            frame = ttk.LabelFrame(self, text='Scoring Options')
-            frame.grid(sticky=NSEW, columnspan=1, row=self.row)
-            frame.rowconfigure(0, weight=1)
-            frame.columnconfigure(0, weight=1)
-            frame.columnconfigure(1, weight=3)
-            label = Label(frame, text="Scoring Plugin: ", justify=LEFT)
-            label.grid(sticky=EW, column=0, row=0)
-
             default = 'No plugins detected'
-            popup_menu = OptionMenu(frame, StringVar(), default, *[default])
-            popup_menu.grid(sticky=E, column=1, row=0)
-
+            popup_menu = OptionMenu(self, StringVar(), default, *[default])
+            popup_menu.grid(sticky=E, column=1, row=self.row)
+            self.increment_row()
         else:
-            self.make_drop_down_menu(self.plugins)
-            _, options_frame, options_file_frame, _ = \
-                self.plugins[self.current]
-            self.show_frame(options_frame)
-            self.show_frame(options_file_frame)
+            self.make_drop_down_widget()
+
+    def make_drop_down_widget(self):
+        choices = [n for n, _ in self.plugins.items()]
+        menu_var = StringVar(self)
+
+        switch = lambda v: self.update_options_view(v)
+        popup_menu = OptionMenu(self, menu_var, self.current_view,
+                                *choices, command=switch)
+        popup_menu.grid(sticky=E, column=1, row=self.row)
+        self.increment_row()
+
+        details = lambda v=menu_var: self.show_plugin_details(v.get())
+        btn = Button(self, text='Plugin Details', command=details)
+        btn.grid(sticky=E, column=1, row=self.row)
+        self.increment_row()
+
+    def make_buttons(self):
+        btn_frame = Frame(self)
+        log_btn = Button(btn_frame, text='Print to Log',
+                         command=self.log_parameters)
+        apply_btn = Button(btn_frame, text='Apply')
+        log_btn.grid(row=0, column=0, sticky=E)
+        apply_btn.grid(row=0, column=1, sticky=E)
+        self.apply_btn = apply_btn
+        self.btn_frame = btn_frame
 
     def increment_row(self):
         # self.rowconfigure(self.row, weight=1)
         self.row += 1
 
+    def update_options_view(self, next_view):
+        self.hide_current_view()
+        self.show_new_view(next_view)
+        self.current_view = next_view
+
+    def hide_current_view(self):
+        _, options_frame, options_file_frame, _ = \
+            self.plugins[self.current_view]
+        if options_frame.has_options():
+            options_frame.grid_forget()
+            self.row -= 1
+            options_file_frame.grid_forget()
+            self.row -= 1
+            self.btn_frame.grid_forget()
+            self.row -= 1
+
+    def show_new_view(self, next_view):
+        _, options_frame, options_file_frame, _ = self.plugins[next_view]
+        if options_frame.has_options():
+            options_frame.grid(sticky=NSEW, row=self.row,
+                               columnspan=2, pady=(12, 0))
+            self.increment_row()
+
+            options_file_frame.grid(sticky=NSEW, row=self.row,
+                                    columnspan=2, pady=(12, 0))
+            self.increment_row()
+
+            self.apply_btn.config(command=options_file_frame.apply_to_options)
+            self.btn_frame.grid(row=self.row, columnspan=2,
+                                sticky=E, pady=(12, 0))
+            self.increment_row()
+
     def get_class_and_attrs(self, keep_defult_bool=False):
         if not self.plugins:
             return None, None
         attrs = {}
-        klass, opt_frame, opt_file_frame, _ = self.plugins[self.current]
+        klass, opt_frame, opt_file_frame, _ = self.plugins[self.current_view]
         options_cfg = opt_frame.get_option_cfg()
         for k, (v, default) in options_cfg.items():
             if keep_defult_bool:
@@ -563,51 +631,6 @@ class ScorerScriptsDropDown(Frame):
                     "Nothing to save.",
                     "No plugin loaded or no attributes to save."
                 )
-
-    def load_plugin(self, path):
-        result = load_scoring_class_and_options(path)
-        klass, options, hidden_options, options_file = result
-        options_frame = OptionFrame(self, options, hidden_options)
-        options_file_frame = OptionsFileFrame(self, options_file)
-        options_file_frame.link_to_options_frame(options_frame)
-        return klass, options_frame, options_file_frame
-
-    def make_drop_down_menu(self, plugins):
-        choices = [n for n, _ in plugins.items()]
-        menu_var = StringVar(self)
-
-        frame = ttk.LabelFrame(self, text='Scoring Options')
-        label = Label(frame, text="Scoring Plugin: ", justify=LEFT)
-        label.grid(sticky=EW, column=0, row=0)
-
-        switch = lambda v: self.update_options_view(v)
-        popup_menu = OptionMenu(
-            frame, menu_var, self.current, *choices, command=switch)
-        popup_menu.grid(sticky=E, column=1, row=0)
-
-        details = lambda v=menu_var: self.show_plugin_details(v.get())
-        btn = Button(frame, text='Plugin Details', command=details)
-        btn.grid(sticky=E, column=1, row=1)
-
-        frame.grid(sticky=NSEW, columnspan=1, row=self.row)
-        frame.rowconfigure(0, weight=1)
-        frame.columnconfigure(0, weight=1)
-        frame.columnconfigure(1, weight=3)
-
-        self.plugins_frame = frame
-        self.row += 1
-
-        frame = LabelFrame(self, text='')
-        frame.rowconfigure(0, weight=1)
-        frame.columnconfigure(0, weight=1)
-
-        btn = Button(frame, text='Print to Log', command=self.log_parameters)
-        btn.grid(row=0, column=0, sticky=E)
-        btn = Button(frame, text='Apply')
-        btn.grid(row=0, column=1, sticky=E)
-
-        self.diagnostics_frame = frame
-        self.apply_btn = btn
 
     def log_parameters(self):
         _, cfg = self.get_class_and_attrs(keep_defult_bool=True)
@@ -631,34 +654,3 @@ class ScorerScriptsDropDown(Frame):
             '{}\n\nPath: {}'.format(klass.name,
                                     klass.version, klass.author, path)
         )
-
-    def update_options_view(self, new_name):
-        if self.current:
-            _, options_frame, options_file_frame, _ = \
-                self.plugins[self.current]
-            self.hide_frame(options_frame)
-            self.hide_frame(options_file_frame)
-
-        _, options_frame, options_file_frame, _ = self.plugins[new_name]
-        self.show_frame(options_frame)
-        self.show_frame(options_file_frame)
-
-        self.current = new_name
-
-    def hide_frame(self, frame):
-        if frame.has_options():
-            frame.grid_forget()
-            self.row -= 1
-            self.diagnostics_frame.grid_forget()
-            self.row -= 1
-
-    def show_frame(self, frame):
-        if frame.has_options():
-            frame.grid(sticky=NSEW, row=self.row, column=0, pady=(12, 0))
-            self.increment_row()
-            self.diagnostics_frame.grid(
-                sticky=NSEW, row=self.row, column=0)
-            self.increment_row()
-
-            if isinstance(frame, OptionsFileFrame):
-                self.apply_btn.config(command=frame.apply_to_options)

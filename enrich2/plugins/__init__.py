@@ -43,7 +43,7 @@ class ModuleLoader(object):
             self.module_folder = module_folder
             self.module = getattr(top_module, self.module_name)
         except BaseException as err:
-            raise Exception(err)
+            raise ImportError(err)
 
     def get_module_attrs(self):
         return self.module.__dict__.items()
@@ -77,13 +77,15 @@ def load_scoring_class_and_options(path):
         if isinstance(attr, Options):
             options_ = attr
 
-    if hidden_options_ is not None or options_ is not None:
+    if hidden_options_ is not None and options_ is not None:
         dupes = varname_intersection(hidden_options_, options_)
         if dupes:
             dupe_string = ", ".join(["'{}'".format(x) for x in dupes])
             raise ImportError(
                 "Cannot define multiple options with the same "
                 "varname. Please fix the following '{}'.".format(dupe_string))
+
+    if hidden_options_ is not None or options_ is not None:
         options_file = OptionsFile.default_json_options_file()
 
     scorer_class = scorers[-1]

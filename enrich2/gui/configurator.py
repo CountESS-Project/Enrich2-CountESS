@@ -169,7 +169,7 @@ class Configurator(tk.Tk):
         # ------------------------------------------------------- #
         # LabelFrame for plugin and options
         scoring_plugin = ScorerScriptsDropDown(
-            right_frame, padding=(3, 3, 12, 12))
+            right_frame, text='Scoring Options', padding=(3, 3, 12, 12))
         scoring_plugin.grid(row=0, column=0, sticky="new")
         self.scorer_plugin = scoring_plugin
 
