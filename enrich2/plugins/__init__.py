@@ -19,7 +19,8 @@
 import os
 import sys
 from .scoring import BaseScorerPlugin
-from .options import Options, OptionsFile
+from .options import Options, OptionsFile, HiddenOptions
+from .options import varname_intersection
 
 
 class ModuleLoader(object):
@@ -41,8 +42,8 @@ class ModuleLoader(object):
             self.module_name = module_name
             self.module_folder = module_folder
             self.module = getattr(top_module, self.module_name)
-        except Exception as err:
-            raise ImportError(err)
+        except BaseException as err:
+            raise Exception(err)
 
     def get_module_attrs(self):
         return self.module.__dict__.items()
@@ -68,18 +69,25 @@ def load_scoring_class_and_options(path):
                           "the required BaseScorerPlugin interface.")
 
     options_ = None
-    options_file_ = None
+    hidden_options_ = None
+    options_file = None
     for attr_name, attr in loader.get_module_attrs():
+        if isinstance(attr, HiddenOptions):
+            hidden_options_ = attr
         if isinstance(attr, Options):
             options_ = attr
-        if isinstance(attr, OptionsFile):
-            options_file_ = attr
 
-    if options_ is not None and options_file_ is None:
-        options_file_ = OptionsFile.default_json_options_file()
+    if hidden_options_ is not None or options_ is not None:
+        dupes = varname_intersection(hidden_options_, options_)
+        if dupes:
+            dupe_string = ", ".join(["'{}'".format(x) for x in dupes])
+            raise ImportError(
+                "Cannot define multiple options with the same "
+                "varname. Please fix the following '{}'.".format(dupe_string))
+        options_file = OptionsFile.default_json_options_file()
 
     scorer_class = scorers[-1]
-    return scorer_class, options_, options_file_
+    return scorer_class, options_, hidden_options_, options_file
 
 
 def implements_methods(class_):
