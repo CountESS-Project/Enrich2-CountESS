@@ -34,7 +34,6 @@ options.add_option(
     dtype=str,
     default='Wild Type',
     choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
-    tooltip="Method used to normalise count data in the ratios."
 )
 options.add_option(
     name="Weighted",
@@ -42,7 +41,6 @@ options.add_option(
     dtype=bool,
     default=True,
     choices={},
-    tooltip="True for WLS or False for OLS."
 )
 options.add_option(
     name="Example String Input",
@@ -50,7 +48,6 @@ options.add_option(
     dtype=str,
     default='Default String...',
     choices={},
-    tooltip=""
 )
 options.add_option(
     name="Alpha",
@@ -58,7 +55,6 @@ options.add_option(
     dtype=int,
     default=0,
     choices={},
-    tooltip=""
 )
 options.add_option(
     name="Beta",
@@ -66,7 +62,6 @@ options.add_option(
     dtype=float,
     default=0.0,
     choices={},
-    tooltip=""
 )
 options.add_option(
     name="Use threading",
@@ -74,7 +69,6 @@ options.add_option(
     dtype=bool,
     default=False,
     choices={},
-    tooltip=""
 )
 
 # Advanced options that are found in configuration files only

@@ -32,7 +32,6 @@ options.add_option(
     dtype=str,
     default='Wild Type',
     choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
-    tooltip="Method used to normalise count data in the ratios."
 )
 options.add_option(
     name="Weighted",
@@ -40,7 +39,6 @@ options.add_option(
     dtype=bool,
     default=True,
     choices={},
-    tooltip="True for WLS or False for OLS."
 )
 
 class RegressionScorer(BaseScorerPlugin):

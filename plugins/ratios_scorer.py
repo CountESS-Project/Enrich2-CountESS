@@ -30,7 +30,6 @@ options.add_option(
     dtype=str,
     default='Wild Type',
     choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
-    tooltip="Method used to normalise count data in the ratios."
 )
 
 class RatiosScorer(BaseScorerPlugin):
