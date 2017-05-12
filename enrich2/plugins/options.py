@@ -19,6 +19,7 @@
 import json
 import yaml
 from collections import Iterable
+from collections import Mapping
 
 
 # -------------------------------------------------------------------------- #
@@ -48,14 +49,65 @@ def validate(cfg_dict):
 # -------------------------------------------------------------------------- #
 #                           Option Types
 # -------------------------------------------------------------------------- #
-class Option(object):
+class BaseOption(object):
+
+    def __init__(self, name, varname, dtype, default):
+        self.name = name
+        self.varname = varname
+        self.dtype = dtype
+        self.default = default
+        self.value = default
+
+    def _validate(self, value):
+        """
+        Validate a potential value that will be set as in the config for this
+        option.
+
+        Parameters
+        ----------
+        value : 
+            A value that must match the dtype attribute.
+
+        Returns
+        -------
+        rtype : None
+        """
+        if not isinstance(value, self.dtype):
+            raise TypeError("Option '{}' with type {} does not match input type "
+                            "{}.".format(self.varname, self.dtype.__name__,
+                                         type(value).__name__))
+
+    def _set_value(self, value):
+        """
+        
+        Parameters
+        ----------
+        value : 
+
+        Returns
+        -------
+
+        """
+        self._validate(value)
+        self.value = value
+
+    def get_value(self):
+        """
+        
+        Returns
+        -------
+
+        """
+        return self.value
+
+
+class Option(BaseOption):
     """
     Utility class to represent a user defined option. Mainly used by the 
     GUI to render to a dialogue box.
     """
 
-    def __init__(self, name, varname, dtype, default,
-                 choices=None, tooltip="No information"):
+    def __init__(self, name, varname, dtype, default, choices=None):
         """
         Option Constructor.
 
@@ -66,16 +118,10 @@ class Option(object):
         dtype :
         default : 
         choices : `dict` or `Iterable` like
-        tooltip : `str` like
         """
-        self.name = name
-        self.varname = varname
-        self.dtype = dtype
-        self.default = default
+        super(Option, self).__init__(name, varname, dtype, default)
         self.choices = {} if choices is None else choices
-        self.rev_choices = {} if choices is None else choices
-        self.tooltip = tooltip
-        self.value = default
+        self._rev_choices = {} if choices is None else choices
 
         if not isinstance(self.choices, Iterable):
             raise TypeError("Parameter 'choices' in option '{}' must be an "
@@ -89,8 +135,29 @@ class Option(object):
             if self.default not in self.choices:
                 raise AttributeError("Parameter 'default' in option '{}' not "
                                      "found in 'choices'.".format(self.name))
-        self.rev_choices = {v: k for k, v in self.choices.items()}
-        self.set_value(default)
+        self._rev_choices = {v: k for (k, v) in self.choices.items()}
+        self.validate(self.value)
+
+    def keytransform(self, value):
+        """
+        Allow a user to set a config option with wither the GUI key or
+        value key.
+
+        Parameters
+        ----------
+        value : `str` like
+            A string value appearing in either the keys of choices or the 
+            values of choices.
+
+        Returns
+        -------
+        rtype : `str` like
+            The key value of a choice.
+        """
+        super()._validate(value)
+        if value in self._rev_choices:
+            return self._rev_choices[value]
+        return value
 
     def validate(self, value):
         """
@@ -106,45 +173,28 @@ class Option(object):
         -------
         rtype : None
         """
-        if not isinstance(value, self.dtype):
-            raise TypeError("Option '{}' type {} does not match input type "
-                            "{}.".format(self.name, self.dtype.__name__,
-                                         type(value).__name__))
         if self.choices:
-            if value not in self.choices.keys() and \
-                            value not in self.rev_choices.keys():
+            if self.keytransform(value) not in self.choices.keys():
                 raise ValueError("Trying to set 'choices' with an undefined "
                                  "value '{}'.".format(value))
 
     def set_value(self, value):
-        self.validate(value)
-        if self.choices:
-            value = self.get_choice_key(value)
-        self.value = value
-
-    def get_choice_key(self, value):
         """
-        Allow a user to set a config option with wither the GUI key or
-        value key.
         
         Parameters
         ----------
-        value : `str` like
-            A string value appearing in either the keys of choices or the 
-            values of choices.
+        value : 
 
         Returns
         -------
-        rtype : `str` like
-            The key value of a choice.
+
         """
-        self.validate(value)
-        if value in self.rev_choices:
-            return self.rev_choices[value]
-        return value
+        if self.choices:
+            value = self.keytransform(value)
+        super()._set_value(value)
 
 
-class HiddenOption(object):
+class HiddenOption(BaseOption):
     """
     Utility class to represent a user defined option. These options only appear
     in the configuration file and will typically represent more advanced python
@@ -161,41 +211,65 @@ class HiddenOption(object):
         dtype :
         default : 
         """
-        self.name = varname
-        self.varname = varname
-        self.dtype = dtype
-        self.default = default
-        self.value = default
-        self.set_value(default)
+        super(HiddenOption, self).__init__(varname, varname, dtype, default)
+        self.validate(self.value)
 
     def validate(self, value):
-        """
-        Validate a potential value that will be set as in the config for this
-        option.
-
-        Parameters
-        ----------
-        value : 
-            A value that must match the dtype attribute.
-
-        Returns
-        -------
-        rtype : None
-        """
-        if not isinstance(value, self.dtype):
-            raise TypeError("Option '{}' type {} does not match input type "
-                            "{}.".format(self.name, self.dtype.__name__,
-                                         type(value).__name__))
+        super()._set_value(value)
 
     def set_value(self, value):
-        self.validate(value)
-        self.value = value
+        super()._validate(value)
 
 
 # -------------------------------------------------------------------------- #
 #                           Option containers
 # -------------------------------------------------------------------------- #
-class Options(object):
+class BaseOptions(Mapping):
+
+    def __init__(self):
+        self._options = dict()
+
+    def __iter__(self):
+        return iter(self._options)
+
+    def __getitem__(self, key):
+        return self._options[key]
+
+    def __len__(self):
+        return len(self._options)
+
+    def __bool__(self):
+        return bool(self._options)
+
+    def has_options(self):
+        return bool(self)
+
+    def option_varnames(self):
+        return self._options.keys()
+
+    def option_names(self):
+        return [o.name for o in self._options.values()]
+
+    def set_option_by_varname(self, varname, value):
+        if varname not in self._options:
+            raise KeyError("Key '{}' not found in {}.".format(
+                varname, self.__class__.__name__))
+        self._options[varname].set_value(value)
+
+    def get_option_by_varname(self, varname):
+        if varname not in self._options:
+            raise KeyError("Key '{}' not found in {}.".format(
+                varname, self.__class__.__name__))
+        return self._options[varname]
+
+    def add_item(self, varname, option):
+        if varname in set(self._options.keys()):
+            raise ValueError("Cannot define two options with the same "
+                             "varname '{}'.".format(varname))
+        self._options[varname] = option
+
+
+class Options(BaseOptions):
     """
     Utility class that is to be used by a plugin developer to add options
     to their scoring script.
@@ -205,10 +279,9 @@ class Options(object):
         """
 
         """
-        self.options = []
+        super().__init__()
 
-    def add_option(self, name, varname, dtype,
-                   default, choices=None, tooltip=""):
+    def add_option(self, name, varname, dtype, default, choices=None):
         """
 
         Parameters
@@ -218,59 +291,16 @@ class Options(object):
         dtype : 
         default : 
         choices : 
-        tooltip : 
 
         Returns
         -------
 
         """
-        varnames = [o.name for o in self.options]
-        if varname in varnames:
-            raise ValueError("Cannot define two options with the same "
-                             "varname '{}'.".format(varname))
-        self.options.append(
-            Option(name, varname, dtype, default, choices, tooltip)
-        )
-        return self
-
-    def __iter__(self):
-        return iter(self.options)
-
-    def __len__(self):
-        return len(self.options)
-
-    def __getitem__(self, item):
-        return self.options[item]
-
-    def option_varnames(self):
-        return [o.varname for o in self.options]
-
-    def option_names(self):
-        return [o.name for o in self.options]
-
-    def set_option_by_varname(self, varname, value):
-        options = {o.varname: o  for o in self}
-        if varname not in options:
-            raise KeyError("Key '{}' not found in {}.".format(
-                varname, self.__class__.__name__))
-        try:
-            options[varname].set_value(value)
-        except (TypeError, ValueError) as err:
-            raise Exception("Error setting '{}' to "
-                            "value {}:\n{}".format(varname, value, err))
-
-    def to_dict(self):
-        return {o.varname: o.value for o in self}
-
-    def append(self, option):
-        self.options.append(option)
-        return self
-
-    def has_options(self):
-        return bool(self.options)
+        option = Option(name, varname, dtype, default, choices)
+        self.add_item(varname, option)
 
 
-class HiddenOptions(object):
+class HiddenOptions(BaseOptions):
     """
     Utility class that is to be used by a plugin developer to add 
     hidden options to their scoring script.
@@ -280,7 +310,7 @@ class HiddenOptions(object):
         """
 
         """
-        self.hidden_options = []
+        super().__init__()
 
     def add_option(self, varname, dtype, default):
         """
@@ -295,50 +325,8 @@ class HiddenOptions(object):
         -------
 
         """
-        varnames = [o.name for o in self.hidden_options]
-        if varname in varnames:
-            raise ValueError("Cannot define two hidden options with the same "
-                             "varname '{}'.".format(varname))
-        self.hidden_options.append(
-            HiddenOption(varname, dtype, default)
-        )
-        return self
-
-    def __iter__(self):
-        return iter(self.hidden_options)
-
-    def __len__(self):
-        return len(self.hidden_options)
-
-    def __getitem__(self, item):
-        return self.hidden_options[item]
-
-    def option_varnames(self):
-        return [o.varname for o in self.hidden_options]
-
-    def option_names(self):
-        return [o.name for o in self.hidden_options]
-
-    def to_dict(self):
-        return {o.varname: o.value for o in self}
-
-    def set_option_by_varname(self, varname, value):
-        options = {o.varname: o  for o in self}
-        if varname not in options:
-            raise KeyError("Key '{}' not found in {}.".format(
-                varname, self.__class__.__name__))
-        try:
-            options[varname].set_value(value)
-        except (TypeError, ValueError) as err:
-            raise Exception("Error setting '{}' to "
-                            "value {}:\n{}".format(varname, value, err))
-
-    def append(self, option):
-        self.hidden_options.append(option)
-        return self
-
-    def has_options(self):
-        return bool(self.hidden_options)
+        option = HiddenOption(varname, dtype, default)
+        self.add_item(varname, option)
 
 
 # -------------------------------------------------------------------------- #
@@ -409,28 +397,30 @@ def get_unused_options(cfg_dict, options):
 
     """
     unused = set()
-    option_keys = options.option_varnames()
+    option_keys = set(options.keys())
     for key in cfg_dict.keys():
         if key not in option_keys:
             unused.add(key)
     return unused
 
 
-def get_unused_options_ls(cfg_dict, *options):
+def get_unused_options_ls(cfg_dict, options_ls):
     """
     
     Parameters
     ----------
     cfg_dict : 
-    options : 
+    options_ls : 
 
     Returns
     -------
 
     """
     unused = set()
-    for opts in list(options):
-        unused |= get_unused_options(cfg_dict, opts)
+    option_keys = set([k for opts in options_ls for k in opts])
+    for key in cfg_dict.keys():
+        if key not in option_keys:
+            unused.add(key)
     return unused
 
 
@@ -451,6 +441,25 @@ def varname_intersection(options_a, options_b):
     return vnames_a & vnames_b
 
 
+def options_not_in_config(cfg, options):
+    """
+    
+    Parameters
+    ----------
+    cfg : 
+    options : 
+
+    Returns
+    -------
+
+    """
+    missing = []
+    for varname, option in options.items():
+        if varname not in cfg:
+            missing.append(option)
+    return missing
+
+
 def option_varnames_not_in_cfg(cfg, options):
     """
     
@@ -463,11 +472,7 @@ def option_varnames_not_in_cfg(cfg, options):
     -------
 
     """
-    defaults = set()
-    for varname in options.option_varnames():
-        if varname not in cfg:
-            defaults.add(varname)
-    return defaults
+    return [opt.varname for opt in options_not_in_config(cfg, options)]
 
 
 def option_names_not_in_cfg(cfg, options):
@@ -482,11 +487,7 @@ def option_names_not_in_cfg(cfg, options):
     -------
 
     """
-    defaults = set()
-    for name in options.option_names():
-        if name not in cfg:
-            defaults.add(name)
-    return defaults
+    return [opt.name for opt in options_not_in_config(cfg, options)]
 
 
 def apply_cfg_to_options(cfg, options):
@@ -502,5 +503,5 @@ def apply_cfg_to_options(cfg, options):
 
     """
     for key, value in cfg.items():
-        if key in set(options.set_option_by_varname()):
+        if key in set(options.option_varnames()):
             options.set_option_by_varname(key, value)
