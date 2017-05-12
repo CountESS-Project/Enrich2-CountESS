@@ -19,7 +19,7 @@
 import os
 import sys
 from .scoring import BaseScorerPlugin
-from .options import Options, OptionsFile, HiddenOptions
+from .options import Options, OptionsFile
 from .options import varname_intersection
 
 
@@ -69,27 +69,16 @@ def load_scoring_class_and_options(path):
                           "the required BaseScorerPlugin interface.")
 
     options_ = None
-    hidden_options_ = None
     options_file = None
     for attr_name, attr in loader.get_module_attrs():
-        if isinstance(attr, HiddenOptions):
-            hidden_options_ = attr
         if isinstance(attr, Options):
             options_ = attr
 
-    if hidden_options_ is not None and options_ is not None:
-        dupes = varname_intersection(hidden_options_, options_)
-        if dupes:
-            dupe_string = ", ".join(["'{}'".format(x) for x in dupes])
-            raise ImportError(
-                "Cannot define multiple options with the same "
-                "varname. Please fix the following '{}'.".format(dupe_string))
-
-    if hidden_options_ is not None or options_ is not None:
+    if options_ is not None and options_.has_options():
         options_file = OptionsFile.default_json_options_file()
 
     scorer_class = scorers[-1]
-    return scorer_class, options_, hidden_options_, options_file
+    return scorer_class, options_, options_file
 
 
 def implements_methods(class_):

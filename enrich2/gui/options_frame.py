@@ -25,10 +25,10 @@ from collections import Iterable
 import tkinter.messagebox as messagebox
 from tkinter.filedialog import askopenfilename, asksaveasfile
 
-from ..plugins.options import Options, Option, HiddenOptions
+from ..plugins.options import Options, Option
 from ..plugins.options import OptionsFile
 from ..plugins.options import options_not_in_config
-from ..plugins.options import get_unused_options_ls
+from ..plugins.options import get_unused_options
 from ..plugins import load_scoring_class_and_options
 from ..base.utils import nested_format
 
@@ -42,17 +42,16 @@ Checkbutton = ttk.Checkbutton
 OptionMenu = ttk.OptionMenu
 
 
+# -------------------------------------------------------------------------- #
+#                Editable Options (Visible/Invisible) Frame
+# -------------------------------------------------------------------------- #
 class OptionsFrame(Frame, Iterable):
-    def __init__(self, parent, options: Options, hidden_options: HiddenOptions,
-                 **kw):
+    def __init__(self, parent, options: Options, **kw):
         super().__init__(parent, **kw)
         self.parent = parent
         self.row = 0
 
-        self.options = Options() \
-            if options is None else options
-        self.hidden_options = HiddenOptions() \
-            if hidden_options is None else hidden_options
+        self.options = Options() if options is None else options
         self.vname_tkvars_map = {}
 
         if options is not None:
@@ -61,10 +60,7 @@ class OptionsFrame(Frame, Iterable):
             self.columnconfigure(1, weight=3)
 
     def __iter__(self):
-        return iter(
-            list(self.options.keys()) + \
-            list(self.hidden_options.keys())
-        )
+        return iter(list(self.options.keys()))
 
     def parse_options(self, options: Options) -> None:
         if not len(options):
@@ -74,7 +70,7 @@ class OptionsFrame(Frame, Iterable):
             self.rowconfigure(self.row, weight=1)
             self.row += 1
 
-        for option in options.values():
+        for option in options.get_visible_options():
             self.create_widget_from_option(option)
             self.rowconfigure(self.row, weight=1)
             self.row += 1
@@ -187,8 +183,7 @@ class OptionsFrame(Frame, Iterable):
         return True
 
     def get_option_by_varname(self, varname):
-        option = self.options.get(varname, None) or \
-                 self.hidden_options.get(varname, None)
+        option = self.options.get(varname, None)
         if option is None:
             raise KeyError("No option with the variable name '{}' could "
                            "be found".format(varname))
@@ -210,44 +205,40 @@ class OptionsFrame(Frame, Iterable):
             default = opt.default
             opt.validate(value)
             cfg[varname] = (value, value == default)
-
-        for varname, h_opt in self.hidden_options.items():
-            value = h_opt.value
-            default = h_opt.default
-            h_opt.validate(value)
-            cfg[varname] = (value, value == default)
         return cfg
 
     def has_options(self):
-        return self.options.has_options() or \
-               self.hidden_options.has_options()
+        return self.options.has_options()
 
 
+# -------------------------------------------------------------------------- #
+#                        Frame for File Handling
+# -------------------------------------------------------------------------- #
 class OptionsFileFrame(Frame):
-    def __init__(self, parent, options_file: OptionsFile, **config):
+    def __init__(self, parent, options_file, **config):
         super().__init__(parent, **config)
         self.row = 0
         self.active_cfg = {}
         self.options_frame = None
+        self.options_file = options_file
         if options_file is not None:
-            self._make_widgets(options_file)
+            self._make_widgets()
             self.columnconfigure(0, weight=1)
             self.columnconfigure(1, weight=3)
 
-    def _make_widgets(self, options_file: OptionsFile):
-        self._make_label(options_file)
-        self._make_button(options_file)
+    def _make_widgets(self):
+        self._make_label()
+        self._make_button()
         self.rowconfigure(self.row, weight=1)
         self.row += 1
 
-    def _make_label(self, options_file: OptionsFile):
-        label_text = "{}: ".format(options_file.name)
+    def _make_label(self):
+        label_text = "{}: ".format(self.options_file.name)
         label = Label(self, text=label_text, justify=LEFT)
         label.grid(row=self.row, column=0, sticky=EW)
 
-    def _make_button(self, options_file: OptionsFile):
-        command = lambda opt=options_file: self.load_from_file(opt)
-        button = Button(self, text='Load...', command=command)
+    def _make_button(self):
+        button = Button(self, text='Load...', command=self.load_from_file)
         button.grid(row=self.row, column=1, sticky=E)
 
     def load_from_cfg(self, cfg):
@@ -272,7 +263,7 @@ class OptionsFileFrame(Frame):
             self.active_cfg = cfg
             messagebox.showinfo('Success!', success)
 
-    def load_from_file(self, options_file: OptionsFile):
+    def load_from_file(self):
         file_path = askopenfilename()
         if not file_path:
             return
@@ -283,14 +274,14 @@ class OptionsFileFrame(Frame):
         validation_error_msg = "There was an error during validation. " \
                                "\n\nPlease see log for details."
         try:
-            cfg = options_file.parse_to_dict(file_path)
+            cfg = self.options_file.parse_to_dict(file_path)
         except BaseException as error:
             logging.exception(error, extra={'oname': self.__class__.__name__})
             messagebox.showerror('Parse Error', cfg_error_msg)
             return
 
         try:
-            options_file.validate_cfg(cfg)
+            self.options_file.validate_cfg(cfg)
         except BaseException as error:
             logging.exception(error, extra={'oname': self.__class__.__name__})
             messagebox.showerror('Validation Error', validation_error_msg)
@@ -317,30 +308,24 @@ class OptionsFileFrame(Frame):
             return
 
         warn_message = ""
-        options_ls = [
-            self.options_frame.options,
-            self.options_frame.hidden_options
-        ]
-        unused_keys = get_unused_options_ls(self.active_cfg, options_ls)
-        incomplete_opt = self.options_file_incomplete()
-        incomplete_hopt = self.hidden_options_file_incomplete()
-        incomplete = incomplete_opt + incomplete_hopt
-
+        unused_keys = get_unused_options(
+            self.active_cfg, self.options_frame.options)
+        incomplete = self.options_file_incomplete()
         self.active_cfg = {k: v for (k, v) in self.active_cfg.items()
                            if k not in unused_keys}
 
         if unused_keys:
             unused = '\n'.join(["'{}'".format(n) for n in unused_keys])
             warn_message += "The following options found in the configuration" \
-                       " file are not defined in the current plugin and " \
-                       "will not be used during analysis:\n\n{}\n\n\n"
+                            "file are not defined in the current plugin and " \
+                            "will not be used during analysis:\n\n{}\n\n"
             warn_message = warn_message.format(unused)
 
         if incomplete:
             incomplete = '\n'.join(["'{}'".format(n) for n in incomplete])
             warn_message += "The following options defined in the plugin " \
-                       "could not be found in the configuration file:" \
-                       "\n\n{}\n\nThese options will not been altered."
+                            "could not be found in the configuration file:" \
+                            "\n\n{}\n\nThese options will not been altered."
             warn_message = warn_message.format(incomplete)
 
         if warn_message:
@@ -362,16 +347,6 @@ class OptionsFileFrame(Frame):
             return missing
         return missing
 
-    def hidden_options_file_incomplete(self):
-        missing = []
-        if self.options_frame and self.active_cfg:
-            missing = options_not_in_config(
-                self.active_cfg, self.options_frame.hidden_options)
-            if missing:
-                return [opt.varname for opt in missing]
-            return missing
-        return missing
-
     def update_option_frame(self, cfg):
         current = []
         for varname, value in cfg.items():
@@ -379,7 +354,8 @@ class OptionsFileFrame(Frame):
                             " option with variable name '{}':\n\n{}\n\n" \
                             "Loading the specified configuration has been " \
                             "aborted. Please supply a correct configuration " \
-                            "file before proceeding. No changes have been made."
+                            "file before proceeding. No changes " \
+                            "have been made."
             try:
                 option = self.options_frame.get_option_by_varname(varname)
                 current.append((varname, option.value))
@@ -403,6 +379,9 @@ class OptionsFileFrame(Frame):
         self.options_frame = options_frame
 
 
+# -------------------------------------------------------------------------- #
+#                           Main GUI Frame
+# -------------------------------------------------------------------------- #
 class ScorerScriptsDropDown(LabelFrame):
     def __init__(self, parent=None, scripts_dir='plugins/', **config):
         super().__init__(parent, **config)
@@ -424,15 +403,15 @@ class ScorerScriptsDropDown(LabelFrame):
                 continue
             try:
                 result = load_scoring_class_and_options(path)
-                klass, options, hidden_options, options_file = result
+                klass, options, options_file = result
                 options_frame, options_file_frame = self.make_options_frames(
-                    options, hidden_options, options_file
+                    options, options_file
                 )
             except Exception as e:
                 logging.exception(e, extra={'oname': self.__class__.__name__})
                 messagebox.showerror(
                     "Error loading plugin...",
-                    "There was an error loading the script:\n\n{}." \
+                    "There was an error loading the script:\n\n{}."
                     "\n\nSee log for details\n\n{}.".format(full_path, e)
                 )
                 continue
@@ -447,8 +426,8 @@ class ScorerScriptsDropDown(LabelFrame):
             self.plugins[key] = (klass, options_frame,
                                  options_file_frame, full_path)
 
-    def make_options_frames(self, options, hidden_options, options_file):
-        options_frame = OptionsFrame(self, options, hidden_options)
+    def make_options_frames(self, options, options_file):
+        options_frame = OptionsFrame(self, options)
         options_file_frame = OptionsFileFrame(self, options_file)
         options_file_frame.link_to_options_frame(options_frame)
         return options_frame, options_file_frame
@@ -486,7 +465,7 @@ class ScorerScriptsDropDown(LabelFrame):
         log_btn = Button(btn_frame, text='Print to Log',
                          command=self.log_parameters)
         save_btn = Button(btn_frame, text='Save As...',
-                           command=self.save_config)
+                          command=self.save_config)
         log_btn.grid(row=0, column=0, sticky=E)
         save_btn.grid(row=0, column=1, sticky=E)
         self.btn_frame = btn_frame

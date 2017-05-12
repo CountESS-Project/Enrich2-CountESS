@@ -30,7 +30,9 @@ options.add_option(
     dtype=str,
     default='Wild Type',
     choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
+    hidden=False
 )
+
 
 class RatiosScorer(BaseScorerPlugin):
 

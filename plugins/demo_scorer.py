@@ -21,8 +21,7 @@ import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
 from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import Options, OptionsFile
-from enrich2.plugins.options import HiddenOption, HiddenOptions
+from enrich2.plugins.options import Options
 from enrich2.base.constants import WILD_TYPE_VARIANT
 
 
@@ -34,6 +33,7 @@ options.add_option(
     dtype=str,
     default='Wild Type',
     choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
+    hidden=False
 )
 options.add_option(
     name="Weighted",
@@ -41,6 +41,7 @@ options.add_option(
     dtype=bool,
     default=True,
     choices={},
+    hidden=False
 )
 options.add_option(
     name="Example String Input",
@@ -48,6 +49,7 @@ options.add_option(
     dtype=str,
     default='Default String...',
     choices={},
+    hidden=False
 )
 options.add_option(
     name="Alpha",
@@ -55,6 +57,7 @@ options.add_option(
     dtype=int,
     default=0,
     choices={},
+    hidden=False
 )
 options.add_option(
     name="Beta",
@@ -62,6 +65,7 @@ options.add_option(
     dtype=float,
     default=0.0,
     choices={},
+    hidden=False
 )
 options.add_option(
     name="Use threading",
@@ -69,29 +73,42 @@ options.add_option(
     dtype=bool,
     default=False,
     choices={},
+    hidden=False
 )
 
 # Advanced options that are found in configuration files only
-hidden_options = HiddenOptions()
-hidden_options.add_option(
+options.add_option(
+    name='h_string',
     varname='h_string',
     dtype=str,
-    default='This is a hidden string'
+    default='This is a hidden string',
+    choices=None,
+    hidden=True
 )
-hidden_options.add_option(
+options.add_option(
+    name='h_float',
     varname='h_float',
     dtype=float,
-    default=6.0
+    default=6.0,
+    choices=None,
+    hidden=True
+
 )
-hidden_options.add_option(
+options.add_option(
+    name='h_int',
     varname='h_int',
     dtype=int,
-    default=5
+    default=5,
+    choices=None,
+    hidden=True
 )
-hidden_options.add_option(
+options.add_option(
+    name='h_list',
     varname='h_list',
     dtype=list,
-    default=[1, 2, 3, 4]
+    default=[1, 2, 3, 4],
+    choices=None,
+    hidden=True
 )
 
 

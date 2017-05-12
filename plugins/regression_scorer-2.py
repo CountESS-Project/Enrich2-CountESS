@@ -21,8 +21,7 @@ import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
 from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import Options, OptionsFile
-from enrich2.plugins.options import Option, OptionsFile
+from enrich2.plugins.options import Options
 from enrich2.base.constants import WILD_TYPE_VARIANT
 
 options = Options()
@@ -32,14 +31,17 @@ options.add_option(
     dtype=str,
     default='Wild Type',
     choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
+    hidden=False
 )
 options.add_option(
     name="Weighted",
     varname="weighted",
     dtype=bool,
     default=True,
-    choices={},
+    choices=None,
+    hidden=False
 )
+
 
 class RegressionScorer(BaseScorerPlugin):
 

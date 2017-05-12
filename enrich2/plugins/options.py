@@ -37,6 +37,7 @@ def parse(file_path, backend=json):
                          "expected keys. File requires the nested key"
                          "'scorer/scorer_options' or the key 'scorer_options'")
 
+
 def validate(cfg_dict):
     if not isinstance(cfg_dict, dict):
         raise TypeError("Expected parsed configuration to be type 'dict'"
@@ -51,12 +52,25 @@ def validate(cfg_dict):
 # -------------------------------------------------------------------------- #
 class BaseOption(object):
 
-    def __init__(self, name, varname, dtype, default):
+    def __init__(self, name, varname, dtype, default, hidden):
+        if not isinstance(name, str):
+            raise TypeError("Parameter 'name' in option '{}' must be a "
+                            "string.".format(name))
+        if not isinstance(varname, str):
+            raise TypeError("Parameter 'varname' in option '{}' must be a "
+                            "string.".format(name))
+        if not isinstance(hidden, bool):
+            raise TypeError("Parameter 'hidden' in option '{}' must be a "
+                            "boolean.".format(name))
+
         self.name = name
         self.varname = varname
         self.dtype = dtype
         self.default = default
         self.value = default
+        self.hidden = hidden
+
+        self._validate(default)
 
     def _validate(self, value):
         """
@@ -73,9 +87,10 @@ class BaseOption(object):
         rtype : None
         """
         if not isinstance(value, self.dtype):
-            raise TypeError("Option '{}' with type {} does not match input type "
-                            "{}.".format(self.varname, self.dtype.__name__,
-                                         type(value).__name__))
+            raise TypeError("Option '{}' with type {} does not match "
+                            "input type {}.".format(self.varname,
+                                                    self.dtype.__name__,
+                                                    type(value).__name__))
 
     def _set_value(self, value):
         """
@@ -100,6 +115,9 @@ class BaseOption(object):
         """
         return self.value
 
+    def visible(self):
+        return not self.hidden
+
 
 class Option(BaseOption):
     """
@@ -107,7 +125,8 @@ class Option(BaseOption):
     GUI to render to a dialogue box.
     """
 
-    def __init__(self, name, varname, dtype, default, choices=None):
+    def __init__(self, name, varname, dtype, default,
+                 choices=None, hidden=True):
         """
         Option Constructor.
 
@@ -119,7 +138,7 @@ class Option(BaseOption):
         default : 
         choices : `dict` or `Iterable` like
         """
-        super(Option, self).__init__(name, varname, dtype, default)
+        super(Option, self).__init__(name, varname, dtype, default, hidden)
         self.choices = {} if choices is None else choices
         self._rev_choices = {} if choices is None else choices
 
@@ -131,17 +150,14 @@ class Option(BaseOption):
                 not isinstance(self.choices, dict):
             self.choices = {x: x for x in self.choices}
 
-        if self.choices:
-            if self.default not in self.choices:
-                raise AttributeError("Parameter 'default' in option '{}' not "
-                                     "found in 'choices'.".format(self.name))
         self._rev_choices = {v: k for (k, v) in self.choices.items()}
-        self.validate(self.value)
+        self.default = self.keytransform(self.default)
+        self.value = self.keytransform(self.value)
 
     def keytransform(self, value):
         """
-        Allow a user to set a config option with wither the GUI key or
-        value key.
+        Transforms a key that appears in choices values into its corresponding
+        key. Throws ValueError if value is neither a key or value.
 
         Parameters
         ----------
@@ -155,9 +171,16 @@ class Option(BaseOption):
             The key value of a choice.
         """
         super()._validate(value)
-        if value in self._rev_choices:
-            return self._rev_choices[value]
-        return value
+        if self.choices:
+            if value in self._rev_choices:
+                return self._rev_choices[value]
+            elif value in self.choices:
+                return value
+            else:
+                raise ValueError("Trying to set 'choices' with an undefined "
+                                 "value '{}'.".format(value))
+        else:
+            return value
 
     def validate(self, value):
         """
@@ -173,10 +196,9 @@ class Option(BaseOption):
         -------
         rtype : None
         """
+        super()._validate(value)
         if self.choices:
-            if self.keytransform(value) not in self.choices.keys():
-                raise ValueError("Trying to set 'choices' with an undefined "
-                                 "value '{}'.".format(value))
+            self.keytransform(value)
 
     def set_value(self, value):
         """
@@ -191,34 +213,8 @@ class Option(BaseOption):
         """
         if self.choices:
             value = self.keytransform(value)
+        self.validate(value)
         super()._set_value(value)
-
-
-class HiddenOption(BaseOption):
-    """
-    Utility class to represent a user defined option. These options only appear
-    in the configuration file and will typically represent more advanced python
-    data structure.
-    """
-
-    def __init__(self, varname, dtype, default):
-        """
-        HiddenOption Constructor.
-
-        Parameters
-        ----------
-        varname : `str` like
-        dtype :
-        default : 
-        """
-        super(HiddenOption, self).__init__(varname, varname, dtype, default)
-        self.validate(self.value)
-
-    def validate(self, value):
-        super()._set_value(value)
-
-    def set_value(self, value):
-        super()._validate(value)
 
 
 # -------------------------------------------------------------------------- #
@@ -268,6 +264,12 @@ class BaseOptions(Mapping):
                              "varname '{}'.".format(varname))
         self._options[varname] = option
 
+    def get_visible_options(self):
+        return [o for o in self._options.values() if o.visible()]
+
+    def get_hidden_options(self):
+        return [o for o in self._options.values() if not o.visible()]
+
 
 class Options(BaseOptions):
     """
@@ -281,7 +283,8 @@ class Options(BaseOptions):
         """
         super().__init__()
 
-    def add_option(self, name, varname, dtype, default, choices=None):
+    def add_option(self, name, varname, dtype, default, choices=None,
+                   hidden=True):
         """
 
         Parameters
@@ -290,42 +293,21 @@ class Options(BaseOptions):
         varname : 
         dtype : 
         default : 
-        choices : 
+        choices :
+        hidden :
 
         Returns
         -------
 
         """
-        option = Option(name, varname, dtype, default, choices)
-        self.add_item(varname, option)
-
-
-class HiddenOptions(BaseOptions):
-    """
-    Utility class that is to be used by a plugin developer to add 
-    hidden options to their scoring script.
-    """
-
-    def __init__(self):
-        """
-
-        """
-        super().__init__()
-
-    def add_option(self, varname, dtype, default):
-        """
-
-        Parameters
-        ----------
-        varname : 
-        dtype : 
-        default : 
-
-        Returns
-        -------
-
-        """
-        option = HiddenOption(varname, dtype, default)
+        option = Option(
+            name=name,
+            varname=varname,
+            dtype=dtype,
+            default=default,
+            choices=choices,
+            hidden=hidden
+        )
         self.add_item(varname, option)
 
 
