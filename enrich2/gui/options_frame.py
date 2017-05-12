@@ -21,11 +21,14 @@ import json
 import logging
 from tkinter import *
 import tkinter.ttk as ttk
+from collections import Iterable
 import tkinter.messagebox as messagebox
 from tkinter.filedialog import askopenfilename, asksaveasfile
 
 from ..plugins.options import Options, Option, HiddenOptions
 from ..plugins.options import OptionsFile
+from ..plugins.options import options_not_in_config
+from ..plugins.options import get_unused_options_ls
 from ..plugins import load_scoring_class_and_options
 from ..base.utils import nested_format
 
@@ -39,46 +42,29 @@ Checkbutton = ttk.Checkbutton
 OptionMenu = ttk.OptionMenu
 
 
-class OptionsFrame(Frame):
+class OptionsFrame(Frame, Iterable):
     def __init__(self, parent, options: Options, hidden_options: HiddenOptions,
-                 show_btn=False, **kw):
+                 **kw):
         super().__init__(parent, **kw)
         self.parent = parent
         self.row = 0
-        self.widgets = []
-        self.labels = []
-        self.show_btn = show_btn
 
         self.options = Options() \
             if options is None else options
         self.hidden_options = HiddenOptions() \
             if hidden_options is None else hidden_options
-        self.vname_option_tkvars_map = {}
-        self.vname_hidden_option_var_map = {}
+        self.vname_tkvars_map = {}
 
         if options is not None:
             self.parse_options(options)
             self.columnconfigure(0, weight=1)
             self.columnconfigure(1, weight=3)
 
-        if hidden_options is not None:
-            self.parse_hidden_options(hidden_options)
-
-    def parse_hidden_options(self, options: HiddenOptions) -> None:
-        for option in options:
-            try:
-                option.validate(option.default)
-            except TypeError:
-                warn = "The default value for option {} has type" \
-                       " '{}' and does not match the specified expected " \
-                       "type '{}'. The program may behave unexpectedly."
-                messagebox.showwarning(
-                    title="Default option type does not match dtype.",
-                    message=warn.format(option.name,
-                                        type(option.default).__name__,
-                                        option.dtype.__name__))
-            data = (option, option.default)
-            self.vname_hidden_option_var_map[option.varname] = data
+    def __iter__(self):
+        return iter(
+            list(self.options.keys()) + \
+            list(self.hidden_options.keys())
+        )
 
     def parse_options(self, options: Options) -> None:
         if not len(options):
@@ -88,25 +74,8 @@ class OptionsFrame(Frame):
             self.rowconfigure(self.row, weight=1)
             self.row += 1
 
-        for option in options:
-            try:
-                option.validate(option.default)
-            except TypeError:
-                warn = "The default value for option {} has type" \
-                       " '{}' and does not match the specified expected " \
-                       "type '{}'. The program may behave unexpectedly."
-                messagebox.showwarning(
-                    title="Default option type does not match dtype.",
-                    message=warn.format(option.name,
-                                        type(option.default).__name__,
-                                        option.dtype.__name__))
+        for option in options.values():
             self.create_widget_from_option(option)
-            self.rowconfigure(self.row, weight=1)
-            self.row += 1
-
-        if self.show_btn:
-            btn = Button(self, text='Show', command=self.log_parameters)
-            btn.grid(row=self.row, column=1, sticky=SE)
             self.rowconfigure(self.row, weight=1)
             self.row += 1
         return
@@ -127,8 +96,8 @@ class OptionsFrame(Frame):
                              "dtype {}.".format(option.dtype))
 
     def make_choice_menu_widget(self, option: Option) -> None:
-        menu_var = StringVar(self)
-        menu_var.set(option.default)
+        variable = StringVar(self)
+        variable.set(option.default)
 
         label_text = "{}: ".format(option.name)
         label = Label(self, text=label_text, justify=LEFT)
@@ -137,45 +106,55 @@ class OptionsFrame(Frame):
         choices = option.choices
         choices = list(choices.keys())
 
+        vname = option.varname
+        set_func = lambda _, y=variable, x=vname: self.set_validate(x, y.get())
         popup_menu = OptionMenu(
-            self, menu_var, option.default, *choices)
+            self, variable, option.default, *choices, command=set_func)
         popup_menu.grid(sticky=E, column=1, row=self.row)
-
-        self.vname_option_tkvars_map[option.varname] = (option, menu_var)
-        self.widgets.append(popup_menu)
-        self.labels.append(label)
+        self.vname_tkvars_map[option.varname] = variable
 
     def make_entry(self, variable: Variable, option: Option) -> Entry:
         label_text = "{}: ".format(option.name)
         label = Label(self, text=label_text, justify=LEFT)
         label.grid(sticky=EW, column=0, row=self.row)
 
-        bad_input_msg = "Invalid type for entry {}. " \
-                        "Expected type {}.".format(
-            option.name, option.dtype.__name__)
-
-        def validate_entry():
+        def validate():
+            bad_input_msg = "Error validating input for entry {}:\n\n{}"
+            varname = option.varname
             try:
                 value = variable.get()
-                option.validate(value)
-                variable.set(option.dtype(value))
-            except (TclError, TypeError):
+                self.set_variable(varname, value)
+                self.set_option(varname, value)
+            except (TclError, TypeError, KeyError, ValueError) as error:
+                variable.set(option.dtype(option.value))
                 messagebox.showwarning(
-                    title="Invalid {} Entry".format(option.name),
-                    message=bad_input_msg)
-                variable.set(option.dtype(option.default))
+                    title="Error setting option '{}'".format(varname),
+                    message=bad_input_msg.format(varname, error)
+                )
                 return False
             return True
 
         entry = Entry(
             self, textvariable=variable,
-            validate="focusout", validatecommand=validate_entry
+            validate="focusout", validatecommand=validate
         )
         entry.grid(sticky=EW, column=1, row=self.row)
-        self.vname_option_tkvars_map[option.varname] = (option, variable)
-        self.widgets.append(entry)
-        self.labels.append(label)
+        self.vname_tkvars_map[option.varname] = variable
         return entry
+
+    def make_bool_entry_widget(self, option: Option) -> None:
+        variable = BooleanVar(self)
+        variable.set(option.default)
+
+        label_text = "{}: ".format(option.name)
+        label = Label(self, text=label_text, justify=LEFT)
+        label.grid(sticky=EW, column=0, row=self.row)
+
+        vname = option.varname
+        set_func = lambda x=vname, y=variable: self.set_validate(x, y.get())
+        checkbox = Checkbutton(self, variable=variable, command=set_func)
+        checkbox.grid(sticky=E, column=1, row=self.row)
+        self.vname_tkvars_map[option.varname] = variable
 
     def make_string_entry_widget(self, option: Option) -> None:
         variable = StringVar(self)
@@ -192,53 +171,52 @@ class OptionsFrame(Frame):
         variable.set(option.dtype(option.default))
         self.make_entry(variable, option)
 
-    def make_bool_entry_widget(self, option: Option) -> None:
-        variable = BooleanVar(self)
-        variable.set(option.default)
+    def set_validate(self, varname, value):
+        bad_input_msg = "Error validating input for entry {}:\n\n{}"
+        try:
+            self.set_variable(varname, value)
+            self.set_option(varname, value)
+        except (KeyError, TclError, TypeError, ValueError) as error:
+            option = self.get_option_by_varname(varname)
+            self.set_variable(varname, option.value)
+            messagebox.showwarning(
+                title="Error setting option!",
+                message=bad_input_msg.format(varname, error)
+            )
+            return False
+        return True
 
-        label_text = "{}: ".format(option.name)
-        label = Label(self, text=label_text, justify=LEFT)
-        label.grid(sticky=EW, column=0, row=self.row)
+    def get_option_by_varname(self, varname):
+        option = self.options.get(varname, None) or \
+                 self.hidden_options.get(varname, None)
+        if option is None:
+            raise KeyError("No option with the variable name '{}' could "
+                           "be found".format(varname))
+        return option
 
-        checkbox = Checkbutton(self, variable=variable)
-        checkbox.grid(sticky=E, column=1, row=self.row)
+    def set_option(self, varname, value):
+        option = self.get_option_by_varname(varname)
+        option.set_value(value)
 
-        self.vname_option_tkvars_map[option.varname] = (option, variable)
-        self.widgets.append(checkbox)
-        self.labels.append(label)
+    def set_variable(self, varname, value):
+        variable = self.vname_tkvars_map.get(varname, None)
+        if variable is not None:
+            variable.set(value)
 
     def get_option_cfg(self) -> dict:
         cfg = {}
-        for vname, (option, var) in self.vname_option_tkvars_map.items():
-            value = var.get()
-            default = option.default
-            if option.choices:
-                default = option.choices[option.get_choice_key(option.default)]
-                value = option.choices[var.get()]
-            option.validate(value)
-            cfg[vname] = (value, value == default)
+        for varname, opt in self.options.items():
+            value = opt.value
+            default = opt.default
+            opt.validate(value)
+            cfg[varname] = (value, value == default)
 
-        for vname, (option, value) in self.vname_hidden_option_var_map.items():
-            option.validate(value)
-            cfg[vname] = (value, value == option.default)
+        for varname, h_opt in self.hidden_options.items():
+            value = h_opt.value
+            default = h_opt.default
+            h_opt.validate(value)
+            cfg[varname] = (value, value == default)
         return cfg
-
-    def log_parameters(self):
-        if not self.has_options():
-            messagebox.showinfo("Nothing to see here...", "No options to log.")
-            return
-
-        msg = "Parsing parameters...\n"
-        for vname, (option, var) in self.vname_option_tkvars_map.items():
-            value = var.get()
-            if option.choices:
-                value = option.choices[value]
-            vname, value, t = str(vname), str(value), type(value).__name__
-            msg += "{}: (value, type) -> ({}, {})\n".format(vname, value, t)
-
-        logging.info(msg, extra={'oname': self.__class__.__name__})
-        messagebox.showinfo("Parameters logged!",
-                            "See log for loaded parameters.")
 
     def has_options(self):
         return self.options.has_options() or \
@@ -246,15 +224,11 @@ class OptionsFrame(Frame):
 
 
 class OptionsFileFrame(Frame):
-    def __init__(self, parent, options_file: OptionsFile,
-                 show_btn=False, **config):
+    def __init__(self, parent, options_file: OptionsFile, **config):
         super().__init__(parent, **config)
         self.row = 0
-        self.widgets = []
-        self.labels = []
         self.active_cfg = {}
-        self.option_frame = None
-        self.show_btn = show_btn
+        self.options_frame = None
         if options_file is not None:
             self._make_widgets(options_file)
             self.columnconfigure(0, weight=1)
@@ -266,25 +240,15 @@ class OptionsFileFrame(Frame):
         self.rowconfigure(self.row, weight=1)
         self.row += 1
 
-        if self.show_btn:
-            btn = Button(self, text='Print to Log',
-                         command=self.log_parameters)
-            btn.grid(row=self.row, column=1, sticky=SE)
-            self.rowconfigure(self.row, weight=1)
-            self.row += 1
-        return
-
     def _make_label(self, options_file: OptionsFile):
         label_text = "{}: ".format(options_file.name)
         label = Label(self, text=label_text, justify=LEFT)
         label.grid(row=self.row, column=0, sticky=EW)
-        self.labels.append(label)
 
     def _make_button(self, options_file: OptionsFile):
         command = lambda opt=options_file: self.load_from_file(opt)
         button = Button(self, text='Load...', command=command)
         button.grid(row=self.row, column=1, sticky=E)
-        self.widgets.append(button)
 
     def load_from_cfg(self, cfg):
         if 'scorer' in cfg:
@@ -299,7 +263,7 @@ class OptionsFileFrame(Frame):
                              "or the key 'scorer_options'")
 
         success = 'Successfully parsed and validated config.'
-        if self.option_frame:
+        if self.options_frame:
             if self.update_option_frame(cfg):
                 self.active_cfg = cfg
                 if not self.options_file_incomplete():
@@ -318,12 +282,6 @@ class OptionsFileFrame(Frame):
                         "\n\nPlease see log for details.".format(file_path)
         validation_error_msg = "There was an error during validation. " \
                                "\n\nPlease see log for details."
-        success = 'Successfully parsed and validated file: \n\n{}'.format(
-            file_path)
-        unused_keys_msg = "The following keys in the configuration file " \
-                          "could not be not found in the plugin " \
-                          "options definitions: \n\n{}\n\n" \
-                          "They will not be used by the scoring plugin."
         try:
             cfg = options_file.parse_to_dict(file_path)
         except BaseException as error:
@@ -339,146 +297,110 @@ class OptionsFileFrame(Frame):
             return
 
         self.active_cfg = cfg
-        unused_keys = self.unused_options()
-        if unused_keys:
-            unused_keys = '\n'.join(["'{}'".format(n) for n in unused_keys])
-            messagebox.showinfo(
-                "Unused configuration options.",
-                unused_keys_msg.format(unused_keys)
-            )
-        else:
-            messagebox.showinfo('Success!', success)
+        self.apply_to_options()
 
     def apply_to_options(self):
-        success = 'Successfully applied configuration file to GUI options.'
-        if self.option_frame and self.active_cfg:
-            if self.update_option_frame(self.active_cfg):
-                incomplete_opt = self.options_file_incomplete()
-                incomplete_hopt = self.hidden_options_file_incomplete()
-                if not (incomplete_opt and incomplete_hopt):
-                    messagebox.showinfo('Apply configuration to GUI', success)
-        else:
-            messagebox.showinfo('Apply configuration to GUI',
-                                "No configuration to apply. Please load a "
-                                "configuration file first.")
+        success = 'Successfully applied configuration file to plugin options.'
+        if not self.options_frame:
+            messagebox.showwarning(
+                'Apply Configuration Warning',
+                "No options have been defined in this plugin. Cannot apply"
+                "loaded configuration."
+            )
+            return
+
+        if not self.active_cfg:
+            messagebox.showwarning(
+                'Apply Configuration Warning',
+                "No configuration file has been loaded. Please load one first."
+            )
+            return
+
+        warn_message = ""
+        options_ls = [
+            self.options_frame.options,
+            self.options_frame.hidden_options
+        ]
+        unused_keys = get_unused_options_ls(self.active_cfg, options_ls)
+        incomplete_opt = self.options_file_incomplete()
+        incomplete_hopt = self.hidden_options_file_incomplete()
+        incomplete = incomplete_opt + incomplete_hopt
+
+        self.active_cfg = {k: v for (k, v) in self.active_cfg.items()
+                           if k not in unused_keys}
+
+        if unused_keys:
+            unused = '\n'.join(["'{}'".format(n) for n in unused_keys])
+            warn_message += "The following options found in the configuration" \
+                       " file are not defined in the current plugin and " \
+                       "will not be used during analysis:\n\n{}\n\n\n"
+            warn_message = warn_message.format(unused)
+
+        if incomplete:
+            incomplete = '\n'.join(["'{}'".format(n) for n in incomplete])
+            warn_message += "The following options defined in the plugin " \
+                       "could not be found in the configuration file:" \
+                       "\n\n{}\n\nThese options will not been altered."
+            warn_message = warn_message.format(incomplete)
+
+        if warn_message:
+            messagebox.showwarning(
+                'Apply configuration to options.', warn_message)
+
+        applied_successfully = self.update_option_frame(self.active_cfg)
+        if applied_successfully and not warn_message:
+            messagebox.showinfo('Apply configuration to options.', success)
+        return
 
     def options_file_incomplete(self):
-        if self.option_frame and self.active_cfg:
-            mapping = self.option_frame.vname_option_tkvars_map
-            option_vnames = list(mapping.keys())
-            cfg_vnames = self.active_cfg.keys()
-            unique_vnames = [n for n in option_vnames if n not in cfg_vnames]
-            unique_names = [mapping[n][0].name for n in unique_vnames]
-            if unique_vnames:
-                unique_str = '\n'.join(["'{}'".format(n) for n in unique_names])
-                message = "There are options in the plugin not found in the " \
-                          "loaded configuration file. The following " \
-                          "options have not been altered: \n\n" \
-                          "{}".format(unique_str)
-                messagebox.showwarning(
-                    "Incomplete configuration file...",
-                    message
-                )
-                return True
-            return False
-        return False
+        missing = []
+        if self.options_frame and self.active_cfg:
+            missing = options_not_in_config(
+                self.active_cfg, self.options_frame.options)
+            if missing:
+                return [opt.varname for opt in missing]
+            return missing
+        return missing
 
     def hidden_options_file_incomplete(self):
-        if self.option_frame and self.active_cfg:
-            mapping = self.option_frame.vname_hidden_option_var_map
-            option_vnames = list(mapping.keys())
-            cfg_vnames = self.active_cfg.keys()
-            unique_vnames = [n for n in option_vnames if n not in cfg_vnames]
-            if unique_vnames:
-                unique_str = '\n'.join(["'{}'".format(n) for n in unique_vnames])
-                message = "There are hidden options in the plugin not found " \
-                          "in the loaded configuration file. The following " \
-                          "options have not been altered: \n\n" \
-                          "{}".format(unique_str)
-                messagebox.showwarning(
-                    "Incomplete configuration file...",
-                    message
-                )
-                return True
-            return False
-        return False
-
-    def unused_options(self):
-        unused = set()
-        used_keys = set(
-            list(self.option_frame.vname_hidden_option_var_map.keys()) +
-            list(self.option_frame.vname_option_tkvars_map.keys())
-        )
-        if self.option_frame:
-            for vname in self.active_cfg.keys():
-                if vname not in used_keys:
-                    unused.add(vname)
-        return unused
+        missing = []
+        if self.options_frame and self.active_cfg:
+            missing = options_not_in_config(
+                self.active_cfg, self.options_frame.hidden_options)
+            if missing:
+                return [opt.varname for opt in missing]
+            return missing
+        return missing
 
     def update_option_frame(self, cfg):
-        for option_varname, value in cfg.items():
+        current = []
+        for varname, value in cfg.items():
+            bad_input_msg = "The following error occured when validating" \
+                            " option with variable name '{}':\n\n{}\n\n" \
+                            "Loading the specified configuration has been " \
+                            "aborted. Please supply a correct configuration " \
+                            "file before proceeding. No changes have been made."
             try:
-                self.update_option_frame_tkvar(option_varname, value)
-                self.update_option_frame_hidden(option_varname, value)
-            except BaseException as err:
-                logging.exception(
-                    err, extra={"oname": self.__class__.__name__})
-                messagebox.showerror(
-                    'Setting Override Error...',
-                    "Couldn't set option with variable name '{}'. "
-                    "Aborting parse, see log for further "
-                    "details.".format(option_varname)
+                option = self.options_frame.get_option_by_varname(varname)
+                current.append((varname, option.value))
+                self.options_frame.set_variable(varname, value)
+                self.options_frame.set_option(varname, value)
+            except (KeyError, TclError, TypeError, ValueError) as error:
+                for vname, old_val in current:
+                    self.options_frame.set_variable(vname, old_val)
+                    self.options_frame.set_option(vname, old_val)
+                messagebox.showwarning(
+                    title="Error setting option!",
+                    message=bad_input_msg.format(varname, error)
                 )
                 return False
         return True
 
-    def update_option_frame_tkvar(self, option_varname, value):
-        mapping = self.option_frame.vname_option_tkvars_map
-        option, tkvar = mapping.get(option_varname, (None, None))
-        if tkvar is not None:
-            current_value = tkvar.get()
-            try:
-                if option.choices:
-                    value = option.get_choice_key(value)
-                option.validate(value)
-                tkvar.set(value)
-            except (TypeError, ValueError) as err:
-                tkvar.set(current_value)
-                raise BaseException(err)
-        return
-
-    def update_option_frame_hidden(self, vname, value):
-        mapping = self.option_frame.vname_hidden_option_var_map
-        option, old_value = mapping.get(vname, (None, None))
-        if old_value is not None:
-            try:
-                option.validate(value)
-                data = (option, value)
-                self.option_frame.vname_hidden_option_var_map[vname] = data
-            except (TypeError, ValueError) as err:
-                raise BaseException(err)
-        return
-
     def get_option_cfg(self):
         return self.active_cfg
 
-    def log_parameters(self):
-        if not self.active_cfg:
-            messagebox.showinfo(
-                "Nothing to see here...",
-                "Please select files to parse first.")
-            return
-        msg = "Parsing parameters...\nFormat: (value, type) "
-        msg += nested_format(self.active_cfg, False, tab_level=0)
-        logging.info(msg, extra={'oname': self.__class__.__name__})
-        messagebox.showinfo("Parameters logged!",
-                            "See log for loaded parameters.")
-
     def link_to_options_frame(self, options_frame: OptionsFrame):
-        self.option_frame = options_frame
-
-    def has_options(self):
-        return bool(self.labels)
+        self.options_frame = options_frame
 
 
 class ScorerScriptsDropDown(LabelFrame):
@@ -487,7 +409,6 @@ class ScorerScriptsDropDown(LabelFrame):
         self.row = 0
         self.current_view = 'Regression'
         self.btn_frame = None
-        self.apply_btn = None
         self.plugins = {}
 
         self.parse_directory(scripts_dir)
@@ -508,7 +429,7 @@ class ScorerScriptsDropDown(LabelFrame):
                     options, hidden_options, options_file
                 )
             except Exception as e:
-                logging.error(e, extra={'oname': self.__class__.__name__})
+                logging.exception(e, extra={'oname': self.__class__.__name__})
                 messagebox.showerror(
                     "Error loading plugin...",
                     "There was an error loading the script:\n\n{}." \
@@ -564,10 +485,10 @@ class ScorerScriptsDropDown(LabelFrame):
         btn_frame = Frame(self)
         log_btn = Button(btn_frame, text='Print to Log',
                          command=self.log_parameters)
-        apply_btn = Button(btn_frame, text='Apply')
+        save_btn = Button(btn_frame, text='Save As...',
+                           command=self.save_config)
         log_btn.grid(row=0, column=0, sticky=E)
-        apply_btn.grid(row=0, column=1, sticky=E)
-        self.apply_btn = apply_btn
+        save_btn.grid(row=0, column=1, sticky=E)
         self.btn_frame = btn_frame
 
     def increment_row(self):
@@ -601,7 +522,6 @@ class ScorerScriptsDropDown(LabelFrame):
                                     columnspan=2, pady=(12, 0))
             self.increment_row()
 
-            self.apply_btn.config(command=options_file_frame.apply_to_options)
             self.btn_frame.grid(row=self.row, columnspan=2,
                                 sticky=E, pady=(12, 0))
             self.increment_row()
