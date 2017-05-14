@@ -142,6 +142,7 @@ class Selection(StoreManager):
         analysis are not suitable. Calls validate method on all child SeqLibs.
         """
         # check the time points
+        scoring_method = self.scoring_class.name
         if 0 not in self.timepoints:
             raise ValueError("Missing timepoint 0 [{}]".format(self.name))
 
@@ -153,7 +154,7 @@ class Selection(StoreManager):
             raise ValueError("Multiple timepoints "
                              "required [{}]".format(self.name))
 
-        elif len(self.timepoints) < 3 and self.scoring_method in ("WLS", "OLS"):
+        elif len(self.timepoints) < 3 and 'Regression' in scoring_method:
             raise ValueError("Insufficient number of timepoints for "
                              "regression scoring [{}]".format(self.name))
         
@@ -163,13 +164,14 @@ class Selection(StoreManager):
                 if self.children[0].wt != child.wt:
                     logging.warning(
                         msg="Inconsistent wild type sequences",
-                        extra={'oname' : self.name}
+                        extra={'oname': self.name}
                     )
                     break
         
         # check that we're not doing wild type normalization
         # on something with no wild type
-        if not self.has_wt_sequence() and self.logr_method == "wt":
+        logr_method = self.scoring_class_attrs.get('logr_method', '')
+        if not self.has_wt_sequence() and logr_method == "wt":
             raise ValueError("No wild type sequence for wild "
                              "type normalization [{}]".format(self.name))
 
@@ -460,7 +462,6 @@ class Selection(StoreManager):
         empty = self.store[key].empty
         return not empty
 
-
     def score_index_has_been_modified(self, label):
         """
         Check to see if the index of a dataframe has been modified when
@@ -537,14 +538,12 @@ class Selection(StoreManager):
         self.ensure_main_count_tables_exist_and_populated()
         self.timepoints_contain_variants()
 
-        if self.scoring_method == "counts":
-            pass
-
-        if 'Demo' in self.scoring_class.__name__:
+        if 'Demo' in self.scoring_class.name:
             raise ValueError('Invalid scoring method "{}" '
-                             '[{}]'.format(self.scoring_method, self.name))
+                             '[{}]'.format(self.scoring_class.name, self.name))
 
-        if 'Regression' in self.scoring_method and len(self.timepoints) <= 2:
+        if 'Regression' in self.scoring_class.name \
+                and len(self.timepoints) <= 2:
             raise ValueError("Regression-based scoring "
                              "requires three or more time points.")
 
@@ -555,8 +554,11 @@ class Selection(StoreManager):
         scorer.run()
 
         # TODO: Write outlier computation as a plugin?
-        allowed_methods = ("ratios" , "WLS", "OLS")
-        if self.scoring_method in allowed_methods and self.component_outliers:
+        non_allowed_methods = ("Counts Only", "Demo")
+        scoring_method = self.scoring_class.name
+
+        if scoring_method not in non_allowed_methods \
+                and self.component_outliers:
             if self.is_barcodevariant() or self.is_barcodeid():
                 self.calc_outliers("barcodes")
             if self.is_coding():

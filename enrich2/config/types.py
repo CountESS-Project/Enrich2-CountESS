@@ -42,8 +42,11 @@ Attributes
 import re
 import os
 import sys
+import logging
 from abc import ABC, abstractclassmethod
 from .config_check import *
+from ..plugins import load_scoring_class_and_options
+from ..plugins.options import Options
 
 
 NAME = 'name'
@@ -66,6 +69,10 @@ FILTERS_MIN_Q = 'min quality'
 FILTERS_CHASTITY = 'chastity'
 TRIM_START = 'start'
 TRIM_LENGTH = 'length'
+SCORER = 'scorer'
+SCORER_PATH = 'scorer_path'
+SCORER_OPTIONS = 'scorer_options'
+
 
 COUNTS_FILE = 'counts file'
 IDENTIFIERS = 'identifiers'
@@ -115,6 +122,63 @@ class Configuration(ABC):
 #                      Component Configuration Classes
 #
 # -------------------------------------------------------------------------- #
+class ScorerConfiguration(Configuration):
+
+    def __init__(self, cfg):
+        if not isinstance(cfg, dict):
+            raise TypeError("dict required for fastq configuration.")
+
+        if SCORER_PATH not in cfg:
+            raise ValueError("Missing {} key from {} configuration.".format(
+                SCORER_PATH, SCORER
+            ))
+        if SCORER_OPTIONS not in cfg:
+            raise ValueError("Missing {} key from {} configuration.".format(
+                SCORER_OPTIONS, SCORER
+            ))
+
+        path = cfg[SCORER_PATH]
+        attrs = cfg[SCORER_OPTIONS]
+        scoring_class, options, _ = \
+            load_scoring_class_and_options(path)
+
+        self.__options = options if options is not None else Options()
+        self.scoring_class = scoring_class
+        self.scoring_class_attrs = attrs
+        self.validate()
+
+    def validate(self):
+        if self.scoring_class is None:
+            raise TypeError("Scoring class cannot be NoneType.")
+
+        passed_varnames = set(self.scoring_class_attrs.keys())
+        expected_varnames = set(self.__options.option_varnames())
+
+        # Check for unused params in attrs and throw error
+        unused = list(passed_varnames - expected_varnames)
+        unused_str = ', '.join(unused)
+        if unused:
+            raise ValueError("The options {} in the provided configuration are"
+                             " not defined in the plugin.".format(unused_str))
+
+        # Validate each value in passed attrs
+        for varname in passed_varnames & expected_varnames:
+            value = self.scoring_class_attrs
+            self.__options.validate_option_by_varname(varname, value)
+            self.__options.set_option_by_varname(varname, value)
+
+        # If missing params log warning and set to default
+        defaults = list(expected_varnames - passed_varnames)
+        defaults_str = ', '.join(defaults)
+        if defaults:
+            logging.warning("The options {} were not found in the provided"
+                            " configuration file. Setting as default "
+                            "values.".format(defaults_str),
+                            extra={'oname': self.__class__.__name__})
+        self.scoring_class_attrs = self.__options.to_dict()
+        return self
+
+
 class FASTQConfiguration(Configuration):
 
     def __init__(self, cfg):
@@ -131,7 +195,7 @@ class FASTQConfiguration(Configuration):
         self.reverse = cfg.get(REVERSE, False)
         self.trim_start = cfg.get(TRIM_START, 1)
         self.trim_length = cfg.get(TRIM_LENGTH, sys.maxsize)
-        self.filters_cfg =  FiltersConfiguration(filters_cfg)
+        self.filters_cfg = FiltersConfiguration(filters_cfg)
         self.validate()
 
     def validate_reverse(self):
@@ -165,7 +229,7 @@ class FASTQConfiguration(Configuration):
 
         _, tail = os.path.split(self.reads)
         _, ext = os.path.splitext(tail)
-        if ext not in set(['.bz2', '.gz', '.fq', '.fastq']):
+        if ext not in {'.bz2', '.gz', '.fq', '.fastq'}:
             raise ValueError("Unsupported format for reads. Files"
                              "need extension to be either bz2, gz, fq or"
                              "fastq.")
@@ -248,7 +312,7 @@ class BarcodeConfiguration(Configuration):
         elif self.map_file and os.path.isfile(self.map_file):
             _, tail = os.path.split(self.map_file)
             _, ext = os.path.splitext(tail)
-            if ext not in set(['.bz2', '.gz', '.txt']):
+            if ext not in {'.bz2', '.gz', '.txt'}:
                 raise ValueError("Unsupported format for map file. Files"
                                  "need extension to be either bz2, gz or txt.")
         else:
@@ -455,7 +519,7 @@ class BaseLibraryConfiguration(Configuration):
         elif self.counts_file and os.path.isfile(self.counts_file):
             _, tail = os.path.split(self.counts_file)
             _, ext = os.path.splitext(tail)
-            if ext not in set(['.tsv', '.txt']):
+            if ext not in {'.tsv', '.txt'}:
                 raise ValueError("Unsupported format for `counts file`. Files"
                                  "need extension to be either bz2, gz or txt.")
         else:
@@ -704,30 +768,46 @@ class StoreConfiguration(Configuration):
 
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
-            raise TypeError("dict required for experiment configuration.")
+            raise TypeError("dict required for store configuration.")
 
+        if SCORER not in cfg:
+            raise ValueError("Missing {} key from store configuration.".format(
+                SCORER
+            ))
+        if NAME not in cfg:
+            raise ValueError("Missing {} key from store configuration.".format(
+                NAME
+            ))
+
+        self.scorer_cfg = cfg.get(SCORER, {})
         self.name = cfg.get(NAME, "")
         self.output_dir = cfg.get(OUTPUT_DIR, "")
         self.store_path = cfg.get(STORE, "")
 
         if not isinstance(self.name, str):
-            raise ValueError("Store `name` must be a str.")
+            raise TypeError("Store `name` must be a str.")
         if not isinstance(self.output_dir, str):
-            raise ValueError("Store `output_dir` must be a str.")
+            raise TypeError("Store `output_dir` must be a str.")
         if not isinstance(self.store_path, str):
-            raise ValueError("Store `store_path` must be a str.")
+            raise TypeError("Store `store_path` must be a str.")
+        if not isinstance(self.scorer_cfg, dict):
+            raise TypeError("Store `scorer_cfg` must be a dict.")
         if not self.name:
             raise ValueError("Store does not have a name.")
+        if not self.scorer_cfg:
+            raise ValueError("Scorer configuration cannot be empty.")
 
         self.has_store_path = bool(self.store_path)
         self.has_output_dir = bool(self.output_dir)
+        self.scorer_cfg = ScorerConfiguration(self.scorer_cfg)
 
     def validate(self):
+        self.scorer_cfg.validate()
         if self.has_store_path and not os.path.exists(self.store_path):
             raise IOError('Specified store file "{}" not found'.format(
                 self.store_path))
-        elif self.has_store_path and \
-                        os.path.splitext(self.store_path)[-1].lower() != ".h5":
+        elif self.has_store_path \
+                and os.path.splitext(self.store_path)[-1].lower() != ".h5":
             raise ValueError('Unrecognized store file extension for '
                              '"{}"'.format(self.store_path))
         if self.has_output_dir and not os.path.exists(self.output_dir):

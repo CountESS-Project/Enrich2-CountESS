@@ -237,6 +237,9 @@ class BaseOptions(Mapping):
     def __bool__(self):
         return bool(self._options)
 
+    def to_dict(self):
+        return self._options
+
     def has_options(self):
         return bool(self)
 
@@ -251,6 +254,12 @@ class BaseOptions(Mapping):
             raise KeyError("Key '{}' not found in {}.".format(
                 varname, self.__class__.__name__))
         self._options[varname].set_value(value)
+
+    def validate_option_by_varname(self, varname, value):
+        if varname not in self._options:
+            raise KeyError("Key '{}' not found in {}.".format(
+                varname, self.__class__.__name__))
+        self._options[varname].validate(value)
 
     def get_option_by_varname(self, varname):
         if varname not in self._options:

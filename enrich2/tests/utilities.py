@@ -21,6 +21,7 @@ import pandas as pd
 
 TOP_LEVEL = os.path.dirname(__file__)
 
+
 def create_file_path(fname, direc='data/result/'):
     path = os.path.join(TOP_LEVEL, direc, fname)
     return path
@@ -33,27 +34,6 @@ def load_config_data(fname, direc='data/config/'):
             return json.load(fp)
     except (IOError, ValueError):
         raise IOError("Failed to open '{}".format(path))
-
-
-def make_libarary(cfg, constructor, **kwargs):
-    obj = constructor()
-    obj.force_recalculate = False
-    obj.component_outliers = False
-    obj.scoring_method = 'counts'
-    obj.logr_method = 'wt'
-    obj.plots_requested = False
-    obj.tsv_requested = False
-    obj.output_dir_override = False
-
-    # perform the analysis
-    obj.configure(cfg)
-    obj.validate()
-    obj.store_open(children=True)
-    obj.calculate()
-
-    for k, v in kwargs.items():
-        setattr(obj, k, v)
-    return obj
 
 
 def load_df_from_txt(fname, direc='data/result/', sep='\t'):
@@ -119,6 +99,7 @@ def dispatch_loader(fname, direc, sep='\t'):
     else:
         raise ValueError("Unexpected file extension {}.".format(ext))
 
+
 def str_test(test_name, expected, result):
     line = '\n'
     line += "-" * 60 + '\n'
@@ -133,11 +114,10 @@ def str_test(test_name, expected, result):
     line += '\n'
     return line
 
+
 DEFAULT_STORE_PARAMS = {
     'force_recalculate': False,
     'component_outliers': False,
-    'scoring_method': 'counts',
-    'logr_method': 'wt',
     'plots_requested': False,
     'tsv_requested': False,
     'output_dir_override': False,

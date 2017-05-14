@@ -19,6 +19,7 @@ import unittest
 from copy import deepcopy
 
 from ..selection.selection import Selection
+from ..plugins import load_scoring_class_and_options
 from .methods import HDF5TestComponent
 from .utilities import DEFAULT_STORE_PARAMS
 from .utilities import load_config_data
@@ -33,16 +34,27 @@ LIBTYPE = 'barcode'
 FILE_EXT = 'tsv'
 FILE_SEP = '\t'
 
+WLS_PATH = "../../plugins/regression_scorer.py"
+OLS_PATH = "../../plugins/regression_scorer.py"
+RATIOS_PATH = "../../plugins/ratios_scorer.py"
+SIMPLE_PATH = "../../plugins/simple_scorer.py"
+COUNTS_PATH = "../../plugins/counts_scorer.py"
+
 
 class TestSelectionBarocdeLibWLSScoringCompleteNorm(unittest.TestCase):
 
     def setUp(self):
         scoring = 'WLS'
         logr = 'complete'
-        cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+
+        klass, _, _ = \
+            load_scoring_class_and_options(WLS_PATH)
+        klass_attrs = {'logr_method': 'complete', 'weighted': True}
+        params['scoring_class'] = klass
+        params['scoring_class_attrs'] = klass_attrs
+
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(

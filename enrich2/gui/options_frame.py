@@ -26,7 +26,6 @@ import tkinter.messagebox as messagebox
 from tkinter.filedialog import askopenfilename, asksaveasfile
 
 from ..plugins.options import Options, Option
-from ..plugins.options import OptionsFile
 from ..plugins.options import options_not_in_config
 from ..plugins.options import get_unused_options
 from ..plugins import load_scoring_class_and_options
@@ -46,7 +45,7 @@ OptionMenu = ttk.OptionMenu
 #                Editable Options (Visible/Invisible) Frame
 # -------------------------------------------------------------------------- #
 class OptionsFrame(Frame, Iterable):
-    def __init__(self, parent, options: Options, **kw):
+    def __init__(self, parent, options, **kw):
         super().__init__(parent, **kw)
         self.parent = parent
         self.row = 0
@@ -62,7 +61,7 @@ class OptionsFrame(Frame, Iterable):
     def __iter__(self):
         return iter(list(self.options.keys()))
 
-    def parse_options(self, options: Options) -> None:
+    def parse_options(self, options):
         if not len(options):
             label_text = "No options found."
             label = Label(self, text=label_text, justify=LEFT)
@@ -76,7 +75,7 @@ class OptionsFrame(Frame, Iterable):
             self.row += 1
         return
 
-    def create_widget_from_option(self, option: Option) -> None:
+    def create_widget_from_option(self, option):
         if option.choices:
             self.make_choice_menu_widget(option)
         elif option.dtype in (str, 'string', 'char', 'chr'):
@@ -91,7 +90,7 @@ class OptionsFrame(Frame, Iterable):
             raise ValueError("Unrecognised attribute in option "
                              "dtype {}.".format(option.dtype))
 
-    def make_choice_menu_widget(self, option: Option) -> None:
+    def make_choice_menu_widget(self, option):
         variable = StringVar(self)
         variable.set(option.default)
 
@@ -109,7 +108,7 @@ class OptionsFrame(Frame, Iterable):
         popup_menu.grid(sticky=E, column=1, row=self.row)
         self.vname_tkvars_map[option.varname] = variable
 
-    def make_entry(self, variable: Variable, option: Option) -> Entry:
+    def make_entry(self, variable, option):
         label_text = "{}: ".format(option.name)
         label = Label(self, text=label_text, justify=LEFT)
         label.grid(sticky=EW, column=0, row=self.row)
@@ -138,7 +137,7 @@ class OptionsFrame(Frame, Iterable):
         self.vname_tkvars_map[option.varname] = variable
         return entry
 
-    def make_bool_entry_widget(self, option: Option) -> None:
+    def make_bool_entry_widget(self, option):
         variable = BooleanVar(self)
         variable.set(option.default)
 
@@ -157,7 +156,7 @@ class OptionsFrame(Frame, Iterable):
         variable.set(option.dtype(option.default))
         self.make_entry(variable, option)
 
-    def make_int_entry_widget(self, option: Option) -> None:
+    def make_int_entry_widget(self, option):
         variable = IntVar(self)
         variable.set(option.dtype(option.default))
         self.make_entry(variable, option)
@@ -198,7 +197,7 @@ class OptionsFrame(Frame, Iterable):
         if variable is not None:
             variable.set(value)
 
-    def get_option_cfg(self) -> dict:
+    def get_option_cfg(self):
         cfg = {}
         for varname, opt in self.options.items():
             value = opt.value

@@ -44,7 +44,6 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
         BarcodeSeqLib.__init__(self)
         self.barcode_map = None
 
-
     def configure(self, cfg, barcode_map=None):
         """
         Set up the object using the config object *cfg*, usually derived from 
