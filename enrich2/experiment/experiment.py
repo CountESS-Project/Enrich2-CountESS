@@ -165,7 +165,7 @@ class Experiment(StoreManager):
         self.combine_barcode_maps()
         for label in self.labels:
             self.calc_counts(label)
-            if self.scoring_class.name != 'Counts Only':
+            if self.get_root().scoring_class.name != 'Counts Only':
                 self.calc_shared_full(label)
                 self.calc_shared(label)
                 self.calc_scores(label)
@@ -276,7 +276,7 @@ class Experiment(StoreManager):
         selections_index = list()
         values_index = list()
 
-        if self.scoring_class.name == "Ratios (Old Enrich)":
+        if self.get_root().scoring_class.name == "Ratios (Old Enrich)":
             values_list = ["score"]
         else:
             values_list = ["score", "SE"]
@@ -372,7 +372,7 @@ class Experiment(StoreManager):
         idx = pd.IndexSlice
 
         score_df = self.store.select("/main/{}/scores_shared".format(label))
-        if self.scoring_class.name == "Ratios (Old Enrich)":
+        if self.get_root().scoring_class.name == "Ratios (Old Enrich)":
             # special case for simple ratios that have no SE
             # calculates the average score
             for cnd in score_df.columns.levels[0]:
@@ -397,7 +397,8 @@ class Experiment(StoreManager):
                     data.loc[:, idx[cnd, 'epsilon']] = eps
 
                 # special case for normalized wild type variant
-                logr_method = self.scoring_class_attrs.get('logr_method', '')
+                logr_method = self.get_root().scoring_class_attrs.get(
+                    'logr_method', '')
                 if logr_method == "wt" and WILD_TYPE_VARIANT in \
                         data.index:
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'SE']] = 0.
