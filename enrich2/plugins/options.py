@@ -212,7 +212,8 @@ class Option(BaseOption):
 
         """
         if self.choices:
-            value = self.keytransform(value)
+            key = self.keytransform(value)
+            value = self.choices[key]
         self.validate(value)
         super()._set_value(value)
 
