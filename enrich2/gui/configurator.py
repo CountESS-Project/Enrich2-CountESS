@@ -225,6 +225,7 @@ class Configurator(tk.Tk):
     def go_button_press(self):
         self.scorer, self.scorer_attrs = \
             self.scorer_plugin.get_class_and_attrs()
+
         if self.scorer is None or self.scorer_attrs is None:
             tkinter.messagebox.showwarning(
                 "Incomplete Configuration", "No scoring plugin selected."

@@ -105,7 +105,7 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
         else:
             raise ValueError("Can't use any other plugins at the moment")
 
-        print(scoring_method, logr_method)
+        print(scoring_class, scoring_class_attrs)
         # -------------------- end temp code ------------------------ #
 
         # set the analysis options

@@ -507,6 +507,7 @@ class ScorerScriptsDropDown(LabelFrame):
     def get_class_and_attrs(self, keep_defult_bool=False):
         if not self.plugins:
             return None, None
+
         attrs = {}
         klass, opt_frame, opt_file_frame, _ = self.plugins[self.current_view]
         options_cfg = opt_frame.get_option_cfg()
