@@ -105,7 +105,6 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
         else:
             raise ValueError("Can't use any other plugins at the moment")
 
-        print(scoring_class, scoring_class_attrs)
         # -------------------- end temp code ------------------------ #
 
         # set the analysis options
@@ -125,12 +124,15 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
         # run the analysis, catching any errors to display in a dialog box
         try:
             # ensure that all objects are valid
+            print("Validating")
             self.pw.root_element.validate()
 
             # open HDF5 files for the root and all child objects
+            print("Opening")
             self.pw.root_element.store_open(children=True)
 
             # perform the analysis
+            print("Computing")
             self.pw.root_element.calculate()
 
         except Exception as e:

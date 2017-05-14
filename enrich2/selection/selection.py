@@ -143,6 +143,7 @@ class Selection(StoreManager):
         """
         # check the time points
         scoring_method = self.scoring_class.name
+
         if 0 not in self.timepoints:
             raise ValueError("Missing timepoint 0 [{}]".format(self.name))
 
