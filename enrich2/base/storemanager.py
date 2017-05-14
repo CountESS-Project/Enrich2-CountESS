@@ -23,8 +23,6 @@ import collections
 import getpass
 import time
 
-from ..config.types import StoreConfiguration
-
 
 #: Dictionary specifying available scoring methods for the analysis
 #: Key is the internal name of the method, value is the GUI label

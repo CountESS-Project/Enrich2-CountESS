@@ -44,6 +44,7 @@ import os
 import sys
 import logging
 from abc import ABC, abstractclassmethod
+
 from .config_check import *
 from ..plugins import load_scoring_class_and_options
 from ..plugins.options import Options
