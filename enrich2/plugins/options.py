@@ -151,8 +151,13 @@ class Option(BaseOption):
             self.choices = {x: x for x in self.choices}
 
         self._rev_choices = {v: k for (k, v) in self.choices.items()}
-        self.default = self.keytransform(self.default)
-        self.value = self.keytransform(self.value)
+
+        if self.choices:
+            key = self.keytransform(self.default)
+            value = self.choices[key]
+            self.default = value
+            self.value = value
+        self.validate(self.default)
 
     def keytransform(self, value):
         """
@@ -211,10 +216,10 @@ class Option(BaseOption):
         -------
 
         """
+        self.validate(value)
         if self.choices:
             key = self.keytransform(value)
             value = self.choices[key]
-        self.validate(value)
         super()._set_value(value)
 
 
