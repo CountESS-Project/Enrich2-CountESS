@@ -18,33 +18,7 @@
 
 import json
 import yaml
-from collections import Iterable
 from collections import Mapping
-
-
-# -------------------------------------------------------------------------- #
-#                       Utility parse/validate methods
-# -------------------------------------------------------------------------- #
-def parse(file_path, backend=json):
-    cfg = backend.load(open(file_path, 'r'))
-    if 'scorer' in cfg:
-        if 'scorer_options' in cfg:
-            return cfg['scorer']['scorer_options']
-    if 'scorer_options' in cfg:
-        return cfg['scorer_options']
-    else:
-        raise ValueError("Unrecognised config file, couldn't find "
-                         "expected keys. File requires the nested key"
-                         "'scorer/scorer_options' or the key 'scorer_options'")
-
-
-def validate(cfg_dict):
-    if not isinstance(cfg_dict, dict):
-        raise TypeError("Expected parsed configuration to be type 'dict'"
-                        " Found {}.".format(type(cfg_dict).__name__))
-    if not bool(cfg_dict):
-        empty_error = "Parsing function returned an empty dictionary"
-        raise ValueError(empty_error)
 
 
 # -------------------------------------------------------------------------- #
@@ -63,14 +37,37 @@ class BaseOption(object):
             raise TypeError("Parameter 'hidden' in option '{}' must be a "
                             "boolean.".format(name))
 
+        if not name:
+            raise ValueError("Parameter 'name' in option '{}' must be a "
+                            "non-empty string.".format(name))
+        if not varname:
+            raise ValueError("Parameter 'varname' in option '{}' must be a "
+                            "non-empty string.".format(name))
+        if dtype is None:
+            raise TypeError("Parameter 'dtype' in option '{}' cannot be "
+                            "NoneType.".format(name))
+
         self.name = name
         self.varname = varname
         self.dtype = dtype
-        self.default = default
-        self.value = default
         self.hidden = hidden
 
         self._validate(default)
+        self._default = default
+        self._value = default
+
+    def __eq__(self, other):
+        name_eq = self.name == other.name
+        varname_eq = self.varname == other.varname
+        dtype_eq = self.dtype == other.dtype
+        hidden_eq = self.hidden == other.hidden
+        default_eq = self.get_default_value() == other.get_default_value()
+        value_eq = self.get_value() == other.get_value()
+        return name_eq and varname_eq and dtype_eq and hidden_eq and \
+               default_eq and value_eq
+
+    def __ne__(self, other):
+        return not self == other
 
     def _validate(self, value):
         """
@@ -104,7 +101,7 @@ class BaseOption(object):
 
         """
         self._validate(value)
-        self.value = value
+        self._value = value
 
     def get_value(self):
         """
@@ -113,7 +110,16 @@ class BaseOption(object):
         -------
 
         """
-        return self.value
+        return self._value
+
+    def get_default_value(self):
+        """
+
+        Returns
+        -------
+
+        """
+        return self._default
 
     def visible(self):
         return not self.hidden
@@ -141,23 +147,51 @@ class Option(BaseOption):
         super(Option, self).__init__(name, varname, dtype, default, hidden)
         self.choices = {} if choices is None else choices
         self._rev_choices = {} if choices is None else choices
+        if not isinstance(self.choices, dict):
+            raise TypeError("Parameter 'choices' in option '{}' must be a "
+                            "dict.".format(self.name))
 
-        if not isinstance(self.choices, Iterable):
-            raise TypeError("Parameter 'choices' in option '{}' must be an "
-                            "iterable.".format(self.name))
+        for key in self.choices.keys():
+            if not isinstance(key, str):
+                raise TypeError("Choice keys must be strings.")
 
-        if isinstance(self.choices, Iterable) and \
-                not isinstance(self.choices, dict):
-            self.choices = {x: x for x in self.choices}
+        for value in self.choices.values():
+            if not isinstance(value, dtype):
+                raise TypeError("Choice values must be {}.".format(
+                    dtype.__name__))
 
         self._rev_choices = {v: k for (k, v) in self.choices.items()}
+        if len(self._rev_choices) != len(self.choices):
+            raise ValueError("Non unique values found in choices.")
+
+        self._choice_key = None
 
         if self.choices:
-            key = self.keytransform(self.default)
-            value = self.choices[key]
-            self.default = value
-            self.value = value
-        self.validate(self.default)
+            self.set_choice_key(default)
+            self._default = self.choices[self._choice_key]
+            self._value = self.choices[self._choice_key]
+
+        if self.choices:
+            assert self._choice_key is not None
+
+        self.validate(self._default)
+
+    def __eq__(self, other):
+        name_eq = self.name == other.name
+        varname_eq = self.varname == other.varname
+        dtype_eq = self.dtype == other.dtype
+        hidden_eq = self.hidden == other.hidden
+        default_eq = self.get_default_value() == other.get_default_value()
+        value_eq = self.get_value() == other.get_value()
+        choices_eq = self.choices == other.choices
+        rev_choices_eq = self._rev_choices == other._rev_choices
+        choice_key_eq = self.get_choice_key() == other.get_choice_key()
+        return name_eq and varname_eq and dtype_eq and hidden_eq and \
+               default_eq and value_eq and choices_eq and choice_key_eq and \
+               rev_choices_eq
+
+    def __ne__(self, other):
+        return not self == other
 
     def keytransform(self, value):
         """
@@ -175,9 +209,10 @@ class Option(BaseOption):
         rtype : `str` like
             The key value of a choice.
         """
-        super()._validate(value)
+
         if self.choices:
             if value in self._rev_choices:
+                super()._validate(value)
                 return self._rev_choices[value]
             elif value in self.choices:
                 return value
@@ -185,6 +220,7 @@ class Option(BaseOption):
                 raise ValueError("Trying to set 'choices' with an undefined "
                                  "value '{}'.".format(value))
         else:
+            super()._validate(value)
             return value
 
     def validate(self, value):
@@ -204,6 +240,7 @@ class Option(BaseOption):
         super()._validate(value)
         if self.choices:
             self.keytransform(value)
+        return self
 
     def set_value(self, value):
         """
@@ -218,9 +255,63 @@ class Option(BaseOption):
         """
         self.validate(value)
         if self.choices:
-            key = self.keytransform(value)
-            value = self.choices[key]
+            self.set_choice_key(value)
+            value = self.choices[self._choice_key]
         super()._set_value(value)
+        return self
+
+    def get_value(self):
+        """
+
+        Returns
+        -------
+
+        """
+        if self.choices:
+            return self.choices[self._choice_key]
+        return self._value
+
+    def set_choice_key(self, key):
+        """
+
+        Parameters
+        ----------
+        key : 
+
+        Returns
+        -------
+
+        """
+        key = self.keytransform(key)
+        self._choice_key = key
+        return self
+
+    def get_choice_key(self):
+        """
+
+        Parameters
+        ----------
+        value : 
+
+        Returns
+        -------
+
+        """
+        if not self.choices:
+            return self._choice_key
+        return self.keytransform(self._choice_key)
+
+    def get_default_value(self):
+        """
+
+        Returns
+        -------
+
+        """
+        if self.choices:
+            key = self.keytransform(self._default)
+            return self.choices[key]
+        return self._default
 
 
 # -------------------------------------------------------------------------- #
@@ -243,8 +334,24 @@ class BaseOptions(Mapping):
     def __bool__(self):
         return bool(self._options)
 
+    def __eq__(self, other):
+        if len(self) != len(other):
+            return False
+        self_opts = sorted(
+            [o for o in self.values()],
+            key=lambda x: x.varname
+        )
+        other_opts = sorted(
+            [o for o in other.values()],
+            key=lambda x: x.varname
+        )
+        return all([o1 == o2 for (o1, o2) in zip(self_opts, other_opts)])
+
+    def __ne__(self, other):
+        return not self == other
+
     def to_dict(self):
-        return self._options
+        return {k: o.get_value() for (k, o) in self._options.items()}
 
     def has_options(self):
         return bool(self)
@@ -273,7 +380,7 @@ class BaseOptions(Mapping):
                 varname, self.__class__.__name__))
         return self._options[varname]
 
-    def add_item(self, varname, option):
+    def put(self, varname, option):
         if varname in set(self._options.keys()):
             raise ValueError("Cannot define two options with the same "
                              "varname '{}'.".format(varname))
@@ -323,7 +430,44 @@ class Options(BaseOptions):
             choices=choices,
             hidden=hidden
         )
-        self.add_item(varname, option)
+        self.put(varname, option)
+
+
+# -------------------------------------------------------------------------- #
+#                       Utility parse/validate methods
+# -------------------------------------------------------------------------- #
+SCORER = 'scorer'
+SCORER_PATH = 'scorer_path'
+SCORER_OPTIONS = 'scorer_options'
+
+def parse(file_path, backend=json):
+    if isinstance(file_path, str):
+        cfg = backend.load(open(file_path, 'r'))
+    else:
+        cfg = backend.load(file_path)
+
+    if SCORER in cfg:
+        if SCORER_OPTIONS in cfg[SCORER]:
+            return cfg[SCORER][SCORER_OPTIONS]
+        else:
+            raise ValueError("Unrecognised config file, couldn't find "
+                             "expected keys. File requires the nested key"
+                             "'scorer/scorer_options'.")
+    elif SCORER_OPTIONS in cfg:
+        return cfg[SCORER_OPTIONS]
+    else:
+        raise ValueError("Unrecognised config file, couldn't find "
+                         "expected keys. File requires the nested key"
+                         "'scorer/scorer_options' or the key 'scorer_options'")
+
+def validate(cfg_dict):
+    if not isinstance(cfg_dict, dict):
+        raise TypeError(
+            "Expected parsed configuration to be type 'dict'"
+            " Found {}.".format(type(cfg_dict).__name__))
+    if not bool(cfg_dict):
+        empty_error = "Parsing function returned an empty dictionary"
+        raise ValueError(empty_error)
 
 
 # -------------------------------------------------------------------------- #
@@ -419,23 +563,6 @@ def get_unused_options_ls(cfg_dict, options_ls):
         if key not in option_keys:
             unused.add(key)
     return unused
-
-
-def varname_intersection(options_a, options_b):
-    """
-    
-    Parameters
-    ----------
-    options_a : 
-    options_b : 
-
-    Returns
-    -------
-
-    """
-    vnames_a = set(options_a.option_varnames())
-    vnames_b = set(options_b.option_varnames())
-    return vnames_a & vnames_b
 
 
 def options_not_in_config(cfg, options):
