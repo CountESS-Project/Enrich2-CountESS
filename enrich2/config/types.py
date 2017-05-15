@@ -164,7 +164,7 @@ class ScorerConfiguration(Configuration):
 
         # Validate each value in passed attrs
         for varname in passed_varnames & expected_varnames:
-            value = self.scoring_class_attrs
+            value = self.scoring_class_attrs[varname]
             self.__options.validate_option_by_varname(varname, value)
             self.__options.set_option_by_varname(varname, value)
 
@@ -176,6 +176,7 @@ class ScorerConfiguration(Configuration):
                             " configuration file. Setting as default "
                             "values.".format(defaults_str),
                             extra={'oname': self.__class__.__name__})
+
         self.scoring_class_attrs = self.__options.to_dict()
         return self
 
@@ -410,6 +411,10 @@ class WildTypeConfiguration(Configuration):
         self.reference_offset = cfg.get(REF_OFFSET, 0)
         self.sequence = cfg.get(SEQUENCE, "")
         self.validate()
+
+        if os.path.isfile(self.sequence) and isinstance(self.sequence, str):
+            with open(self.sequence, 'rt') as fp:
+                self.sequence = fp.read()
 
     def validate_coding(self):
         if not isinstance(self.coding, bool):
