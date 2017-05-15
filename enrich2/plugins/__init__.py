@@ -20,7 +20,6 @@ import os
 import sys
 from .scoring import BaseScorerPlugin
 from .options import Options, OptionsFile
-from .options import varname_intersection
 
 
 class ModuleLoader(object):
@@ -72,6 +71,11 @@ def load_scoring_class_and_options(path):
     options_file = None
     for attr_name, attr in loader.get_module_attrs():
         if isinstance(attr, Options):
+            if options_ is not None:
+                raise ImportError("Two Options classes found. Expecting only"
+                                  "one instantiation.")
+            if not attr.has_options():
+                raise ImportError("Options class must contain options.")
             options_ = attr
 
     if options_ is not None and options_.has_options():
@@ -87,8 +91,6 @@ def implements_methods(class_):
     if not getattr(class_, "_base_name") == 'BaseScorerPlugin':
         return False
     if not hasattr(class_, "compute_scores"):
-        return False
-    if not hasattr(class_, "row_apply_function"):
         return False
     return True
 

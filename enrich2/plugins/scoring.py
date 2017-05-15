@@ -69,7 +69,6 @@ class BaseScorerPlugin(ABC):
         """
         pass
 
-    @abstractclassmethod
     def row_apply_function(self, *args, **kwargs):
         """
         """
