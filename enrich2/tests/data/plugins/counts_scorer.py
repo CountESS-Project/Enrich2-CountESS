@@ -15,23 +15,21 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
-import cProfile, pstats
-from io import StringIO
 
-# pr = cProfile.Profile()
-#
-# pr.enable()
+from enrich2.plugins.scoring import BaseScorerPlugin
 
-loader = unittest.TestLoader()
-tests = loader.discover(start_dir='./', pattern="test_module_types.py")
-test_runner = unittest.TextTestRunner()
-test_runner.run(tests)
 
-# pr.disable()
-#
-# s = StringIO()
-# sortby = 'cumulative'
-# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-# ps.print_stats()
-# print(s.getvalue())
+class CountsScorer(BaseScorerPlugin):
+
+    name = 'Counts Only'
+    version = '1.0'
+    author = 'Alan Rubin, Daniel Esposito'
+
+    def __init__(self, store_manager, options):
+        super().__init__(store_manager, options)
+
+    def compute_scores(self):
+        return
+
+    def row_apply_function(self, *args, **kwargs):
+        return

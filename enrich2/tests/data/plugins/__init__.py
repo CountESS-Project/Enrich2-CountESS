@@ -15,23 +15,3 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
-import cProfile, pstats
-from io import StringIO
-
-# pr = cProfile.Profile()
-#
-# pr.enable()
-
-loader = unittest.TestLoader()
-tests = loader.discover(start_dir='./', pattern="test_module_types.py")
-test_runner = unittest.TextTestRunner()
-test_runner.run(tests)
-
-# pr.disable()
-#
-# s = StringIO()
-# sortby = 'cumulative'
-# ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-# ps.print_stats()
-# print(s.getvalue())
