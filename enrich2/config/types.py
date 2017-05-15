@@ -814,3 +814,4 @@ class StoreConfiguration(Configuration):
         if self.has_output_dir and not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         return self
+
