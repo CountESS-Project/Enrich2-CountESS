@@ -36,8 +36,6 @@ Attributes
 
 """
 
-# TODO: Making a config file when files will exist on a server. How to avoid
-# TODO: Throwing an error?
 
 import re
 import os
@@ -48,6 +46,8 @@ from abc import ABC, abstractclassmethod
 from .config_check import *
 from ..plugins import load_scoring_class_and_options
 from ..plugins.options import Options
+from ..libraries.barcodemap import BarcodeMap
+from ..sequence.wildtype import WildTypeSequence
 
 
 NAME = 'name'
@@ -193,7 +193,7 @@ class FASTQConfiguration(Configuration):
             ))
 
         filters_cfg = cfg.get(FILTERS, {})
-        self.reads = cfg.get(READS)
+        self.reads = cfg.get(READS, "")
         self.reverse = cfg.get(REVERSE, False)
         self.trim_start = cfg.get(TRIM_START, 1)
         self.trim_length = cfg.get(TRIM_LENGTH, sys.maxsize)
@@ -232,7 +232,7 @@ class FASTQConfiguration(Configuration):
         _, tail = os.path.split(self.reads)
         _, ext = os.path.splitext(tail)
         if ext not in {'.bz2', '.gz', '.fq', '.fastq'}:
-            raise ValueError("Unsupported format for reads. Files"
+            raise IOError("Unsupported format for reads. Files"
                              "need extension to be either bz2, gz, fq or"
                              "fastq.")
 
@@ -295,12 +295,16 @@ class FiltersConfiguration(Configuration):
 
 class BarcodeConfiguration(Configuration):
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, is_variant=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for barcodes configuration.")
+        if not isinstance(is_variant, bool):
+            raise TypeError("Argument 'is_variant' must be a boolean.")
 
         self.min_count = cfg.get(BARCODE_MIN_COUNT, 0)
         self.map_file = cfg.get(BARCODE_MAP_FILE, "")
+        self.is_variant = is_variant
+        self.barcodemap = None
         self.validate()
 
     def validate_map_file(self):
@@ -315,10 +319,16 @@ class BarcodeConfiguration(Configuration):
             _, tail = os.path.split(self.map_file)
             _, ext = os.path.splitext(tail)
             if ext not in {'.bz2', '.gz', '.txt'}:
-                raise ValueError("Unsupported format for map file. Files"
+                raise IOError("Unsupported format for map file. Files"
                                  "need extension to be either bz2, gz or txt.")
         else:
             self.map_file = None
+
+        if self.map_file is not None:
+            self.barcodemap = BarcodeMap(self.map_file, self.is_variant)
+
+        if self.barcodemap is not None and not self.barcodemap:
+            raise ValueError("Empty barcodemap.")
 
     def validate_min_count(self):
         if not isinstance(self.min_count, int):
@@ -386,6 +396,10 @@ class VariantsConfiguration(Configuration):
         if self.max_mutations < 0:
             raise ValueError("Variants `max mutations` must not be negative.")
 
+        if self.max_mutations > self.DEFAULT_MAX_MUTATIONS:
+            raise ValueError("Variants `max mutations` should not be higher "
+                             "than {}.".format(self.DEFAULT_MAX_MUTATIONS))
+
     def validate_min_count(self):
         if not isinstance(self.min_count, int):
             raise TypeError("Variants `min count` must be an integer."
@@ -412,20 +426,17 @@ class WildTypeConfiguration(Configuration):
         self.sequence = cfg.get(SEQUENCE, "")
         self.validate()
 
-        if os.path.isfile(self.sequence) and isinstance(self.sequence, str):
-            with open(self.sequence, 'rt') as fp:
-                self.sequence = fp.read()
-
     def validate_coding(self):
         if not isinstance(self.coding, bool):
             raise TypeError("Wildtype `coding` must be a boolean."
-                            " Found type {}.".format(type(self.coding)))
+                            " Found type "
+                            "{}.".format(type(self.coding).__name__))
 
     def validate_reference_offset(self):
         if not isinstance(self.reference_offset, int):
             raise TypeError("Wildtype `reference offset` "
                             "must be an integer. Found type "
-                            "{}.".format(type(self.reference_offset)))
+                            "{}.".format(type(self.reference_offset).__name__))
         if self.reference_offset < 0:
             raise ValueError("Wildtype `reference offset` "
                              "must not be negative.")
@@ -437,19 +448,34 @@ class WildTypeConfiguration(Configuration):
 
     def validate_sequence(self):
         if not isinstance(self.sequence, str):
-            raise TypeError("Variants `min count` must be an integer. "
-                            "Found type {}".format(type(self.sequence)))
+            raise TypeError("Variants `sequence` must be a string. "
+                            "Found type "
+                            "{}".format(type(self.sequence).__name__))
+
+        if self.sequence and os.path.isfile(self.sequence):
+            _, tail = os.path.split(self.sequence)
+            _, ext = os.path.splitext(tail)
+            if ext not in {'.bz2', '.gz', '.fa', 'fasta'}:
+                raise ValueError("Unsupported format for fasta file. Files"
+                                 "need extension to be either bz2, gz, "
+                                 "fa or fasta.")
+
+        if os.path.isfile(self.sequence):
+            with open(self.sequence, 'rt') as fp:
+                # TODO: replace with fasta reader
+                self.sequence = fp.read().strip()
 
         self.sequence = self.sequence.upper()
         atcg_chars_only = "^[ACGT]+$"
-        if not re.match(atcg_chars_only, self.sequence):
-            raise ValueError("`sequence` contains unexpected "
-                             "characters {}".format(self.sequence))
+        if self.sequence:
+            if not re.match(atcg_chars_only, self.sequence):
+                raise ValueError("'sequence' contains unexpected "
+                                 "characters {}".format(self.sequence))
 
-        multple_of_three = len(self.sequence) % 3 == 0
-        if self.coding and not multple_of_three:
-            raise ValueError("If `protein coding` is selected "
-                             "`sequence` must be a multiple of 3.")
+            multple_of_three = len(self.sequence) % 3 == 0
+            if self.coding and not multple_of_three:
+                raise ValueError("If `protein coding` is selected "
+                                 "`sequence` must be a multiple of 3.")
 
     def validate(self):
         self.validate_coding()
@@ -602,6 +628,8 @@ class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for IdOnlySeqLib configuration.")
+        if not COUNTS_FILE in cfg:
+            raise ValueError("Missing key {} from config.".format(COUNTS_FILE))
         super(IdOnlySeqLibConfiguration, self).__init__(cfg)
         identifiers_cfg = cfg.get(IDENTIFIERS, {})
         identifiers_cfg = IdentifiersConfiguration(identifiers_cfg).validate()

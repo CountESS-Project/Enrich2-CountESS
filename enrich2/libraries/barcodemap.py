@@ -78,6 +78,10 @@ class BarcodeMap(dict):
                 raise ValueError("Unexpected barcode map line format "
                                  "[{}]".format(self.name))
 
+            if len(value) == 0 or len(barcode) == 0:
+                raise ValueError("Missing either the barcode or map value."
+                                 " [{}]".format(self.name))
+
             barcode = barcode.upper()
             if not re_barcode.match(barcode):
                 raise ValueError("Barcode DNA sequence contains unexpected "

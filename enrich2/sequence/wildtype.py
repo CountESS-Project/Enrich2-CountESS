@@ -24,12 +24,14 @@ from ..base.constants import CODON_TABLE
 
 class WildTypeSequence(object):
     """
-    Container class for wild type sequence information. Used by :py:class:`~seqlib.seqlib.VariantSeqLib` objects and 
-    :py:class:`~enrich2.selection.Selection` or :py:class:`~enrich2.experiment.Experiment` objects that contain 
+    Container class for wild type sequence information. 
+    Used by :py:class:`~seqlib.seqlib.VariantSeqLib` objects and 
+    :py:class:`~enrich2.selection.Selection` 
+    or :py:class:`~enrich2.experiment.Experiment` objects that contain 
     variant information.
 
-    Requires a *parent_name* that associates this object with a StoreManager object for the 
-    purposes of error reporting and logging.
+    Requires a *parent_name* that associates this object with a 
+    StoreManager object for the purposes of error reporting and logging.
     """
     def __init__(self, parent_name):
         self.parent_name = parent_name
@@ -39,8 +41,11 @@ class WildTypeSequence(object):
         self.protein_offset = None
 
     def __eq__(self, other):
-        # note we don't need to check protein_offset, since it depends on dna_offset and protein_seq
-        return self.dna_seq == other.dna_seq and self.protein_seq == other.protein_seq and self.dna_offset == other.dna_offset
+        # note we don't need to check protein_offset,
+        # since it depends on dna_offset and protein_seq
+        return self.dna_seq == other.dna_seq and \
+               self.protein_seq == other.protein_seq and \
+               self.dna_offset == other.dna_offset
 
     def __ne__(self, other):
         return not self == other
@@ -61,9 +66,11 @@ class WildTypeSequence(object):
                     offset = int(cfg['reference offset'])
                     self.dna_offset = offset
                     if offset < 0:
-                        raise ValueError("Offset must be 0 or greater [{}]".format(self.parent_name))
+                        raise ValueError("Offset must be 0 or greater "
+                                         "[{}]".format(self.parent_name))
                 except (ValueError, TypeError):
-                    raise ValueError("Invalid reference offset value [{}]".format(self.parent_name))
+                    raise ValueError("Invalid reference offset value "
+                                     "[{}]".format(self.parent_name))
             else:
                 self.dna_offset = 0
 
@@ -71,7 +78,8 @@ class WildTypeSequence(object):
             if cfg['coding']:
                 # require coding sequences are in-frame
                 if len(self.dna_seq) % 3 != 0:
-                    raise ValueError("WT DNA sequence contains incomplete codons [{}]".format(self.parent_name))
+                    raise ValueError("WT DNA sequence contains incomplete "
+                                     "codons [{}]".format(self.parent_name))
 
                 # perform translation
                 self.protein_seq = ""
@@ -82,18 +90,22 @@ class WildTypeSequence(object):
                 if self.dna_offset % 3 == 0:
                     self.protein_offset = self.dna_offset // 3
                 else:
-                    logging.warning("Ignoring reference offset for protein changes (not a multiple of three)", extra={'oname' : self.parent_name})
+                    logging.warning("Ignoring reference offset for protein "
+                                    "changes (not a multiple of three)",
+                                    extra={'oname' : self.parent_name})
                     self.protein_offset = 0
             else:
                 self.protein_seq = None
                 self.protein_offset = None
 
         except KeyError as key:
-            raise KeyError("Missing required config value {key} [{name}]".format(key=key, name=self.parent_name))
+            raise KeyError("Missing required config value {key} "
+                           "[{name}]".format(key=key, name=self.parent_name))
 
     def serialize(self):
         """
-        Format this object as a config object suitable for dumping to a config file.
+        Format this object as a config object suitable for 
+        dumping to a config file.
         """
         cfg = {
                 'sequence' : self.dna_seq, 
@@ -115,18 +127,22 @@ class WildTypeSequence(object):
         new.configure(self.serialize())
 
         if new != self:
-            raise ValueError("Failed to duplicate wild type sequence [{}]".format(self.parent_name))
+            raise ValueError("Failed to duplicate wild type "
+                             "sequence [{}]".format(self.parent_name))
         else:
             return new
 
     def position_tuples(self, protein=False):
         """
-        Return a list of tuples containing the position number (after offset adjustment) and 
-        single-letter symbol (nucleotide or amino acid) for each position the wild type sequence.
+        Return a list of tuples containing the position number 
+        (after offset adjustment) and single-letter symbol 
+        (nucleotide or amino acid) for each position the wild type sequence.
         """
         if protein:
             if not self.is_coding():
-                raise AttributeError("Cannot return wild type protein position tuples for non-coding wild type [{}]".format(self.parent_name))
+                raise AttributeError("Cannot return wild type protein "
+                                     "position tuples for non-coding wild "
+                                     "type [{}]".format(self.parent_name))
             else:
                 seq = self.protein_seq
                 offset = self.protein_offset
@@ -135,4 +151,3 @@ class WildTypeSequence(object):
             offset = self.dna_offset
 
         return [(i + offset + 1, seq[i]) for i in range(len(seq))]
-
