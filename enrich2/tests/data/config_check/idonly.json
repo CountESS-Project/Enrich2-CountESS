@@ -1,0 +1,9 @@
+{
+  "counts file": "data/reads/idonly/idonly_counts.tsv",
+  "identifiers": {
+  }, 
+  "name": "idonly_test", 
+  "output directory": "test_output/idonly/",
+  "report filtered reads": false, 
+  "timepoint": 0
+}

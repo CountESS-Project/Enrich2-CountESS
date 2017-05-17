@@ -1,0 +1,17 @@
+{
+  "barcodes": {
+    "map file": "tests/data/reads/barcodeid/barcode_map.txt"
+  },
+  "fastq": {
+    "filters": {
+    },
+    "reads": "",
+    "reverse": false
+  },
+  "identifiers": {
+  },
+  "name": "barcode_id_test", 
+  "output directory": "test_output/barcodeid",
+  "report filtered reads": false, 
+  "timepoint": 0
+}

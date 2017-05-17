@@ -16,11 +16,19 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import sys
+import shutil
+import json
 from unittest import TestCase
 
 from ..config.types import *
 
 
+# -------------------------------------------------------------------------- #
+#
+#                      Component Configuration Classes
+#
+# -------------------------------------------------------------------------- #
 class ScorerConfigTest(TestCase):
 
     def setUp(self):
@@ -379,6 +387,11 @@ class BarcodeConfigTest(TestCase):
         }
         self.assertEqual(barcodemap.items(), barcode_cfg.barcodemap.items())
 
+    def test_error_no_barcode_map_when_requested(self):
+        cfg = {}
+        with self.assertRaises(ValueError):
+            BarcodeConfiguration(cfg, require_map=True).validate()
+
     def test_error_no_barcode_no_value(self):
         cfg = {
             BARCODE_MAP_FILE: os.path.join(
@@ -680,6 +693,7 @@ class WildTypeConfigTest(TestCase):
             self.data_path, 'polyA_t0.txt')}
         with self.assertRaises(IOError):
             WildTypeConfiguration(cfg).validate()
+
         cfg = {CODING: False, SEQUENCE: os.path.join(
             self.data_path, 'bad_sequence.fa')}
         with self.assertRaises(ValueError):
@@ -690,6 +704,3 @@ class WildTypeConfigTest(TestCase):
             self.data_path, 'sequence.fa')}
         wt_cfg = WildTypeConfiguration(cfg).validate()
         self.assertEqual(wt_cfg.sequence, 'AAAAAAAAAAAA')
-
-
-

@@ -92,7 +92,7 @@ class OptionsFrame(Frame, Iterable):
 
     def make_choice_menu_widget(self, option):
         variable = StringVar(self)
-        variable.set(option.default)
+        variable.set(option.get_default_value())
 
         label_text = "{}: ".format(option.name)
         label = Label(self, text=label_text, justify=LEFT)
@@ -104,7 +104,7 @@ class OptionsFrame(Frame, Iterable):
         vname = option.varname
         set_func = lambda _, y=variable, x=vname: self.set_validate(x, y.get())
         popup_menu = OptionMenu(
-            self, variable, option.default, *choices, command=set_func)
+            self, variable, option.get_choice_key(), *choices, command=set_func)
         popup_menu.grid(sticky=E, column=1, row=self.row)
         self.vname_tkvars_map[option.varname] = variable
 
@@ -121,7 +121,7 @@ class OptionsFrame(Frame, Iterable):
                 self.set_variable(varname, value)
                 self.set_option(varname, value)
             except (TclError, TypeError, KeyError, ValueError) as error:
-                variable.set(option.dtype(option.value))
+                variable.set(option.dtype(option.get_value()))
                 messagebox.showwarning(
                     title="Error setting option '{}'".format(varname),
                     message=bad_input_msg.format(varname, error)
@@ -139,7 +139,7 @@ class OptionsFrame(Frame, Iterable):
 
     def make_bool_entry_widget(self, option):
         variable = BooleanVar(self)
-        variable.set(option.default)
+        variable.set(option.get_default_value())
 
         label_text = "{}: ".format(option.name)
         label = Label(self, text=label_text, justify=LEFT)
@@ -153,17 +153,17 @@ class OptionsFrame(Frame, Iterable):
 
     def make_string_entry_widget(self, option: Option) -> None:
         variable = StringVar(self)
-        variable.set(option.dtype(option.default))
+        variable.set(option.dtype(option.get_default_value()))
         self.make_entry(variable, option)
 
     def make_int_entry_widget(self, option):
         variable = IntVar(self)
-        variable.set(option.dtype(option.default))
+        variable.set(option.dtype(option.get_default_value()))
         self.make_entry(variable, option)
 
     def make_float_entry_widget(self, option: Option) -> None:
         variable = DoubleVar(self)
-        variable.set(option.dtype(option.default))
+        variable.set(option.dtype(option.get_default_value()))
         self.make_entry(variable, option)
 
     def set_validate(self, varname, value):
@@ -173,7 +173,7 @@ class OptionsFrame(Frame, Iterable):
             self.set_option(varname, value)
         except (KeyError, TclError, TypeError, ValueError) as error:
             option = self.get_option_by_varname(varname)
-            self.set_variable(varname, option.value)
+            self.set_variable(varname, option.get_value())
             messagebox.showwarning(
                 title="Error setting option!",
                 message=bad_input_msg.format(varname, error)
@@ -200,8 +200,8 @@ class OptionsFrame(Frame, Iterable):
     def get_option_cfg(self):
         cfg = {}
         for varname, opt in self.options.items():
-            value = opt.value
-            default = opt.default
+            value = opt.get_value()
+            default = opt.get_default_value()
             opt.validate(value)
             cfg[varname] = (value, value == default)
         return cfg
@@ -357,7 +357,7 @@ class OptionsFileFrame(Frame):
                             "have been made."
             try:
                 option = self.options_frame.get_option_by_varname(varname)
-                current.append((varname, option.value))
+                current.append((varname, option.get_value()))
                 self.options_frame.set_variable(varname, value)
                 self.options_frame.set_option(varname, value)
             except (KeyError, TclError, TypeError, ValueError) as error:
