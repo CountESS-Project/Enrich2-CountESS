@@ -35,5 +35,9 @@
     }
   ],
   "name": "barcode_selection_test",
-  "output directory": "test_output/selection/"
+  "output directory": "test_output/selection/",
+  "scorer": {
+    "scorer_path": "",
+    "scorer_options": {}
+  }
 }

@@ -83,23 +83,23 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
         self.run_button.config(state='disabled')
         self.update_idletasks()
 
-        scoring_class = self.pw.get_selected_scorer_class()
-        scoring_class_attrs = self.pw.get_selected_scorer_attrs()
+        scorer_class = self.pw.get_selected_scorer_class()
+        scorer_class_attrs = self.pw.get_selected_scorer_attrs()
 
         # -------------------- temp code --------------------------- #
-        if scoring_class.__name__ == 'RegressionScorer':
-            logr_method = scoring_class_attrs['logr_method']
-            weighted = scoring_class_attrs['weighted']
+        if scorer_class.__name__ == 'RegressionScorer':
+            logr_method = scorer_class_attrs['logr_method']
+            weighted = scorer_class_attrs['weighted']
             if weighted:
                 scoring_method = 'WLS'
             else:
                 scoring_method = 'OLS'
 
-        elif scoring_class.__name__ == 'RatiosScorer':
-            logr_method = scoring_class_attrs['logr_method']
+        elif scorer_class.__name__ == 'RatiosScorer':
+            logr_method = scorer_class_attrs['logr_method']
             scoring_method = 'ratios'
 
-        elif scoring_class.__name__ == 'SimpleScorer':
+        elif scorer_class.__name__ == 'SimpleScorer':
             logr_method = 'wt'
             scoring_method = 'simple'
         else:
@@ -114,8 +114,8 @@ class RunnerWindow(tkinter.simpledialog.Dialog):
             self.pw.component_outliers.get()
 
         # self.pw.root_element.scoring_method = self.pw.scoring_method.get()
-        self.pw.root_element.scoring_class = scoring_class
-        self.pw.root_element.scoring_class_attrs = scoring_class_attrs
+        self.pw.root_element.scoring_class = scorer_class
+        self.pw.root_element.scoring_class_attrs = scorer_class_attrs
 
         self.pw.root_element.scoring_method = scoring_method
         self.pw.root_element.logr_method = logr_method

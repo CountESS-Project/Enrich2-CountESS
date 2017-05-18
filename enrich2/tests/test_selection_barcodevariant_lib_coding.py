@@ -21,7 +21,7 @@ from copy import deepcopy
 from ..selection.selection import Selection
 from .methods import HDF5TestComponent
 from .utilities import DEFAULT_STORE_PARAMS
-from .utilities import load_config_data
+from .utilities import load_config_data, create_file_path
 
 CFG_FILE = "barcodevariant_selection_coding.json"
 CFG_DIR = "data/config/selection/"
@@ -42,8 +42,12 @@ class TestSelectionBcvLibWLSScoringCompleteNormC(unittest.TestCase):
         logr = 'complete'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'regression_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr,
+            'weighted': True if scoring == 'WLS' else False
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -74,8 +78,12 @@ class TestSelectionBcvLibWLSScoringFullNormC(unittest.TestCase):
         logr = 'full'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'regression_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr,
+            'weighted': True if scoring == 'WLS' else False
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -105,8 +113,12 @@ class TestSelectionBcvLibWLSScoringWTNormC(unittest.TestCase):
         logr = 'wt'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'regression_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr,
+            'weighted': True if scoring == 'WLS' else False
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -137,8 +149,12 @@ class TestSelectionBcvLibOLSScoringCompleteNormC(unittest.TestCase):
         logr = 'complete'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'regression_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr,
+            'weighted': True if scoring == 'WLS' else False
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -169,8 +185,12 @@ class TestSelectionBcvLibOLSScoringFullNormC(unittest.TestCase):
         logr = 'full'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'regression_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr,
+            'weighted': True if scoring == 'WLS' else False
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -201,8 +221,12 @@ class TestSelectionBcvLibOLSScoringWTNormC(unittest.TestCase):
         logr = 'wt'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'regression_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr,
+            'weighted': True if scoring == 'WLS' else False
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -233,8 +257,11 @@ class TestSelectionBcvLibRatiosScoringCompleteNormC(unittest.TestCase):
         logr = 'complete'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'ratios_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -265,8 +292,11 @@ class TestSelectionBcvLibRatiosScoringFullNormC(unittest.TestCase):
         logr = 'full'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'ratios_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -297,8 +327,11 @@ class TestSelectionBcvLibRatiosScoringWTNormC(unittest.TestCase):
         logr = 'wt'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'ratios_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {
+            'logr_method': logr
+        }
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -329,8 +362,9 @@ class TestSelectionBcvLibCountsScoringCompleteNormC(unittest.TestCase):
         logr = 'complete'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'counts_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {}
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -361,8 +395,9 @@ class TestSelectionBcvLibCountsScoringFullNormC(unittest.TestCase):
         logr = 'full'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'counts_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {}
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -393,8 +428,9 @@ class TestSelectionBcvLibCountsScoringWTNormC(unittest.TestCase):
         logr = 'wt'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'counts_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {}
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -424,8 +460,9 @@ class TestSelectionBcvLibSimpleScoringCompleteNormC(unittest.TestCase):
         logr = 'complete'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'simple_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {}
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -455,8 +492,9 @@ class TestSelectionBcvLibSimpleScoringFullNormC(unittest.TestCase):
         logr = 'full'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'simple_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {}
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -486,8 +524,9 @@ class TestSelectionBcvLibSimpleScoringWTNormC(unittest.TestCase):
         logr = 'wt'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'simple_scorer.py', 'data/plugins/')
+        cfg["scorer"]["scorer_options"] = {}
         file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
@@ -509,7 +548,7 @@ class TestSelectionBcvLibSimpleScoringWTNormC(unittest.TestCase):
 
     def test_all_hdf5_dataframes(self):
         self.general_test_component.runTest()
-        
-        
+
+
 if __name__ == "__main__":
     unittest.main()

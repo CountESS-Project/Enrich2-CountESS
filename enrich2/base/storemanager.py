@@ -23,7 +23,6 @@ import collections
 import getpass
 import time
 
-
 #: Dictionary specifying available scoring methods for the analysis
 #: Key is the internal name of the method, value is the GUI label
 #: For command line options, internal name is used for the option string itself
@@ -109,8 +108,8 @@ class StoreManager(object):
         self._logr_method = None
 
         # analysis parameters
-        self.scoring_class = None
-        self.scoring_class_attrs = None
+        self.scorer_class = None
+        self.scorer_class_attrs = None
 
         self._force_recalculate = None
         self._component_outliers = None
@@ -449,6 +448,24 @@ class StoreManager(object):
         # else:
         #     self.store_cfg = False
         #     self.store_path = None
+
+        # ---------------------- TEMP ------------------------ #
+        from ..plugins import load_scorer_class_and_options
+        path = \
+            cfg.get('scorer', {}).get('scorer_path', None)
+        override_attrs = \
+            cfg.get('scorer', {}).get('scorer_options', {})
+
+        if path:
+            scorer_class, options, _ = load_scorer_class_and_options(path)
+            self.scorer_class = scorer_class
+            for key, value in override_attrs.items():
+                options.set_option_by_varname(key, value)
+            if options is not None:
+                self.scorer_class_attrs = options.to_dict()
+            else:
+                self.scorer_class_attrs = {}
+        # ---------------------- TEMP ------------------------ #
 
         try:
             self.name = cfg['name']

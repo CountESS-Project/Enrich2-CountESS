@@ -24,7 +24,7 @@ from io import StringIO
 # pr.enable()
 
 loader = unittest.TestLoader()
-tests = loader.discover(start_dir='./', pattern="test_module_plugins_base.py")
+tests = loader.discover(start_dir='./', pattern="test_selection_valueerrors.py")
 test_runner = unittest.TextTestRunner()
 test_runner.run(tests)
 

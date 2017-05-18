@@ -72,17 +72,13 @@ class HDF5TestComponent(unittest.TestCase):
         obj = self.store_constructor()
         obj.force_recalculate = self.params['force_recalculate']
         obj.component_outliers = self.params['component_outliers']
-        obj.scoring_method = self.params['scoring_method']
-        obj.logr_method = self.params['logr_method']
-        obj.plots_requested = self.params['plots_requested']
         obj.tsv_requested = self.params['tsv_requested']
         obj.output_dir_override = self.params['output_dir_override']
-        obj.scoring_class = self.params['scoring_class']
-        obj.scoring_class_attrs = self.params['scoring_class_attrs']
 
-        # perform the analysis
         obj.configure(self.cfg)
         obj.validate()
+
+        # perform the analysis
         obj.store_open(children=True)
         obj.calculate()
         self.obj = obj
@@ -90,17 +86,17 @@ class HDF5TestComponent(unittest.TestCase):
             self.saveToResult()
         self.makeTests()
 
+    def tearDown(self):
+        self.obj.store_close(children=True)
+        os.remove(self.obj.store_path)
+        shutil.rmtree(self.obj.output_dir)
+
     def makeTests(self):
         for key in self.obj.store:
             test_func = TEST_METHODS[key]
             test_name = "test_{}".format(key.replace("/", "_")[1:])
             setattr(self, test_name, MethodType(test_func, self))
             self.tests.append(test_name)
-
-    def tearDown(self):
-        self.obj.store_close(children=True)
-        os.remove(self.obj.store_path)
-        shutil.rmtree(self.obj.output_dir)
 
     def runTest(self):
         for test_func_name in self.tests:
@@ -110,8 +106,8 @@ class HDF5TestComponent(unittest.TestCase):
         if self.file_ext == 'pkl':
             save_result_to_pkl(self.obj, self.result_dir, self.file_prefix)
         else:
-            save_result_to_txt(self.obj, self.result_dir,
-                               self.file_prefix, self.file_sep)
+            save_result_to_txt(
+                self.obj, self.result_dir, self.file_prefix, self.file_sep)
 
 
 # -------------------------------------------------------------------------- #

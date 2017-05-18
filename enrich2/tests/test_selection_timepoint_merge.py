@@ -21,7 +21,7 @@ from copy import deepcopy
 from ..selection.selection import Selection
 from .methods import HDF5TestComponent
 from .utilities import DEFAULT_STORE_PARAMS
-from .utilities import load_config_data
+from .utilities import load_config_data, create_file_path
 
 CFG_FILE = "selection_timepoint_merge.json"
 CFG_DIR = "data/config/selection/"
@@ -41,8 +41,10 @@ class TestSelectionTimepointMerge(unittest.TestCase):
         logr = 'wt'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        params['scoring_method'] = scoring
-        params['logr_method'] = logr
+        cfg["scorer"]["scorer_path"] = create_file_path(
+            'counts_scorer.py', 'data/plugins/'
+        )
+        cfg["scorer"]["scorer_options"] = {}
         file_prefix = "timepoint_merge"
 
         self.general_test_component = HDF5TestComponent(

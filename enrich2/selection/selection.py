@@ -142,7 +142,7 @@ class Selection(StoreManager):
         analysis are not suitable. Calls validate method on all child SeqLibs.
         """
         # check the time points
-        scoring_method = self.get_root().scoring_class.name
+        scoring_method = self.get_root().scorer_class.name
 
         if 0 not in self.timepoints:
             raise ValueError("Missing timepoint 0 [{}]".format(self.name))
@@ -171,7 +171,7 @@ class Selection(StoreManager):
         
         # check that we're not doing wild type normalization
         # on something with no wild type
-        logr_method = self.get_root().scoring_class_attrs.get(
+        logr_method = self.get_root().scorer_class_attrs.get(
             'logr_method', '')
         if not self.has_wt_sequence() and logr_method == "wt":
             raise ValueError("No wild type sequence for wild "
@@ -525,7 +525,7 @@ class Selection(StoreManager):
         Wrapper method to calculate counts and enrichment scores 
         for all data in the :py:class:`~selection.Selection`.
         """
-        scoring_class_name = self.get_root().scoring_class.name
+        scorer_class_name = self.get_root().scorer_class.name
 
         if len(self.labels) == 0:
             raise ValueError("No data present across all "
@@ -541,24 +541,24 @@ class Selection(StoreManager):
         self.ensure_main_count_tables_exist_and_populated()
         self.timepoints_contain_variants()
 
-        if 'Demo' in scoring_class_name:
+        if 'Demo' in scorer_class_name:
             raise ValueError('Invalid scoring method "{}" '
-                             '[{}]'.format(scoring_class_name, self.name))
+                             '[{}]'.format(scorer_class_name, self.name))
 
-        if 'Regression' in scoring_class_name \
+        if 'Regression' in scorer_class_name \
                 and len(self.timepoints) <= 2:
             raise ValueError("Regression-based scoring "
                              "requires three or more time points.")
 
-        scorer = self.get_root().scoring_class(
+        scorer = self.get_root().scorer_class(
             store_manager=self,
-            options=self.get_root().scoring_class_attrs
+            options=self.get_root().scorer_class_attrs
         )
         scorer.run()
 
         # TODO: Write outlier computation as a plugin?
         non_allowed_methods = ("Counts Only", "Demo")
-        scoring_method = scoring_class_name
+        scoring_method = scorer_class_name
 
         if scoring_method not in non_allowed_methods \
                 and self.component_outliers:

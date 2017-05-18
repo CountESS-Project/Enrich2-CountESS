@@ -121,6 +121,6 @@ DEFAULT_STORE_PARAMS = {
     'plots_requested': False,
     'tsv_requested': False,
     'output_dir_override': False,
-    'scoring_class': '',
-    'scoring_class_attrs': ''
+    'scorer_class': None,
+    'scorer_class_attrs': None
 }
