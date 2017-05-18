@@ -28,7 +28,7 @@ from tkinter.filedialog import askopenfilename, asksaveasfile
 from ..plugins.options import Options, Option
 from ..plugins.options import options_not_in_config
 from ..plugins.options import get_unused_options
-from ..plugins import load_scoring_class_and_options
+from ..plugins import load_scorer_class_and_options
 from ..base.utils import nested_format
 
 
@@ -401,7 +401,7 @@ class ScorerScriptsDropDown(LabelFrame):
             if "__init__.py" in path:
                 continue
             try:
-                result = load_scoring_class_and_options(path)
+                result = load_scorer_class_and_options(path)
                 klass, options, options_file = result
                 options_frame, options_file_frame = self.make_options_frames(
                     options, options_file

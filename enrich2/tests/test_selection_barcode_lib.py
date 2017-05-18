@@ -19,7 +19,7 @@ import unittest
 from copy import deepcopy
 
 from ..selection.selection import Selection
-from ..plugins import load_scoring_class_and_options
+from ..plugins import load_scorer_class_and_options
 from .methods import HDF5TestComponent
 from .utilities import DEFAULT_STORE_PARAMS
 from .utilities import load_config_data
@@ -49,7 +49,7 @@ class TestSelectionBarocdeLibWLSScoringCompleteNorm(unittest.TestCase):
         params = deepcopy(DEFAULT_STORE_PARAMS)
 
         klass, _, _ = \
-            load_scoring_class_and_options(WLS_PATH)
+            load_scorer_class_and_options(WLS_PATH)
         klass_attrs = {'logr_method': 'complete', 'weighted': True}
         params['scoring_class'] = klass
         params['scoring_class_attrs'] = klass_attrs

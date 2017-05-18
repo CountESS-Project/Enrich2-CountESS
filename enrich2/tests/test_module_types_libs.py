@@ -52,7 +52,7 @@ class BaseLibraryConfigTest(TestCase):
             IDENTIFIERS: {},
             NAME: 'BaseLibStoreTest',
             REPORT_FILTERED_READS: False,
-            TIMEPOINT: 0
+            TIMEPOINT: 0,
         }
 
     def tearDown(self):
@@ -60,17 +60,17 @@ class BaseLibraryConfigTest(TestCase):
 
     def test_error_name_not_in_cfg(self):
         cfg = {}
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             BaseLibraryConfiguration(cfg).validate()
 
     def test_error_timepoint_not_in_cfg(self):
         cfg = {NAME: 'BaseLibStoreTest'}
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             BaseLibraryConfiguration(cfg).validate()
 
     def test_error_report_filtered_reads_not_in_cfg(self):
         cfg = {NAME: 'BaseLibStoreTest', TIMEPOINT: 0}
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             BaseLibraryConfiguration(cfg).validate()
 
     def test_error_invalid_timepoint_in_cfg(self):
@@ -100,11 +100,15 @@ class BaseLibraryConfigTest(TestCase):
             BaseLibraryConfiguration(cfg).validate()
 
     def test_defaults_load_correctly(self):
-        base_cfg = BaseLibraryConfiguration(self.basic_cfg).validate()
+        path = os.path.join(self.data_dir, 'barcode_map.txt')
+        cfg = self.basic_cfg.copy()
+        cfg[COUNTS_FILE] = path
+
+        base_cfg = BaseLibraryConfiguration(cfg).validate()
         self.assertEqual(base_cfg.seqlib_type, 'IdOnlySeqLib')
         self.assertEqual(base_cfg.report_filtered_reads, False)
         self.assertEqual(base_cfg.timepoint, 0)
-        self.assertEqual(base_cfg.counts_file, None)
+        self.assertEqual(base_cfg.counts_file, path)
         self.assertEqual(base_cfg.store_cfg.name, 'BaseLibStoreTest')
         self.assertEqual(base_cfg.fastq_cfg, None)
 
@@ -144,6 +148,20 @@ class BaseLibraryConfigTest(TestCase):
         with self.assertRaises(ValueError):
             BaseLibraryConfiguration(cfg, init_fastq=True).validate()
 
+    def test_error_have_init_fastq_but_no_fastq(self):
+        with self.assertRaises(KeyError):
+            BaseLibraryConfiguration(self.basic_cfg, init_fastq=True).validate()
+
+    def test_error_have_not_init_fastq_but_no_counts(self):
+        cfg = {
+            IDENTIFIERS: {},
+            NAME: 'BaseLibStoreTest',
+            REPORT_FILTERED_READS: False,
+            TIMEPOINT: 0,
+        }
+        with self.assertRaises(KeyError):
+            BaseLibraryConfiguration(cfg, init_fastq=False).validate()
+
     def test_correct_seqlib_type(self):
         idonly = json.load(
             open(os.path.join(self.data_dir, 'idonly.json'), 'r')
@@ -156,14 +174,14 @@ class BaseLibraryConfigTest(TestCase):
             open(os.path.join(self.data_dir, 'basic_coding.json'), 'r')
         )
         basic[FASTQ][READS] = os.path.join(self.data_dir, 'polyA_t0.fq')
-        base_cfg = BaseLibraryConfiguration(basic).validate()
+        base_cfg = BaseLibraryConfiguration(basic, init_fastq=True).validate()
         self.assertEqual(base_cfg.seqlib_type, 'BasicSeqLib')
 
         barcode = json.load(
             open(os.path.join(self.data_dir, 'barcode.json'), 'r')
         )
         barcode[FASTQ][READS] = os.path.join(self.data_dir, 'polyA_t0.fq')
-        base_cfg = BaseLibraryConfiguration(barcode).validate()
+        base_cfg = BaseLibraryConfiguration(barcode, init_fastq=True).validate()
         self.assertEqual(base_cfg.seqlib_type, 'BarcodeSeqLib')
 
         barcodeid = json.load(
@@ -173,7 +191,7 @@ class BaseLibraryConfigTest(TestCase):
             self.data_dir, 'barcode_map.txt'
         )
         barcodeid[FASTQ][READS] = os.path.join(self.data_dir, 'polyA_t0.fq')
-        base_cfg = BaseLibraryConfiguration(barcodeid).validate()
+        base_cfg = BaseLibraryConfiguration(barcodeid, init_fastq=True).validate()
         self.assertEqual(base_cfg.seqlib_type, 'BcidSeqLib')
 
         barcodevar = json.load(
@@ -184,7 +202,7 @@ class BaseLibraryConfigTest(TestCase):
             self.data_dir, 'barcode_map.txt'
         )
         barcodevar[FASTQ][READS] = os.path.join(self.data_dir, 'polyA_t0.fq')
-        base_cfg = BaseLibraryConfiguration(barcodevar).validate()
+        base_cfg = BaseLibraryConfiguration(barcodevar, init_fastq=True).validate()
         self.assertEqual(base_cfg.seqlib_type, 'BcvSeqLib')
 
         path = os.path.join(self.data_dir, '../../../../test_output/')

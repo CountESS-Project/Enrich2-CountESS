@@ -44,10 +44,9 @@ import logging
 from abc import ABC, abstractclassmethod
 
 from .config_check import *
-from ..plugins import load_scoring_class_and_options
+from ..plugins import load_scorer_class_and_options
 from ..plugins.options import Options
 from ..libraries.barcodemap import BarcodeMap
-from ..sequence.wildtype import WildTypeSequence
 
 
 NAME = 'name'
@@ -130,29 +129,29 @@ class ScorerConfiguration(Configuration):
             raise TypeError("dict required for fastq configuration.")
 
         if SCORER_PATH not in cfg:
-            raise ValueError("Missing {} key from {} configuration.".format(
+            raise KeyError("Missing '{}' key from {} configuration.".format(
                 SCORER_PATH, SCORER
             ))
         if SCORER_OPTIONS not in cfg:
-            raise ValueError("Missing {} key from {} configuration.".format(
+            raise KeyError("Missing '{}' key from {} configuration.".format(
                 SCORER_OPTIONS, SCORER
             ))
 
         path = cfg[SCORER_PATH]
         attrs = cfg[SCORER_OPTIONS]
-        scoring_class, options, _ = \
-            load_scoring_class_and_options(path)
+        scorer_class, options, _ = \
+            load_scorer_class_and_options(path)
 
         self.__options = options if options is not None else Options()
-        self.scoring_class = scoring_class
-        self.scoring_class_attrs = attrs
+        self.scorer_class = scorer_class
+        self.scorer_class_attrs = attrs
         self.validate()
 
     def validate(self):
-        if self.scoring_class is None:
+        if self.scorer_class is None:
             raise TypeError("Scoring class cannot be NoneType.")
 
-        passed_varnames = set(self.scoring_class_attrs.keys())
+        passed_varnames = set(self.scorer_class_attrs.keys())
         expected_varnames = set(self.__options.option_varnames())
 
         # Check for unused params in attrs and throw error
@@ -164,7 +163,7 @@ class ScorerConfiguration(Configuration):
 
         # Validate each value in passed attrs
         for varname in passed_varnames & expected_varnames:
-            value = self.scoring_class_attrs[varname]
+            value = self.scorer_class_attrs[varname]
             self.__options.validate_option_by_varname(varname, value)
             self.__options.set_option_by_varname(varname, value)
 
@@ -177,7 +176,7 @@ class ScorerConfiguration(Configuration):
                             "values.".format(defaults_str),
                             extra={'oname': self.__class__.__name__})
 
-        self.scoring_class_attrs = self.__options.to_dict()
+        self.scorer_class_attrs = self.__options.to_dict()
         return self
 
 
@@ -188,7 +187,7 @@ class FASTQConfiguration(Configuration):
             raise TypeError("dict required for fastq configuration.")
 
         if READS not in cfg:
-            raise ValueError("Missing {} key from {} configuration.".format(
+            raise KeyError("Missing '{}' key from {} configuration.".format(
                 READS, FASTQ
             ))
 
@@ -375,7 +374,7 @@ class VariantsConfiguration(Configuration):
             raise TypeError("dict required for variants configuration.")
 
         if WILDTYPE not in cfg:
-            raise ValueError("Missing {} key from {} configuration.".format(
+            raise KeyError("Missing '{}' key from {} configuration.".format(
                 WILDTYPE, VARIANTS
             ))
 
@@ -501,18 +500,23 @@ class BaseLibraryConfiguration(Configuration):
             raise TypeError("'init_fastq' needs to be a boolean.")
 
         if TIMEPOINT not in cfg:
-            raise ValueError("Missing {} from base library "
+            raise KeyError("Missing '{}' from base library "
                              "configuration.".format(TIMEPOINT))
         if REPORT_FILTERED_READS not in cfg:
-            raise ValueError("Missing {} from base library "
+            raise KeyError("Missing '{}' from base library "
                              "configuration.".format(REPORT_FILTERED_READS))
 
         if init_fastq and FASTQ not in cfg:
-            raise ValueError("Missing {} from base library "
+            raise KeyError("Missing '{}' from base library "
                              "configuration.".format(FASTQ))
+        if not init_fastq and COUNTS_FILE not in cfg:
+            raise KeyError("Missing '{}' from base library "
+                             "configuration.".format(COUNTS_FILE))
 
+        fastq_cfg = cfg.get(FASTQ, None)
+        self.counts_file = cfg.get(COUNTS_FILE, None)
         if init_fastq:
-            self.fastq_cfg = FASTQConfiguration(cfg.get(FASTQ)).validate()
+            self.fastq_cfg = FASTQConfiguration(fastq_cfg).validate()
         else:
             self.fastq_cfg = None
 
@@ -522,7 +526,6 @@ class BaseLibraryConfiguration(Configuration):
 
         self.timepoint = cfg.get(TIMEPOINT)
         self.report_filtered_reads = cfg.get(REPORT_FILTERED_READS, False)
-        self.counts_file = cfg.get(COUNTS_FILE, None)
         if not self.counts_file:
             self.counts_file = None
 
@@ -548,6 +551,9 @@ class BaseLibraryConfiguration(Configuration):
             ))
 
     def validate_counts_file(self):
+        if self.fastq_cfg is None and not self.counts_file:
+            raise ValueError("Must provide a counts file if not using fastq.")
+
         if self.counts_file and not isinstance(self.counts_file, str):
             raise TypeError("Expected str for `counts file` but "
                             "found {}.".format(type(self.counts_file)))
@@ -578,8 +584,8 @@ class BarcodeSeqLibConfiguration(BaseLibraryConfiguration):
 
         barcodes_cfg = cfg.get(BARCODES, {})
         if BARCODES not in cfg:
-            raise ValueError("Key {} missing for BcidSeqLib "
-                             "configuration.".format(BARCODES))
+            raise KeyError("Key {} missing for BcidSeqLib "
+                           "configuration.".format(BARCODES))
 
         self.barcodes_cfg = BarcodeConfiguration(
             barcodes_cfg, require_map=False).validate()
@@ -594,16 +600,16 @@ class BcidSeqLibConfiguration(BaseLibraryConfiguration):
         super(BcidSeqLibConfiguration, self).__init__(cfg, init_fastq)
 
         if BARCODES not in cfg:
-            raise ValueError("Key {} missing for BcidSeqLib "
-                             "configuration.".format(BARCODES))
+            raise KeyError("Key {} missing for BcidSeqLib "
+                           "configuration.".format(BARCODES))
         if IDENTIFIERS not in cfg:
-            raise ValueError("Key {} missing for BcidSeqLib "
-                             "configuration.".format(IDENTIFIERS))
+            raise KeyError("Key {} missing for BcidSeqLib "
+                           "configuration.".format(IDENTIFIERS))
 
         barcodes_cfg = cfg.get(BARCODES)
         identifers_cfg = cfg.get(IDENTIFIERS)
         if not barcodes_cfg:
-            raise ValueError("Configuration for {} "
+            raise KeyError("Configuration for {} "
                              "cannot be empty.".format(BARCODES))
 
         barcodes_cfg = BarcodeConfiguration(
@@ -622,11 +628,11 @@ class BcvSeqLibConfiguration(BaseLibraryConfiguration):
         super(BcvSeqLibConfiguration, self).__init__(cfg, init_fastq)
 
         if BARCODES not in cfg:
-            raise ValueError("Key {} missing for BcidSeqLib "
-                             "configuration.".format(BARCODES))
+            raise KeyError("Key {} missing for BcidSeqLib "
+                           "configuration.".format(BARCODES))
         if VARIANTS not in cfg:
-            raise ValueError("Key {} missing for BcidSeqLib "
-                             "configuration.".format(VARIANTS))
+            raise KeyError("Key {} missing for BcidSeqLib "
+                           "configuration.".format(VARIANTS))
 
         barcodes_cfg = cfg.get(BARCODES, {})
         variants_cfg = cfg.get(VARIANTS, {})
@@ -650,8 +656,7 @@ class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for IdOnlySeqLib configuration.")
-        if not COUNTS_FILE in cfg:
-            raise ValueError("Missing key {} from config.".format(COUNTS_FILE))
+
         super(IdOnlySeqLibConfiguration, self).__init__(cfg, init_fastq=False)
         identifiers_cfg = cfg.get(IDENTIFIERS, {})
         identifiers_cfg = IdentifiersConfiguration(identifiers_cfg).validate()
@@ -668,8 +673,8 @@ class BasicSeqLibConfiguration(BaseLibraryConfiguration):
         super(BasicSeqLibConfiguration, self).__init__(cfg, init_fastq)
 
         if VARIANTS not in cfg:
-            raise ValueError("Key {} missing for BcvSeqLib "
-                             "configuration.".format(VARIANTS))
+            raise KeyError("Key {} missing for BcvSeqLib "
+                           "configuration.".format(VARIANTS))
 
         variants_cfg = cfg.get(VARIANTS, {})
         if not variants_cfg:
@@ -686,41 +691,46 @@ class BasicSeqLibConfiguration(BaseLibraryConfiguration):
 # -------------------------------------------------------------------------- #
 class ExperimentConfiguration(Configuration):
 
-    def __init__(self, cfg, has_scorer=True):
+    def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for experiment configuration.")
 
-        self.store_cfg = StoreConfiguration(cfg, has_scorer).validate()
         if CONDITIONS not in cfg:
             raise KeyError("Missing required config value `{}` [{}]"
                            "".format(CONDITIONS, self.__class__.__name__))
+        if SCORER not in cfg:
+            raise KeyError("Missing required config value `{}` [{}]"
+                           "".format(SCORER, self.__class__.__name__))
 
-        conditions_cfg = cfg.get(CONDITIONS, [])
-        self.conditions = []
+        self.store_cfg = StoreConfiguration(cfg, has_scorer=True).validate()
+        condition_cfgs = cfg.get(CONDITIONS)
+        self.condition_cfgs = []
 
-        if not isinstance(conditions_cfg, list):
-            raise ValueError("Experiment `conditions` must be a list.")
-        if len(conditions_cfg) == 0:
+        if not isinstance(condition_cfgs, list):
+            raise TypeError("Experiment `conditions` must be a list.")
+
+        if len(condition_cfgs) == 0:
             raise ValueError("At least 1 experimental condition must be "
                              "present in an experiment.")
 
-        for condition_cfg in cfg[CONDITIONS]:
-            self.conditions.append(ConditonsConfiguration(condition_cfg))
+        for cfg in condition_cfgs:
+            self.condition_cfgs.append(ConditonsConfiguration(cfg))
         self.validate()
 
     def validate(self):
-        for condition in self.conditions:
-            condition.validate()
+        condition_names = []
+        for cfg in self.condition_cfgs:
+            cfg.validate()
+            condition_names.append(cfg.store_cfg.name)
 
-        condition_names = [condition.name for condition in self.conditions]
         if len(set(condition_names)) != len(condition_names):
             raise ValueError("Non-unique condition names in Experiment "
                              "[{}].".format(self.__class__.__name__))
 
         selection_names = [
-            selection.name
-            for condition in self.conditions
-            for selection in condition.selections
+            s_cfg.store_cfg.name
+            for c_cfg in self.condition_cfgs
+            for s_cfg in c_cfg.selection_cfgs
         ]
         if len(set(selection_names)) != len(selection_names):
             raise ValueError("Non-unique selection names across conditions "
@@ -735,28 +745,29 @@ class ConditonsConfiguration(Configuration):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for condition configuration.")
 
-        self.store_cfg = StoreConfiguration(cfg, has_scorer=False).validate()
         if SELECTIONS not in cfg:
-            raise KeyError("Condition is missing required config value "
+            raise KeyError("Configuration is missing required config value "
                            "`{}` [{}]".format(SELECTIONS,
                                               self.__class__.__name__))
 
-        selections_cfg = cfg.get(SELECTIONS, [])
-        self.selections = []
+        self.selection_cfgs = []
+        self.store_cfg = StoreConfiguration(cfg, has_scorer=False).validate()
+        selection_cfgs = cfg.get(SELECTIONS, [])
 
-        if not isinstance(selections_cfg, list):
-            raise ValueError("Condition `selections` must be a list.")
-        if len(selections_cfg) == 0:
+        if not isinstance(selection_cfgs, list):
+            raise TypeError("Condition `selections` must be a list.")
+        if len(selection_cfgs) == 0:
             raise ValueError("At least 1 selection must be "
                              "present in a condition.")
 
-        for selection_cfg in cfg[SELECTIONS]:
-            self.selections.append(SelectionsConfiguration(selection_cfg))
+        for cfg in selection_cfgs:
+            self.selection_cfgs.append(
+                SelectionsConfiguration(cfg, has_scorer=False))
         self.validate()
 
     def validate(self):
-        for selection in self.selections:
-            selection.validate()
+        for cfg in self.selection_cfgs:
+            cfg.validate()
         return self
 
 
@@ -779,7 +790,7 @@ class SelectionsConfiguration(Configuration):
         self.store_cfg = StoreConfiguration(cfg, has_scorer).validate()
 
         if LIBRARIES not in cfg:
-            raise ValueError("Selection has no `{}` element.".format(
+            raise KeyError("Selection has no `{}` element.".format(
                 LIBRARIES))
 
         libraries_cfg = cfg.get(LIBRARIES, [])
@@ -811,7 +822,7 @@ class SelectionsConfiguration(Configuration):
                              "required [{}].".format(self.__class__.__name__))
 
         if self.store_cfg.has_scorer:
-            name = self.store_cfg.scorer_cfg.scoring_class.name
+            name = self.store_cfg.scorer_cfg.scorer_class.name
             if len(self.timepoints) < 3 and name == 'Regression':
                 raise ValueError("Insufficient number of timepoints for "
                                  "regression scoring "
@@ -833,11 +844,11 @@ class StoreConfiguration(Configuration):
             raise TypeError("Boolean required for 'has_storer'.")
 
         if has_scorer and SCORER not in cfg:
-            raise ValueError("Missing {} key from store configuration.".format(
+            raise KeyError("Missing '{}' key from store configuration.".format(
                 SCORER
             ))
         if NAME not in cfg:
-            raise ValueError("Missing {} key from store configuration.".format(
+            raise KeyError("Missing '{}' key from store configuration.".format(
                 NAME
             ))
 

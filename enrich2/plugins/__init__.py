@@ -54,7 +54,7 @@ class ModuleLoader(object):
         return getattr(self.module, name)
 
 
-def load_scoring_class_and_options(path):
+def load_scorer_class_and_options(path):
     loader = ModuleLoader(path)
     scorers = []
     for attr_name, attr in loader.get_module_attrs():

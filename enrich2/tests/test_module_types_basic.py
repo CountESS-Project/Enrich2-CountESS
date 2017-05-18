@@ -40,7 +40,7 @@ class ScorerConfigTest(TestCase):
 
     def test_error_path_key_missing(self):
         cfg = {SCORER_OPTIONS: {}}
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             ScorerConfiguration(cfg)
 
     def test_error_invalid_path(self):
@@ -50,7 +50,7 @@ class ScorerConfigTest(TestCase):
 
     def test_error_options_key_missing(self):
         cfg = {SCORER_PATH: ""}
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             ScorerConfiguration(cfg)
 
     def test_error_invalid_plugin_file(self):
@@ -83,11 +83,11 @@ class ScorerConfigTest(TestCase):
         }
         scorer_cfg = ScorerConfiguration(cfg).validate()
         self.assertTrue(
-            scorer_cfg.scoring_class_attrs,
+            scorer_cfg.scorer_class_attrs,
             {'logr_method': 'wt', 'weighted': False}
         )
         self.assertTrue(
-            scorer_cfg.scoring_class.name,
+            scorer_cfg.scorer_class.name,
             'Regression'
         )
 
@@ -98,7 +98,7 @@ class ScorerConfigTest(TestCase):
         }
         scorer_cfg = ScorerConfiguration(cfg).validate()
         self.assertTrue(
-            scorer_cfg.scoring_class_attrs,
+            scorer_cfg.scorer_class_attrs,
             {'logr_method': 'wt', 'weighted': True}
         )
 
@@ -117,7 +117,7 @@ class ScorerConfigTest(TestCase):
         }
         scorer_cfg = ScorerConfiguration(cfg).validate()
         self.assertTrue(
-            scorer_cfg.scoring_class_attrs,
+            scorer_cfg.scorer_class_attrs,
             {'logr_method': 'wt', 'weighted': True}
         )
 
@@ -128,18 +128,18 @@ class ScorerConfigTest(TestCase):
         }
         scorer_cfg = ScorerConfiguration(cfg).validate()
         self.assertTrue(
-            scorer_cfg.scoring_class_attrs,
+            scorer_cfg.scorer_class_attrs,
             {'logr_method': 'complete', 'weighted': False}
         )
 
-    def test_loads_expected_scoring_class(self):
+    def test_loads_expected_scorer_class(self):
         cfg = {
             SCORER_PATH: os.path.join(self.plugin_dir, 'regression_scorer.py'),
             SCORER_OPTIONS: {'logr_method': 'complete', 'weighted': False}
         }
         scorer_cfg = ScorerConfiguration(cfg).validate()
         self.assertTrue(
-            scorer_cfg.scoring_class.name,
+            scorer_cfg.scorer_class.name,
             'Regression'
         )
 
@@ -150,7 +150,7 @@ class ScorerConfigTest(TestCase):
         }
         scorer_cfg = ScorerConfiguration(cfg).validate()
         self.assertTrue(
-            scorer_cfg.scoring_class_attrs,
+            scorer_cfg.scorer_class_attrs,
             {'logr_method': 'wt', 'weighted': True}
         )
 
@@ -182,7 +182,7 @@ class FASTQConfigTest(TestCase):
 
     def test_error_missing_reads_key(self):
         cfg = {}
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             FASTQConfiguration(cfg).validate()
 
     def test_defaults_load_correctly(self):
@@ -555,7 +555,7 @@ class VariantsConfigTest(TestCase):
 
     def test_error_wildtype_key_missing(self):
         cfg = {}
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             VariantsConfiguration(cfg).validate()
 
     def test_defaults_load_correctly(self):

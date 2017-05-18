@@ -19,7 +19,7 @@
 import os
 from unittest import TestCase
 
-from ..plugins import load_scoring_class_and_options
+from ..plugins import load_scorer_class_and_options
 from ..plugins.options import Options
 
 
@@ -59,34 +59,34 @@ class PluginLoadingTest(TestCase):
 
     def test_error_non_module(self):
         with self.assertRaises(ImportError):
-            load_scoring_class_and_options(self.non_module)
+            load_scorer_class_and_options(self.non_module)
 
     def test_error_non_python_file(self):
         with self.assertRaises(IOError):
-            load_scoring_class_and_options(self.non_py_file)
+            load_scorer_class_and_options(self.non_py_file)
 
     def test_error_bad_path(self):
         with self.assertRaises(IOError):
-            load_scoring_class_and_options(self.non_existent)
+            load_scorer_class_and_options(self.non_existent)
 
     def test_error_too_many_classes(self):
         with self.assertRaises(ImportError):
-            load_scoring_class_and_options(self.two_scorers)
+            load_scorer_class_and_options(self.two_scorers)
 
     def test_error_no_classes(self):
         with self.assertRaises(ImportError):
-            load_scoring_class_and_options(self.no_scorers)
+            load_scorer_class_and_options(self.no_scorers)
 
     def test_error_two_options_classes_defined(self):
         with self.assertRaises(ImportError):
-            load_scoring_class_and_options(self.two_optons_def)
+            load_scorer_class_and_options(self.two_optons_def)
 
     def test_error_empty_options_class(self):
         with self.assertRaises(ImportError):
-            load_scoring_class_and_options(self.empty_options)
+            load_scorer_class_and_options(self.empty_options)
 
     def test_correct_options(self):
-        _, result, _ = load_scoring_class_and_options(self.regression_scorer)
+        _, result, _ = load_scorer_class_and_options(self.regression_scorer)
         expected = Options()
         expected.add_option(
             name="Normalization Method",
@@ -108,13 +108,13 @@ class PluginLoadingTest(TestCase):
         self.assertEqual(expected, result)
 
     def test_correct_options_file(self):
-        _, _, options_file = load_scoring_class_and_options(self.counts_scorer)
+        _, _, options_file = load_scorer_class_and_options(self.counts_scorer)
         self.assertTrue(options_file is None)
 
-        _, _, options_file = load_scoring_class_and_options(
+        _, _, options_file = load_scorer_class_and_options(
             self.regression_scorer)
         self.assertTrue(options_file is not None)
 
     def test_error_incomplete_implementation(self):
         with self.assertRaises(ImportError):
-            load_scoring_class_and_options(self.bad_scorer_incomplete)
+            load_scorer_class_and_options(self.bad_scorer_incomplete)
