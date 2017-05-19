@@ -24,6 +24,7 @@ requirements = [
     'pandas >= 0.18.0',
     'statsmodels >= 0.6.1',
     'matplotlib >= 1.4.3',
+    'pyyaml >= 3.12'
 ]
 
 # dirty workaround to deal with Enthought Canopy referring to the

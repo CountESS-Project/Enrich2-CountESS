@@ -28,7 +28,6 @@ install:
       - source activate test-environment
       - python setup.py install
       - pip install coverage
-      - pip install yaml
 
 # command to run tests
 script:
