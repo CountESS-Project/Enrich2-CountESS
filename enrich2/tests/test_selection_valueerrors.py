@@ -20,7 +20,7 @@ import shutil
 import unittest
 
 from ..selection.selection import Selection
-from .utilities import load_config_data, create_file_path
+from .utilities import load_config_data, update_cfg_file
 
 CFG_PATH = "data/config/selection/"
 READS_DIR = "data/reads/selection/"
@@ -30,12 +30,8 @@ RESULT_DIR = "data/result/selection/"
 class TestSelectionRaisesValueErrorOnlyWTCounts(unittest.TestCase):
 
     def setUp(self):
-        cfg = load_config_data(
-            "selection_valueerror_only_wt.json", CFG_PATH)
-        cfg["scorer"]["scorer_path"] = create_file_path(
-            'counts_scorer.py', 'data/plugins/'
-        )
-        cfg["scorer"]["scorer_options"] = {}
+        cfg = load_config_data("selection_valueerror_only_wt.json", CFG_PATH)
+        cfg = update_cfg_file(cfg, 'counts', 'wt')
         obj = Selection()
         obj.force_recalculate = False
         obj.component_outliers = False

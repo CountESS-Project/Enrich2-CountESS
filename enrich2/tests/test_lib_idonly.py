@@ -46,16 +46,14 @@ class TestIdonlySeqLibCountsOnlyModeNoFilter(unittest.TestCase):
         cfg['counts file'] = "{}/{}".format(
             READS_DIR ,'{}.tsv'.format(prefix))
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=IdOnlySeqLib,
-            cfg=cfg,
-            file_prefix="{}".format(prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=IdOnlySeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}".format(
+                                                    prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -79,16 +77,14 @@ class TestIdonlySeqLibCountsWithIdentifiersMinCountSetting(unittest.TestCase):
             READS_DIR , '{}.tsv'.format(prefix))
         cfg['identifiers']['min count'] = 2
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=IdOnlySeqLib,
-            cfg=cfg,
-            file_prefix="{}".format(prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=IdOnlySeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}".format(
+                                                    prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):

@@ -21,7 +21,7 @@ from copy import deepcopy
 from ..selection.selection import Selection
 from .methods import HDF5TestComponent
 from .utilities import DEFAULT_STORE_PARAMS
-from .utilities import load_config_data, create_file_path
+from .utilities import load_config_data, update_cfg_file
 
 CFG_FILE = "selection_timepoint_merge.json"
 CFG_DIR = "data/config/selection/"
@@ -40,25 +40,14 @@ class TestSelectionTimepointMerge(unittest.TestCase):
         scoring = 'counts'
         logr = 'wt'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        cfg["scorer"]["scorer_path"] = create_file_path(
-            'counts_scorer.py', 'data/plugins/'
-        )
-        cfg["scorer"]["scorer_options"] = {}
         file_prefix = "timepoint_merge"
 
         self.general_test_component = HDF5TestComponent(
-            methodName=DRIVER,
-            store_constructor=Selection,
-            cfg=cfg,
-            params=params,
-            file_prefix=file_prefix,
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            verbose=False,
-            save=False
-        )
+            store_constructor=Selection, cfg=cfg, file_prefix=file_prefix,
+            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
+            save=False, params=params, verbose=False)
         self.general_test_component.setUp()
 
     def tearDown(self):

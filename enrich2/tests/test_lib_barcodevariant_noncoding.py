@@ -72,16 +72,14 @@ class TestBcvSeqLibCountsIntegrated(unittest.TestCase):
         cfg['variants']['max mutations'] = 1
         cfg['variants']['use aligner'] = True
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
 
@@ -114,16 +112,14 @@ class TestBcvSeqLibCountsBarcodesMinCountFilter(unittest.TestCase):
         # Set barcode parameters
         cfg['barcodes']['min count'] = 2
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -155,16 +151,14 @@ class TestBcvSeqLibCountsCountsOnlyMode(unittest.TestCase):
         # Set barcode parameters
         cfg['barcodes']['min count'] = 4
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -196,16 +190,14 @@ class TestBcvSeqLibCountsAvgQFQFilter(unittest.TestCase):
         # Set barcode parameters
         cfg['fastq']['filters']['avg quality'] = 39
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -237,16 +229,14 @@ class TestBcvSeqLibCountsMinQFQFilter(unittest.TestCase):
         # Set barcode parameters
         cfg['fastq']['filters']['min quality'] = 39
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -278,16 +268,14 @@ class TestBcvSeqLibCountsMaxNFQFilter(unittest.TestCase):
         # Set barcode parameters
         cfg['fastq']['filters']['max N'] = 0
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -319,16 +307,14 @@ class TestBcvSeqLibCountsNotChasteFQFilter(unittest.TestCase):
         # Set barcode parameters
         cfg['fastq']['filters']['chastity'] = True
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -357,16 +343,14 @@ class TestBcvSeqLibDetectMultiMutations(unittest.TestCase):
         cfg['barcodes']['map file'] = "{}/{}_barcode_map.txt".format(
             READS_DIR, prefix)
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -396,16 +380,14 @@ class TestBcvSeqLibDetectSingleMutations(unittest.TestCase):
         cfg['barcodes']['map file'] = "{}/{}_barcode_map.txt".format(
             READS_DIR, prefix)
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -436,16 +418,14 @@ class TestBcvSeqLibWithRevcomp(unittest.TestCase):
         # Set barcode parameters
         cfg['fastq']['reverse'] = True
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -478,16 +458,14 @@ class TestBcvSeqLibWithTrimLengthAt3(unittest.TestCase):
         # Set barcode parameters
         cfg['fastq']['length'] = 3
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -519,16 +497,14 @@ class TestBcvSeqLibWithTrimStartAt4(unittest.TestCase):
         # Set barcode parameters
         cfg['fastq']['start'] = 4
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -559,16 +535,14 @@ class TestBcvSeqLibDetectSynonymous(unittest.TestCase):
         # Set barcode parameters
         cfg['variants']['wild type']['sequence'] = 'CCTCCT'
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -595,16 +569,14 @@ class TestBcvSeqLibDetectWildtype(unittest.TestCase):
         cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
             READS_DIR)
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -635,16 +607,14 @@ class TestBcvSeqLibWithVariantMaxMutationsFilter(unittest.TestCase):
         # Set barcode parameters
         cfg['variants']['max mutations'] = 1
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -674,16 +644,14 @@ class TestBcvSeqLibWithVariantMinCountFilter(unittest.TestCase):
         # Set barcode parameters
         cfg['variants']['min count'] = 2
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -714,16 +682,14 @@ class TestBcvSeqLibWithReferenceOffset(unittest.TestCase):
         # Set barcode parameters
         cfg['variants']['wild type']['reference offset'] = 3
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):
@@ -754,16 +720,14 @@ class TestBcvSeqLibWithUseAlignerSetting(unittest.TestCase):
         # Set barcode parameters
         cfg['variants']['use aligner'] = True
 
-        self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
+        self.test_component = HDF5TestComponent(store_constructor=BcvSeqLib,
+                                                cfg=cfg,
+                                                file_prefix="{}_{}".format(
+                                                    CODING_STR, prefix),
+                                                result_dir=RESULT_DIR,
+                                                file_ext=FILE_EXT,
+                                                file_sep=FILE_SEP, save=False,
+                                                verbose=False)
         self.test_component.setUp()
 
     def tearDown(self):

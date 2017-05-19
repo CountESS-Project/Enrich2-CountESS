@@ -143,5 +143,9 @@
     }
   ], 
   "name": "barcodevariant_experiment_coding_test",
-  "output directory": "test_output/experiment/"
+  "output directory": "test_output/experiment/",
+  "scorer": {
+    "scorer_path": "",
+    "scorer_options": {}
+  }
 }
