@@ -51,56 +51,93 @@ class WildTypeSequence(object):
         return not self == other
 
     def configure(self, cfg):
-        try:
-            # remove whitespace from WT DNA sequence and capitalize
-            self.dna_seq = "".join(cfg['sequence'].split()).upper()
+        from ..config.types import WildTypeConfiguration
 
-            # check that only valid characters are included (ACGT)
-            if not re.match("^[ACGT]+$", self.dna_seq):
-                raise ValueError("WT DNA sequence contains unexpected "
-                                  "characters [{}]".format(self.parent_name))
+        if isinstance(cfg, dict):
+            cfg = WildTypeConfiguration(cfg)
+        elif not isinstance(cfg, WildTypeConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "WildTypeConfiguration or dict.")
 
-            # set the reference offset
-            if 'reference offset' in cfg:
-                try:
-                    offset = int(cfg['reference offset'])
-                    self.dna_offset = offset
-                    if offset < 0:
-                        raise ValueError("Offset must be 0 or greater "
-                                         "[{}]".format(self.parent_name))
-                except (ValueError, TypeError):
-                    raise ValueError("Invalid reference offset value "
-                                     "[{}]".format(self.parent_name))
+        self.dna_offset = cfg.reference_offset
+        self.dna_seq = cfg.sequence.upper()
+        if not re.match("^[ACGT]+$", self.dna_seq):
+            raise ValueError("WT DNA sequence contains unexpected "
+                             "characters [{}]".format(self.parent_name))
+
+        if cfg.coding:
+            # require coding sequences are in-frame
+            if len(self.dna_seq) % 3 != 0:
+                raise ValueError("WT DNA sequence contains incomplete "
+                                 "codons [{}]".format(self.parent_name))
+
+            # perform translation
+            self.protein_seq = ""
+            for i in range(0, len(self.dna_seq), 3):
+                self.protein_seq += CODON_TABLE[self.dna_seq[i:i + 3]]
+
+            # set the reference offset if it's a multiple of three
+            if self.dna_offset % 3 == 0:
+                self.protein_offset = self.dna_offset // 3
             else:
-                self.dna_offset = 0
+                logging.warning("Ignoring reference offset for protein "
+                                "changes (not a multiple of three)",
+                                extra={'oname' : self.parent_name})
+                self.protein_offset = 0
+        else:
+            self.protein_seq = None
+            self.protein_offset = None
 
-            # handle coding sequences
-            if cfg['coding']:
-                # require coding sequences are in-frame
-                if len(self.dna_seq) % 3 != 0:
-                    raise ValueError("WT DNA sequence contains incomplete "
-                                     "codons [{}]".format(self.parent_name))
-
-                # perform translation
-                self.protein_seq = ""
-                for i in range(0, len(self.dna_seq), 3):
-                    self.protein_seq += CODON_TABLE[self.dna_seq[i:i + 3]]
-
-                # set the reference offset if it's a multiple of three
-                if self.dna_offset % 3 == 0:
-                    self.protein_offset = self.dna_offset // 3
-                else:
-                    logging.warning("Ignoring reference offset for protein "
-                                    "changes (not a multiple of three)",
-                                    extra={'oname' : self.parent_name})
-                    self.protein_offset = 0
-            else:
-                self.protein_seq = None
-                self.protein_offset = None
-
-        except KeyError as key:
-            raise KeyError("Missing required config value {key} "
-                           "[{name}]".format(key=key, name=self.parent_name))
+        # try:
+        #     # remove whitespace from WT DNA sequence and capitalize
+        #     self.dna_seq = "".join(cfg['sequence'].split()).upper()
+        #
+        #     # check that only valid characters are included (ACGT)
+        #     if not re.match("^[ACGT]+$", self.dna_seq):
+        #         raise ValueError("WT DNA sequence contains unexpected "
+        #                           "characters [{}]".format(self.parent_name))
+        #
+        #     # set the reference offset
+        #     if 'reference offset' in cfg:
+        #         try:
+        #             offset = int(cfg['reference offset'])
+        #             self.dna_offset = offset
+        #             if offset < 0:
+        #                 raise ValueError("Offset must be 0 or greater "
+        #                                  "[{}]".format(self.parent_name))
+        #         except (ValueError, TypeError):
+        #             raise ValueError("Invalid reference offset value "
+        #                              "[{}]".format(self.parent_name))
+        #     else:
+        #         self.dna_offset = 0
+        #
+        #     # handle coding sequences
+        #     if cfg['coding']:
+        #         # require coding sequences are in-frame
+        #         if len(self.dna_seq) % 3 != 0:
+        #             raise ValueError("WT DNA sequence contains incomplete "
+        #                              "codons [{}]".format(self.parent_name))
+        #
+        #         # perform translation
+        #         self.protein_seq = ""
+        #         for i in range(0, len(self.dna_seq), 3):
+        #             self.protein_seq += CODON_TABLE[self.dna_seq[i:i + 3]]
+        #
+        #         # set the reference offset if it's a multiple of three
+        #         if self.dna_offset % 3 == 0:
+        #             self.protein_offset = self.dna_offset // 3
+        #         else:
+        #             logging.warning("Ignoring reference offset for protein "
+        #                             "changes (not a multiple of three)",
+        #                             extra={'oname' : self.parent_name})
+        #             self.protein_offset = 0
+        #     else:
+        #         self.protein_seq = None
+        #         self.protein_offset = None
+        #
+        # except KeyError as key:
+        #     raise KeyError("Missing required config value {key} "
+        #                    "[{name}]".format(key=key, name=self.parent_name))
 
     def serialize(self):
         """

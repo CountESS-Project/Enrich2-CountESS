@@ -62,20 +62,22 @@ class Experiment(StoreManager):
         Set up the :py:class:`~experiment.Experiment` using the *cfg* object,
         usually from a ``.json`` configuration file.
         """
-        StoreManager.configure(self, cfg)
+        from ..config.types import ExperimentConfiguration
+        if isinstance(cfg, dict):
+            cfg = ExperimentConfiguration(cfg)
+        elif not isinstance(cfg, ExperimentConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "ExperimentConfiguration or dict.")
+
+        StoreManager.configure(self, cfg.store_cfg)
         if configure_children:
-            if 'conditions' not in cfg:
+            if len(cfg.condition_cfgs) == 0:
                 raise KeyError("Missing required config value {} [{}]"
                                "".format('conditions', self.name))
-            for cnd_cfg in cfg['conditions']:
+            for cnd_cfg in cfg.condition_cfgs:
                 cnd = Condition()
                 cnd.configure(cnd_cfg)
                 self.add_child(cnd)
-
-        selection_names = [x.name for x in self.selection_list()]
-        if len(set(selection_names)) != len(selection_names):
-            raise ValueError("Non-unique selection names [{}]"
-                             "".format(self.name))
 
     def serialize(self):
         """

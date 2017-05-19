@@ -37,16 +37,16 @@ class IdOnlySeqLib(SeqLib):
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
         """
+        from ..config.types import IdOnlySeqLibConfiguration
+
+        if isinstance(cfg, dict):
+            cfg = IdOnlySeqLibConfiguration(cfg)
+        elif not isinstance(cfg, IdOnlySeqLibConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "IdOnlySeqLibConfiguration or dict.")
+
         SeqLib.configure(self, cfg)
-        try:
-            if 'min count' in cfg['identifiers']:
-                self.identifier_min_count = \
-                    int(cfg['identifiers']['min count'])
-            else:
-                self.identifier_min_count = 0
-        except KeyError as key:
-            raise KeyError("Missing required config value {key} [{name}]"
-                           "".format(key=key, name=self.name))
+        self.identifier_min_count = cfg.identifiers_cfg.min_count
 
     def serialize(self):
         """

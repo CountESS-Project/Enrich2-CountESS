@@ -174,7 +174,7 @@ class SelectionConfigurationTest(TestCase):
             SCORER: self.scorer_cfg
         }
         with self.assertRaises(KeyError):
-            SelectionsConfiguration(self.cfg, has_scorer=True).validate()
+            SelectionConfiguration(self.cfg, has_scorer=True).validate()
 
     def test_error_libraries_empty(self):
         self.cfg = {
@@ -183,7 +183,7 @@ class SelectionConfigurationTest(TestCase):
             SCORER: self.scorer_cfg
         }
         with self.assertRaises(ValueError):
-            SelectionsConfiguration(self.cfg, has_scorer=True).validate()
+            SelectionConfiguration(self.cfg, has_scorer=True).validate()
 
     def test_error_libraries_not_list(self):
         self.cfg = {
@@ -192,7 +192,7 @@ class SelectionConfigurationTest(TestCase):
             SCORER: self.scorer_cfg
         }
         with self.assertRaises(TypeError):
-            SelectionsConfiguration(self.cfg, has_scorer=True).validate()
+            SelectionConfiguration(self.cfg, has_scorer=True).validate()
 
     def test_error_zero_not_in_timepoints(self):
         lib_1_cfg = self.lib_1_cfg.copy()
@@ -203,7 +203,7 @@ class SelectionConfigurationTest(TestCase):
             SCORER: self.scorer_cfg
         }
         with self.assertRaises(ValueError):
-            SelectionsConfiguration(self.cfg, has_scorer=True).validate()
+            SelectionConfiguration(self.cfg, has_scorer=True).validate()
 
     def test_error_less_than_two_timepoints(self):
         self.cfg = {
@@ -212,7 +212,7 @@ class SelectionConfigurationTest(TestCase):
             SCORER: self.scorer_cfg
         }
         with self.assertRaises(ValueError):
-            SelectionsConfiguration(self.cfg, has_scorer=True).validate()
+            SelectionConfiguration(self.cfg, has_scorer=True).validate()
 
     def test_error_insufficient_timepoints_regression(self):
         self.cfg = {
@@ -221,7 +221,7 @@ class SelectionConfigurationTest(TestCase):
             SCORER: self.scorer_cfg
         }
         with self.assertRaises(ValueError):
-            SelectionsConfiguration(self.cfg, has_scorer=True).validate()
+            SelectionConfiguration(self.cfg, has_scorer=True).validate()
 
     def test_error_non_unique_lib_names(self):
         lib_1_cfg = self.lib_1_cfg.copy()
@@ -232,7 +232,7 @@ class SelectionConfigurationTest(TestCase):
             SCORER: self.scorer_cfg
         }
         with self.assertRaises(ValueError):
-            SelectionsConfiguration(self.cfg, has_scorer=True).validate()
+            SelectionConfiguration(self.cfg, has_scorer=True).validate()
 
 
 class ConditionConfigTest(TestCase):
@@ -278,7 +278,7 @@ class ConditionConfigTest(TestCase):
     def test_error_selections_not_in_cfg(self):
         cfg = {}
         with self.assertRaises(KeyError):
-            ConditonsConfiguration(cfg)
+            ConditonConfiguration(cfg)
 
     def test_error_selections_empty(self):
         cfg = {
@@ -286,7 +286,7 @@ class ConditionConfigTest(TestCase):
             SELECTIONS: []
         }
         with self.assertRaises(ValueError):
-            ConditonsConfiguration(cfg)
+            ConditonConfiguration(cfg)
 
     def test_error_selections_not_list(self):
         cfg = {
@@ -294,14 +294,14 @@ class ConditionConfigTest(TestCase):
             SELECTIONS: {}
         }
         with self.assertRaises(TypeError):
-            ConditonsConfiguration(cfg)
+            ConditonConfiguration(cfg)
 
     def test_selections_load_correctly(self):
         cfg = {
             NAME: 'TestCondition',
             SELECTIONS: [self.selection_1_cfg, self.selection_2_cfg]
         }
-        cfg = ConditonsConfiguration(cfg).validate()
+        cfg = ConditonConfiguration(cfg).validate()
         self.assertEqual(cfg.store_cfg.name, 'TestCondition')
         self.assertEqual(len(cfg.selection_cfgs), 2)
         self.assertEqual(cfg.selection_cfgs[0].store_cfg.name, 'Selection_1')

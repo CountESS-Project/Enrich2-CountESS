@@ -34,13 +34,19 @@ class Condition(StoreManager):
         self.selections = list()
 
     def configure(self, cfg, configure_children=True):
-        StoreManager.configure(self, cfg)        
+        from ..config.types import ConditonConfiguration
+
+        if isinstance(cfg, dict):
+            cfg = ConditonConfiguration(cfg)
+        elif not isinstance(cfg, ConditonConfiguration):
+            raise TypeError("`cfg` was neither a ConditonConfiguration or dict.")
+
+        StoreManager.configure(self, cfg.store_cfg)
         if configure_children:
-            if 'selections' not in cfg:
+            if len(cfg.selection_cfgs) == 0:
                 raise KeyError("Missing required config value "
                                "{} [{}]".format('selections', self.name))
-
-            for sel_cfg in cfg['selections']:
+            for sel_cfg in cfg.selection_cfgs:
                 sel = Selection()
                 sel.configure(sel_cfg)
                 self.add_child(sel)

@@ -135,23 +135,19 @@ class SeqLib(StoreManager):
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
         """
-        StoreManager.configure(self, cfg)
-        try:
-            self.timepoint = int(cfg['timepoint'])
-            if 'report filtered reads' in cfg:
-                self.report_filtered = cfg['report filtered reads']
-            else:
-                self.report_filtered = False
-            if 'counts file' in cfg:
-                self.counts_file = cfg['counts file']
-            else:
-                self.counts_file = None
-        except KeyError as key:
-            raise KeyError("Missing required config value {key}"
-                           "".format(key=key), self.name)
-        except ValueError as value:
-            raise ValueError("Invalid parameter value {value}"
-                             "".format(value=value), self.name)
+        from ..config.types import BaseLibraryConfiguration
+
+        if isinstance(cfg, dict):
+            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            cfg = BaseLibraryConfiguration(cfg, init_fastq)
+        elif not isinstance(cfg, BaseLibraryConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "BaseLibraryConfiguration or dict.")
+
+        StoreManager.configure(self, cfg.store_cfg)
+        self.timepoint = cfg.timepoint
+        self.report_filtered = cfg.report_filtered_reads
+        self.counts_file = cfg.counts_file
 
     def serialize(self):
         """

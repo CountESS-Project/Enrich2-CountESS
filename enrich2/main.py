@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel Esposito
 #
 #  This file is part of Enrich2.
 #

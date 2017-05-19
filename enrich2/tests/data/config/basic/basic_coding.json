@@ -3,7 +3,7 @@
     "filters": {
     },
     "reads":  "",
-    "reverse": 0
+    "reverse": false
   },
   "name": "basic_test",
   "output directory": "test_output/basic",

@@ -23,6 +23,7 @@ import collections
 import getpass
 import time
 
+
 #: Dictionary specifying available scoring methods for the analysis
 #: Key is the internal name of the method, value is the GUI label
 #: For command line options, internal name is used for the option string itself
@@ -428,72 +429,91 @@ class StoreManager(object):
         """
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
+        
+        Parameters
+        ----------
+        cfg : :py:class: `~..config.types.StoreConfiguration`, dict
+            Either a configuration object or a dictionary to initialise
+            a configuration object.
+
+        Returns
+        -------
+        None
+
         """
-        # if not isinstance(cfg, StoreConfiguration):
-        #     raise ValueError("Expected `StoreConfiguration` object but"
-        #                      "found {}.".format(type(cfg)))
-        # self.name = cfg.name
-        # if cfg.has_output_dir and self.output_dir_override:
-        #     logging.warning("Using command line supplied output "
-        #                     "directory instead of config file output "
-        #                     "directory", extra={'oname': self.name})
-        # elif cfg.has_output_dir and not self.output_dir_override:
-        #     self.output_dir = cfg.output_dir
+        from ..config.types import StoreConfiguration
+        if isinstance(cfg, dict):
+            has_scorer = bool(cfg.get('scorer', {}).get('scorer_path', ""))
+            cfg = StoreConfiguration(cfg, has_scorer=has_scorer)
+        elif not isinstance(cfg, StoreConfiguration):
+            raise TypeError("`cfg` was neither a StoreConfiguration or dict.")
+
+        self.name = cfg.name
+        if cfg.has_output_dir and self.output_dir_override:
+            logging.warning("Using command line supplied output "
+                            "directory instead of config file output "
+                            "directory", extra={'oname': self.name})
+        elif cfg.has_output_dir and not self.output_dir_override:
+            self.output_dir = cfg.output_dir
+
+        if cfg.has_store_path:
+            self.store_cfg = True
+            self.store_path = cfg.store_path
+            logging.info('Using specified HDF5 data store "{}"'.format(
+                self.store_path), extra={'oname': self.name})
+        else:
+            self.store_cfg = False
+            self.store_path = None
+
+        if cfg.has_scorer:
+            self.scorer_class = cfg.scorer_cfg.scorer_class
+            self.scorer_class_attrs = cfg.scorer_cfg.scorer_class_attrs
+
+        # # ---------------------- TEMP ------------------------ #
+        # from ..plugins import load_scorer_class_and_options
+        # path = \
+        #     cfg.get('scorer', {}).get('scorer_path', None)
+        # override_attrs = \
+        #     cfg.get('scorer', {}).get('scorer_options', {})
         #
-        # if cfg.has_store_path:
-        #     self.store_cfg = True
-        #     self.store_path = cfg.store_path
-        #     logging.info('Using specified HDF5 data store "{}"'.format(
-        #         self.store_path), extra={'oname': self.name})
-        # else:
-        #     self.store_cfg = False
-        #     self.store_path = None
-
-        # ---------------------- TEMP ------------------------ #
-        from ..plugins import load_scorer_class_and_options
-        path = \
-            cfg.get('scorer', {}).get('scorer_path', None)
-        override_attrs = \
-            cfg.get('scorer', {}).get('scorer_options', {})
-
-        if path:
-            scorer_class, options, _ = load_scorer_class_and_options(path)
-            self.scorer_class = scorer_class
-            for key, value in override_attrs.items():
-                options.set_option_by_varname(key, value)
-            if options is not None:
-                self.scorer_class_attrs = options.to_dict()
-            else:
-                self.scorer_class_attrs = {}
-        # ---------------------- TEMP ------------------------ #
-
-        try:
-            self.name = cfg['name']
-            if 'output directory' in cfg:
-                if self.output_dir_override:
-                    logging.warning("Using command line supplied output "
-                                    "directory instead of config file output "
-                                    "directory", extra={'oname': self.name})
-                else:
-                    self.output_dir = cfg['output directory']
-            if 'store' in cfg:
-                self.store_cfg = True
-                if not os.path.exists(cfg['store']):
-                    raise IOError('Specified store file "{}" not found'.format(
-                            cfg['store']), self.name)
-                elif os.path.splitext(cfg['store'])[-1].lower() != ".h5":
-                    raise ValueError('Unrecognized store file extension for '
-                                     '"{}"'.format(cfg['store']), self.name)
-                else:
-                    self.store_path = cfg['store']
-                    logging.info('Using specified HDF5 data store "{}"'.format(
-                            self.store_path), extra={'oname': self.name})
-            else:
-                self.store_cfg = False
-                self.store_path = None
-        except KeyError as key:
-            raise KeyError("Missing required config value {}".format(key),
-                           self.name)
+        # if path:
+        #     scorer_class, options, _ = load_scorer_class_and_options(path)
+        #     self.scorer_class = scorer_class
+        #     for key, value in override_attrs.items():
+        #         options.set_option_by_varname(key, value)
+        #     if options is not None:
+        #         self.scorer_class_attrs = options.to_dict()
+        #     else:
+        #         self.scorer_class_attrs = {}
+        # # ---------------------- TEMP ------------------------ #
+        #
+        # try:
+        #     self.name = cfg['name']
+        #     if 'output directory' in cfg:
+        #         if self.output_dir_override:
+        #             logging.warning("Using command line supplied output "
+        #                             "directory instead of config file output "
+        #                             "directory", extra={'oname': self.name})
+        #         else:
+        #             self.output_dir = cfg['output directory']
+        #     if 'store' in cfg:
+        #         self.store_cfg = True
+        #         if not os.path.exists(cfg['store']):
+        #             raise IOError('Specified store file "{}" not found'.format(
+        #                     cfg['store']), self.name)
+        #         elif os.path.splitext(cfg['store'])[-1].lower() != ".h5":
+        #             raise ValueError('Unrecognized store file extension for '
+        #                              '"{}"'.format(cfg['store']), self.name)
+        #         else:
+        #             self.store_path = cfg['store']
+        #             logging.info('Using specified HDF5 data store "{}"'.format(
+        #                     self.store_path), extra={'oname': self.name})
+        #     else:
+        #         self.store_cfg = False
+        #         self.store_path = None
+        # except KeyError as key:
+        #     raise KeyError("Missing required config value {}".format(key),
+        #                    self.name)
 
     def serialize(self):
         """

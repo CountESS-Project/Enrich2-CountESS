@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -24,7 +24,7 @@ from io import StringIO
 # pr.enable()
 
 loader = unittest.TestLoader()
-tests = loader.discover(start_dir='./', pattern="test_experiment_barcode_lib.py")
+tests = loader.discover(start_dir='./', pattern="test_module_types_basic.py")
 test_runner = unittest.TextTestRunner()
 test_runner.run(tests)
 

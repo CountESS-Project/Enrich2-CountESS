@@ -49,31 +49,55 @@ class BcidSeqLib(BarcodeSeqLib):
         Set up the object using the config object *cfg*, usually derived from 
         a ``.json`` file.
         """
-        BarcodeSeqLib.configure(self, cfg)
-        try:
-            if 'min count' in cfg['identifiers']:
-                self.identifier_min_count = int(
-                    cfg['identifiers']['min count']
-                )
-            else:
-                self.identifier_min_count = 0
+        from ..config.types import BcidSeqLibConfiguration
 
-            if barcode_map is not None:
-                if barcode_map.filename == cfg['barcodes']['map file']:
-                    self.barcode_map = barcode_map
-                else:
-                    raise ValueError("Attempted to assign "
-                                     "non-matching "
-                                     "barcode map [{}]".format(self.name))
+        if isinstance(cfg, dict):
+            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            cfg = BcidSeqLibConfiguration(cfg, init_fastq)
+        elif not isinstance(cfg, BcidSeqLibConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "BcidSeqLibConfiguration or dict.")
+
+        BarcodeSeqLib.configure(self, cfg)
+        self.identifier_min_count = cfg.identifers_cfg.min_count
+
+        if barcode_map is not None:
+            if barcode_map.filename == cfg.barcodes_cfg.map_file:
+                self.barcode_map = barcode_map
             else:
-                self.barcode_map = BarcodeMap(
-                    mapfile=cfg['barcodes']['map file'],
-                    is_variant=False
-                )
-        except KeyError as key:
-            raise KeyError("Configuration Error: Missing "
-                           "required config value "
-                           "{key} [{name}]".format(key=key, name=self.name))
+                raise ValueError("Attempted to assign "
+                                 "non-matching "
+                                 "barcode map [{}]".format(self.name))
+        else:
+            self.barcode_map = BarcodeMap(
+                mapfile=cfg.barcodes_cfg.map_file,
+                is_variant=False
+            )
+
+        # try:
+        #     if 'min count' in cfg['identifiers']:
+        #         self.identifier_min_count = int(
+        #             cfg['identifiers']['min count']
+        #         )
+        #     else:
+        #         self.identifier_min_count = 0
+        #
+        #     if barcode_map is not None:
+        #         if barcode_map.filename == cfg['barcodes']['map file']:
+        #             self.barcode_map = barcode_map
+        #         else:
+        #             raise ValueError("Attempted to assign "
+        #                              "non-matching "
+        #                              "barcode map [{}]".format(self.name))
+        #     else:
+        #         self.barcode_map = BarcodeMap(
+        #             mapfile=cfg['barcodes']['map file'],
+        #             is_variant=False
+        #         )
+        # except KeyError as key:
+        #     raise KeyError("Configuration Error: Missing "
+        #                    "required config value "
+        #                    "{key} [{name}]".format(key=key, name=self.name))
 
     def serialize(self):
         """

@@ -64,14 +64,16 @@ class TestBasicSeqLibCountsIntegrated(unittest.TestCase):
         cfg['variants']['max mutations'] = 1
         cfg['variants']['use aligner'] = True
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
     
     def tearDown(self):
@@ -94,14 +96,16 @@ class TestBasicSeqLibCountsSynonymous(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -123,14 +127,16 @@ class TestBasicSeqLibCountsSingleMutation(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -152,14 +158,16 @@ class TestBasicSeqLibCountsMultiMutation(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -181,14 +189,16 @@ class TestBasicSeqLibCountsWildType(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -211,14 +221,16 @@ class TestBasicSeqLibCountsWithMaxNFQFilter(unittest.TestCase):
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['fastq']['filters']['max N'] = 0
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -241,14 +253,16 @@ class TestBasicSeqLibCountsWithChaste(unittest.TestCase):
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['fastq']['filters']['chastity'] = True
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -271,14 +285,16 @@ class TestBasicSeqLibCountsWithMinQualFQFilter(unittest.TestCase):
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['fastq']['filters']['min quality'] = 20
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -300,14 +316,16 @@ class TestBasicSeqLibCountsWithAvgQualFQFilter(unittest.TestCase):
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['fastq']['filters']['avg quality'] = 38
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -331,14 +349,16 @@ class TestBasicSeqLibCountsTrimLengthSetting(unittest.TestCase):
         cfg['fastq']['length'] = 3
         cfg['variants']['wild type']['sequence'] = "AAA"
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -362,14 +382,16 @@ class TestBasicSeqLibCountsTrimStartSetting(unittest.TestCase):
         cfg['fastq']['start'] = 4
         cfg['variants']['wild type']['sequence'] = "AAA"
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -393,14 +415,16 @@ class TestBasicSeqLibCountsReverseSetting(unittest.TestCase):
         cfg['fastq']['reverse'] = True
         cfg['variants']['wild type']['sequence'] = "TTTTTT"
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -423,14 +447,16 @@ class TestBasicSeqLibCountsWithRefOffset(unittest.TestCase):
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['variants']['wild type']['reference offset'] = 6
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -453,14 +479,16 @@ class TestBasicSeqLibCountsWithRefOffsetNotMultipleOfThree(unittest.TestCase):
             'reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['variants']['wild type']['reference offset'] = 5
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -483,14 +511,16 @@ class TestBasicSeqLibCountsWithVariantMinCount(unittest.TestCase):
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['variants']['min counts'] = 2
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -513,14 +543,16 @@ class TestBasicSeqLibCountsWithVariantMaxMutations(unittest.TestCase):
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['variants']['max mutations'] = 1
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -543,14 +575,16 @@ class TestBasicSeqLibCountsWithVariantAligner(unittest.TestCase):
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['variants']['use aligner'] = True
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -572,14 +606,16 @@ class TestBasicSeqLibCountsOnlyMode(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg['counts file'] = '{}/{}.tsv'.format(READS_DIR, prefix)
 
-        self.test_component = HDF5TestComponent(store_constructor=BasicSeqLib,
-                                                cfg=cfg,
-                                                file_prefix="{}_{}".format(
-                                                    CODING_STR, prefix),
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            file_prefix="{}_{}".format(CODING_STR, prefix),
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False
+        )
         self.test_component.setUp()
 
     def tearDown(self):

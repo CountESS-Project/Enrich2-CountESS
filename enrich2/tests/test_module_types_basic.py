@@ -351,78 +351,21 @@ class BarcodeConfigTest(TestCase):
         cfg = {
             BARCODE_MAP_FILE: os.path.join(self.data_path, 'barcode_map.txt')
         }
-        barcode_cfg = BarcodeConfiguration(cfg, is_variant=False).validate()
+        barcode_cfg = BarcodeConfiguration(cfg).validate()
         self.assertEqual(barcode_cfg.min_count, 0)
-
-        barcodemap = {
-            'AAAAAA': 'AAAAAAAAAAAA',
-            'AACAAT': 'AACAATAAAAAA'
-        }
-        self.assertEqual(barcodemap.items(), barcode_cfg.barcodemap.items())
 
     def test_override_defaults_correctly(self):
         cfg = {
             BARCODE_MAP_FILE: os.path.join(self.data_path, 'barcode_map.txt'),
             BARCODE_MIN_COUNT: 10
         }
-        barcode_cfg = BarcodeConfiguration(cfg, is_variant=False).validate()
+        barcode_cfg = BarcodeConfiguration(cfg).validate()
         self.assertEqual(barcode_cfg.min_count, 10)
-
-        barcodemap = {
-            'AAAAAA': 'AAAAAAAAAAAA',
-            'AACAAT': 'AACAATAAAAAA'
-        }
-        self.assertEqual(barcodemap.items(), barcode_cfg.barcodemap.items())
-
-    def test_skip_blanks_correctly(self):
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_blanks.txt'),
-            BARCODE_MIN_COUNT: 10
-        }
-        barcode_cfg = BarcodeConfiguration(cfg, is_variant=False).validate()
-        barcodemap = {
-            'AAAAAA': 'AAAAAAAAAAAA',
-            'AACAAT': 'AACAATAAAAAA'
-        }
-        self.assertEqual(barcodemap.items(), barcode_cfg.barcodemap.items())
 
     def test_error_no_barcode_map_when_requested(self):
         cfg = {}
         with self.assertRaises(ValueError):
             BarcodeConfiguration(cfg, require_map=True).validate()
-
-    def test_error_no_barcode_no_value(self):
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_no_barcode.txt')
-        }
-        with self.assertRaises(ValueError):
-            BarcodeConfiguration(cfg, is_variant=False).validate()
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_no_value.txt')
-        }
-        with self.assertRaises(ValueError):
-            BarcodeConfiguration(cfg, is_variant=False).validate()
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_zerolen_value.txt')
-        }
-        with self.assertRaises(ValueError):
-            BarcodeConfiguration(cfg, is_variant=False).validate()
-
-    def test_variant_dna_uppercase(self):
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_lower.txt')
-        }
-        barcodemap = {
-            'AAAAAA': 'AAAAAAAAAAAA',
-            'TTTTTT': 'TTTTTTTTTTTT'
-        }
-        barcode_cfg = BarcodeConfiguration(cfg, is_variant=True).validate()
-        self.assertEqual(barcodemap.items(), barcode_cfg.barcodemap.items())
 
     def test_error_minc_not_int(self):
         cfg = {BARCODE_MIN_COUNT: dict()}
@@ -454,62 +397,6 @@ class BarcodeConfigTest(TestCase):
         }
         with self.assertRaises(IOError):
             BarcodeConfiguration(cfg).validate()
-
-    def test_error_mapfile_invalid_dna_chars(self):
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_non_dna_chars.txt')
-        }
-        with self.assertRaises(ValueError):
-            BarcodeConfiguration(cfg).validate()
-
-    def test_error_mapfile_invalid_variant_dna(self):
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_invalid_variant_dna.txt')
-        }
-        with self.assertRaises(ValueError):
-            BarcodeConfiguration(cfg, is_variant=True).validate()
-
-    def test_error_mapfile_non_unique_map(self):
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_non_unique.txt')
-        }
-        with self.assertRaises(ValueError):
-            BarcodeConfiguration(cfg).validate()
-
-    def test_error_barcodemap_empty(self):
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map_empty.txt')
-        }
-        with self.assertRaises(ValueError):
-            BarcodeConfiguration(cfg).validate()
-
-    def test_mapfile_bz2_gz_load_correctly(self):
-        barcodemap = {
-            'AAAAAA': 'AAAAAAAAAAAA',
-            'AACAAT': 'AACAATAAAAAA',
-            'AAGAAA': 'AAGAAAAAAAAA',
-            'GAATAA': 'GAATAAAAAAAA',
-            'GGAAAA': 'GGAAAAAAAAAA',
-            'AAGACA': 'AAGACAAAAAAA',
-            'AATAAA': 'AATAAAAAAAAA'
-        }
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map.txt.bz2')
-        }
-        barcode_cfg = BarcodeConfiguration(cfg, is_variant=False).validate()
-        self.assertEqual(barcodemap.items(), barcode_cfg.barcodemap.items())
-
-        cfg = {
-            BARCODE_MAP_FILE: os.path.join(
-                self.data_path, 'barcode_map.txt.gz')
-        }
-        barcode_cfg = BarcodeConfiguration(cfg, is_variant=False).validate()
-        self.assertEqual(barcodemap.items(), barcode_cfg.barcodemap.items())
 
 
 class IdentifiersConfigTest(TestCase):
@@ -658,10 +545,10 @@ class WildTypeConfigTest(TestCase):
         wt_cfg = WildTypeConfiguration(cfg).validate()
         self.assertEqual(wt_cfg.reference_offset, 2)
 
-    def test_error_ref_offset_not_multiple_of_three_coding(self):
+    def test_ignore_ref_offset_not_multiple_of_three_coding(self):
         cfg = {REF_OFFSET: 2, CODING: True}
-        with self.assertRaises(ValueError):
-            WildTypeConfiguration(cfg).validate()
+        wt_cfg = WildTypeConfiguration(cfg).validate()
+        self.assertEqual(wt_cfg.reference_offset, 0)
 
     def test_error_sequence_not_str(self):
         cfg = {SEQUENCE: b'AAA'}

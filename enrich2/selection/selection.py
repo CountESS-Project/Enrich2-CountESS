@@ -106,21 +106,25 @@ class Selection(StoreManager):
         If *configure_children* is false, do not configure the children in 
         *cfg*.
         """
+        from ..config.types import SelectionConfiguration
 
-        StoreManager.configure(self, cfg)
+        if isinstance(cfg, dict):
+            has_scorer = True
+            cfg = SelectionConfiguration(cfg, has_scorer)
+        elif not isinstance(cfg, SelectionConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "SelectionConfiguration or dict.")
+
+        StoreManager.configure(self, cfg.store_cfg)
         if configure_children:
-            if 'libraries' not in cfg:
+            if len(cfg.lib_cfgs) == 0:
                 raise KeyError("Missing required config value "
                                "{} [{}]".format('libraries', self.name))
 
-            for lib_cfg in cfg['libraries']:
-                libtype = seqlib_type(lib_cfg)
-                if libtype is None:
-                    raise ValueError("Unrecognized SeqLib config")
-                elif libtype in ('BcvSeqLib', 'BcidSeqLib'):
-                    lib = globals()[libtype]()
-                    # don't re-parse the barcode maps if possible
-                    mapfile = lib_cfg['barcodes']['map file']
+            for lib_cfg in cfg.lib_cfgs:
+                if lib_cfg.seqlib_type in ('BcvSeqLib', 'BcidSeqLib'):
+                    lib = globals()[lib_cfg.seqlib_type]()
+                    mapfile = lib_cfg.barcodes_cfg.map_file
                     if mapfile in list(self.barcode_maps.keys()):
                         lib.configure(
                             lib_cfg, barcode_map=self.barcode_maps[mapfile])
@@ -129,12 +133,37 @@ class Selection(StoreManager):
                         self.barcode_maps[mapfile] = lib.barcode_map
                     self.add_child(lib)
                 else:
-                    # requires that the SeqLib derived classes be
-                    # imported into the module namespace
-                    # using "from x import y" style
-                    lib = globals()[libtype]()
+                    lib = globals()[lib_cfg.seqlib_type]()
                     lib.configure(lib_cfg)
                     self.add_child(lib)
+
+        # if configure_children:
+        #     if 'libraries' not in cfg:
+        #         raise KeyError("Missing required config value "
+        #                        "{} [{}]".format('libraries', self.name))
+        #
+        #     for lib_cfg in cfg['libraries']:
+        #         libtype = seqlib_type(lib_cfg)
+        #         if libtype is None:
+        #             raise ValueError("Unrecognized SeqLib config")
+        #         elif libtype in ('BcvSeqLib', 'BcidSeqLib'):
+        #             lib = globals()[libtype]()
+        #             # don't re-parse the barcode maps if possible
+        #             mapfile = lib_cfg['barcodes']['map file']
+        #             if mapfile in list(self.barcode_maps.keys()):
+        #                 lib.configure(
+        #                     lib_cfg, barcode_map=self.barcode_maps[mapfile])
+        #             else:
+        #                 lib.configure(lib_cfg)
+        #                 self.barcode_maps[mapfile] = lib.barcode_map
+        #             self.add_child(lib)
+        #         else:
+        #             # requires that the SeqLib derived classes be
+        #             # imported into the module namespace
+        #             # using "from x import y" style
+        #             lib = globals()[libtype]()
+        #             lib.configure(lib_cfg)
+        #             self.add_child(lib)
 
     def validate(self):
         """

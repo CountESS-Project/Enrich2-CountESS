@@ -291,14 +291,20 @@ class FiltersConfiguration(Configuration):
         self.validate_min_base_quality()
         return self
 
+    def to_dict(self):
+        return {
+            FILTERS_CHASTITY: self.chaste,
+            FILTERS_MAX_N: self.max_n,
+            FILTERS_MIN_Q: self.min_base_quality,
+            FILTERS_AVG_Q: self.avg_base_quality
+        }
+
 
 class BarcodeConfiguration(Configuration):
 
-    def __init__(self, cfg, is_variant=False, require_map=False):
+    def __init__(self, cfg, require_map=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for barcodes configuration.")
-        if not isinstance(is_variant, bool):
-            raise TypeError("Argument 'is_variant' must be a boolean.")
         if not isinstance(require_map, bool):
             raise TypeError("Argument 'require_map' must be a boolean.")
 
@@ -308,7 +314,6 @@ class BarcodeConfiguration(Configuration):
         if require_map and not self.map_file:
             raise ValueError("Map file cannot be empty.")
 
-        self.is_variant = is_variant
         self.barcodemap = None
         self.validate()
 
@@ -326,11 +331,6 @@ class BarcodeConfiguration(Configuration):
             if ext not in {'.bz2', '.gz', '.txt'}:
                 raise IOError("Unsupported format for map file. Files"
                                  "need extension to be either bz2, gz or txt.")
-        if self.map_file:
-            self.barcodemap = BarcodeMap(self.map_file, self.is_variant)
-
-        if self.barcodemap is not None and not self.barcodemap:
-            raise ValueError("Empty barcodemap.")
 
     def validate_min_count(self):
         if not isinstance(self.min_count, int):
@@ -445,8 +445,14 @@ class WildTypeConfiguration(Configuration):
 
         multple_of_three = self.reference_offset % 3 == 0
         if self.coding and not multple_of_three:
-            raise ValueError("If `protein coding` is selected, "
-                             "`reference offset` must be a multiple of 3.")
+            logging.warning(
+                "Reference offset is not a multiple of three when setting "
+                "`protein coding` as True. Setting to reference offset to 0.",
+                extra={'oname': self.__class__.__name__}
+            )
+            self.reference_offset = 0
+            # raise ValueError("If `protein coding` is selected, "
+            #                  "`reference offset` must be a multiple of 3.")
 
     def validate_sequence(self):
         if not isinstance(self.sequence, str):
@@ -532,6 +538,8 @@ class BaseLibraryConfiguration(Configuration):
         if init_fastq and self.counts_file is not None:
             raise ValueError("Cannot define both a counts file and reads file "
                              "at the same time. It's one or the other, buddy.")
+        if fastq_cfg is None and self.counts_file is None:
+            raise ValueError("Must have either a fastq definition or counts file.")
 
         self.store_cfg = StoreConfiguration(cfg, has_scorer=False).validate()
         self.validate()
@@ -575,102 +583,12 @@ class BaseLibraryConfiguration(Configuration):
         return self
 
 
-class BarcodeSeqLibConfiguration(BaseLibraryConfiguration):
+class BaseVariantSeqLibConfiguration(BaseLibraryConfiguration):
 
-    def __init__(self, cfg, init_fastq=True):
+    def __init__(self, cfg, init_fastq=False):
         if not isinstance(cfg, dict):
-            raise TypeError("dict required for BarcodeSeqLibConfiguration.")
-        super(BarcodeSeqLibConfiguration, self).__init__(cfg, init_fastq)
-
-        barcodes_cfg = cfg.get(BARCODES, {})
-        if BARCODES not in cfg:
-            raise KeyError("Key {} missing for BcidSeqLib "
-                           "configuration.".format(BARCODES))
-
-        self.barcodes_cfg = BarcodeConfiguration(
-            barcodes_cfg, require_map=False).validate()
-        self.validate()
-
-
-class BcidSeqLibConfiguration(BaseLibraryConfiguration):
-
-    def __init__(self, cfg, init_fastq=True):
-        if not isinstance(cfg, dict):
-            raise TypeError("dict required for BcidSeqLibConfiguration.")
-        super(BcidSeqLibConfiguration, self).__init__(cfg, init_fastq)
-
-        if BARCODES not in cfg:
-            raise KeyError("Key {} missing for BcidSeqLib "
-                           "configuration.".format(BARCODES))
-        if IDENTIFIERS not in cfg:
-            raise KeyError("Key {} missing for BcidSeqLib "
-                           "configuration.".format(IDENTIFIERS))
-
-        barcodes_cfg = cfg.get(BARCODES)
-        identifers_cfg = cfg.get(IDENTIFIERS)
-        if not barcodes_cfg:
-            raise KeyError("Configuration for {} "
-                             "cannot be empty.".format(BARCODES))
-
-        barcodes_cfg = BarcodeConfiguration(
-            barcodes_cfg, require_map=True).validate()
-        identifers_cfg = IdentifiersConfiguration(identifers_cfg).validate()
-        self.validate()
-        self.barcodes_cfg = barcodes_cfg
-        self.identifers_cfg = identifers_cfg
-
-
-class BcvSeqLibConfiguration(BaseLibraryConfiguration):
-
-    def __init__(self, cfg, init_fastq=True):
-        if not isinstance(cfg, dict):
-            raise TypeError("dict required for BcvSeqLibConfiguration.")
-        super(BcvSeqLibConfiguration, self).__init__(cfg, init_fastq)
-
-        if BARCODES not in cfg:
-            raise KeyError("Key {} missing for BcidSeqLib "
-                           "configuration.".format(BARCODES))
-        if VARIANTS not in cfg:
-            raise KeyError("Key {} missing for BcidSeqLib "
-                           "configuration.".format(VARIANTS))
-
-        barcodes_cfg = cfg.get(BARCODES, {})
-        variants_cfg = cfg.get(VARIANTS, {})
-        if not barcodes_cfg:
-            raise ValueError("Configuration for {} "
-                             "cannot be empty.".format(BARCODES))
-        if not variants_cfg:
-            raise ValueError("Configuration for {} "
-                             "cannot be empty.".format(VARIANTS))
-
-        barcodes_cfg = BarcodeConfiguration(
-            barcodes_cfg, require_map=True).validate()
-        variants_cfg = VariantsConfiguration(variants_cfg).validate()
-        self.validate()
-        self.barcodes_cfg = barcodes_cfg
-        self.variants_cfg = variants_cfg
-
-
-class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
-
-    def __init__(self, cfg):
-        if not isinstance(cfg, dict):
-            raise TypeError("dict required for IdOnlySeqLib configuration.")
-
-        super(IdOnlySeqLibConfiguration, self).__init__(cfg, init_fastq=False)
-        identifiers_cfg = cfg.get(IDENTIFIERS, {})
-        identifiers_cfg = IdentifiersConfiguration(identifiers_cfg).validate()
-
-        self.identifiers_cfg = identifiers_cfg
-        self.validate()
-
-
-class BasicSeqLibConfiguration(BaseLibraryConfiguration):
-
-    def __init__(self, cfg, init_fastq=True):
-        if not isinstance(cfg, dict):
-            raise TypeError("dict required for BasicSeqLibConfiguration.")
-        super(BasicSeqLibConfiguration, self).__init__(cfg, init_fastq)
+            raise TypeError("dict required for BaseVariantSeqLibConfiguration.")
+        BaseLibraryConfiguration.__init__(self, cfg, init_fastq)
 
         if VARIANTS not in cfg:
             raise KeyError("Key {} missing for BcvSeqLib "
@@ -681,6 +599,83 @@ class BasicSeqLibConfiguration(BaseLibraryConfiguration):
             raise ValueError("Variants configuration cannot be empty.")
 
         self.variants_cfg = VariantsConfiguration(variants_cfg).validate()
+        self.validate()
+
+
+class BarcodeSeqLibConfiguration(BaseLibraryConfiguration):
+
+    def __init__(self, cfg, init_fastq=True, reqiure_map=False):
+        if not isinstance(cfg, dict):
+            raise TypeError("dict required for BarcodeSeqLibConfiguration.")
+        BaseLibraryConfiguration.__init__(self, cfg, init_fastq)
+
+        if BARCODES not in cfg:
+            raise KeyError("Key {} missing for BcidSeqLib "
+                           "configuration.".format(BARCODES))
+        barcodes_cfg = cfg.get(BARCODES)
+
+        self.barcodes_cfg = BarcodeConfiguration(
+            barcodes_cfg, reqiure_map).validate()
+        self.validate()
+
+
+class BcidSeqLibConfiguration(BarcodeSeqLibConfiguration):
+
+    def __init__(self, cfg, init_fastq=True):
+        if not isinstance(cfg, dict):
+            raise TypeError("dict required for BcidSeqLibConfiguration.")
+
+        if IDENTIFIERS not in cfg:
+            raise KeyError("Key {} missing for BcidSeqLib "
+                           "configuration.".format(IDENTIFIERS))
+
+        BarcodeSeqLibConfiguration.__init__(
+            self, cfg, init_fastq, reqiure_map=True)
+
+        identifers_cfg = cfg.get(IDENTIFIERS)
+        identifers_cfg = IdentifiersConfiguration(identifers_cfg).validate()
+
+        self.validate()
+        self.identifers_cfg = identifers_cfg
+
+
+class BcvSeqLibConfiguration(BaseVariantSeqLibConfiguration,
+                             BarcodeSeqLibConfiguration):
+
+    def __init__(self, cfg, init_fastq=True):
+        if not isinstance(cfg, dict):
+            raise TypeError("dict required for BcvSeqLibConfiguration.")
+
+        BaseVariantSeqLibConfiguration.__init__(
+            self, cfg, init_fastq)
+        BarcodeSeqLibConfiguration.__init__(
+            self, cfg, init_fastq, reqiure_map=True)
+
+        self.validate()
+
+
+class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
+
+    def __init__(self, cfg):
+        if not isinstance(cfg, dict):
+            raise TypeError("dict required for IdOnlySeqLib configuration.")
+
+        BaseLibraryConfiguration.__init__(self, cfg, init_fastq=False)
+        identifiers_cfg = cfg.get(IDENTIFIERS, {})
+        identifiers_cfg = IdentifiersConfiguration(identifiers_cfg).validate()
+
+        self.identifiers_cfg = identifiers_cfg
+        self.validate()
+
+
+class BasicSeqLibConfiguration(BaseVariantSeqLibConfiguration):
+
+    def __init__(self, cfg, init_fastq=True):
+        if not isinstance(cfg, dict):
+            raise TypeError("dict required for BasicSeqLibConfiguration.")
+
+        BaseVariantSeqLibConfiguration.__init__(self, cfg, init_fastq)
+
         self.validate()
 
 
@@ -714,7 +709,7 @@ class ExperimentConfiguration(Configuration):
                              "present in an experiment.")
 
         for cfg in condition_cfgs:
-            self.condition_cfgs.append(ConditonsConfiguration(cfg))
+            self.condition_cfgs.append(ConditonConfiguration(cfg))
         self.validate()
 
     def validate(self):
@@ -739,7 +734,7 @@ class ExperimentConfiguration(Configuration):
         return self
 
 
-class ConditonsConfiguration(Configuration):
+class ConditonConfiguration(Configuration):
 
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
@@ -762,7 +757,7 @@ class ConditonsConfiguration(Configuration):
 
         for cfg in selection_cfgs:
             self.selection_cfgs.append(
-                SelectionsConfiguration(cfg, has_scorer=False))
+                SelectionConfiguration(cfg, has_scorer=False))
         self.validate()
 
     def validate(self):
@@ -771,7 +766,7 @@ class ConditonsConfiguration(Configuration):
         return self
 
 
-class SelectionsConfiguration(Configuration):
+class SelectionConfiguration(Configuration):
 
     _lib_constructors = {
         "BarcodeSeqLib": BarcodeSeqLibConfiguration,

@@ -49,23 +49,27 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
         Set up the object using the config object *cfg*, usually derived from 
         a ``.json`` file.
         """
+        from ..config.types import BcvSeqLibConfiguration
+
+        if isinstance(cfg, dict):
+            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            cfg = BcvSeqLibConfiguration(cfg, init_fastq)
+        elif not isinstance(cfg, BcvSeqLibConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "BcvSeqLibConfiguration or dict.")
+
         VariantSeqLib.configure(self, cfg)
         BarcodeSeqLib.configure(self, cfg)
-        try:
-            if barcode_map is not None:
-                if barcode_map.filename == cfg['barcodes']['map file']:
-                    self.barcode_map = barcode_map
-                else:
-                    raise ValueError("Attempted to assign non-matching "
-                                     "barcode map [{}]".format(self.name))
+        if barcode_map is not None:
+            if barcode_map.filename == cfg.barcodes_cfg.map_file:
+                self.barcode_map = barcode_map
             else:
-                self.barcode_map = BarcodeMap(
-                    cfg['barcodes']['map file'], is_variant=True
-                )
-        except KeyError as key:
-            raise KeyError("Missing required config value "
-                           "{key} [{name}]".format(key=key, name=self.name))
-
+                raise ValueError("Attempted to assign non-matching "
+                                 "barcode map [{}]".format(self.name))
+        else:
+            self.barcode_map = BarcodeMap(
+                cfg.barcodes_cfg.map_file, is_variant=True
+            )
 
     def serialize(self):
         """

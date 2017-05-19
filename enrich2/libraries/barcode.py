@@ -49,28 +49,22 @@ class BarcodeSeqLib(SeqLib):
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
         """
-        SeqLib.configure(self, cfg)
+        from ..config.types import BarcodeSeqLibConfiguration
 
-        # handle non-FASTQ config options
-        try:
-            if 'min count' in cfg['barcodes']:
-                self.barcode_min_count = int(cfg['barcodes']['min count'])
-            else:
-                self.barcode_min_count = 0
-        except KeyError as key:
-            raise KeyError("Configuration Error: Missing required "
-                           "config value {}".format(key), self.name)
+        if isinstance(cfg, dict):
+            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            cfg = BarcodeSeqLibConfiguration(cfg, init_fastq)
+        elif not isinstance(cfg, BarcodeSeqLibConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "BarcodeSeqLibConfiguration or dict.")
+
+        SeqLib.configure(self, cfg)
+        self.barcode_min_count = cfg.barcodes_cfg.min_count
 
         # if counts are specified, copy them later
         # else handle the FASTQ config options and check the files
         if self.counts_file is None:
-            self.configure_fastq(cfg)
-            try:
-                if split_fastq_path(self.reads) is None:
-                    raise ValueError("FASTQ file error: Unrecognized "
-                                     "file extension", self.name)
-            except IOError as fqerr:
-                raise IOError("FASTQ file error: {}".format(fqerr), self.name)
+            self.configure_fastq(cfg.fastq_cfg)
 
     def serialize(self):
         """
@@ -88,24 +82,11 @@ class BarcodeSeqLib(SeqLib):
         """
         Set up the object's FASTQ_ file handling and filtering options.
         """
-        try:
-            self.reads = cfg['fastq']['reads']
-            self.revcomp_reads = cfg['fastq']['reverse']
-
-            if 'start' in cfg['fastq']:
-                self.trim_start = cfg['fastq']['start']
-            else:
-                self.trim_start = 1
-
-            if 'length' in cfg['fastq']:
-                self.trim_length = cfg['fastq']['length']
-            else:
-                self.trim_length = sys.maxsize
-
-            self.filters = cfg['fastq']['filters']
-        except KeyError as key:
-            raise KeyError("Configuration Error: Missing required "
-                           "config value {}".format(key), self.name)
+        self.reads = cfg.reads
+        self.revcomp_reads = cfg.reverse
+        self.trim_start = cfg.trim_start
+        self.trim_length = cfg.trim_length
+        self.filters = cfg.filters_cfg.to_dict()
 
     def serialize_fastq(self):
         """

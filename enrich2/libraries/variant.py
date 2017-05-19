@@ -23,6 +23,7 @@ from ..sequence.aligner import Aligner
 from ..base.constants import CODON_TABLE, AA_CODES
 from ..base.constants import WILD_TYPE_VARIANT, SYNONYMOUS_VARIANT
 from ..sequence.wildtype import WildTypeSequence
+from ..config.config_check import seqlib_type
 
 from .seqlib import SeqLib
 
@@ -244,33 +245,29 @@ class VariantSeqLib(SeqLib):
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
         """
-        SeqLib.configure(self, cfg)
+        from ..config.types import BaseVariantSeqLibConfiguration
 
-        self.wt.configure(cfg['variants']['wild type'])
+        if isinstance(cfg, dict):
+            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            cfg = BaseVariantSeqLibConfiguration(cfg, init_fastq)
+        elif not isinstance(cfg, BaseVariantSeqLibConfiguration):
+            raise TypeError("`cfg` was neither a "
+                            "BaseVariantSeqLibConfiguration or dict.")
+
+        SeqLib.configure(self, cfg)
+        self.wt.configure(cfg.variants_cfg.wildtype_cfg)
+
         if self.is_coding():
             self.add_label('synonymous')
-        try:
-            if 'use aligner' in cfg['variants']:
-                if cfg['variants']['use aligner']:
-                    self.aligner = Aligner()
-                    self.aligner_cache = dict()
-                else:
-                    self.aligner = None
-                    self.aligner_cache = None
 
-            if 'min count' in cfg['variants']:
-                self.variant_min_count = int(cfg['variants']['min count'])
-            else:
-                self.variant_min_count = 0
-
-            if 'max mutations' in cfg['variants']:
-                self.max_mutations = int(cfg['variants']['max mutations'])
-            else:
-                self.max_mutations = DEFAULT_MAX_MUTATIONS
-
-        except KeyError as key:
-            raise KeyError("Missing required config value {key} [{name}]"
-                           "".format(key=key, name=self.name))
+        self.variant_min_count = cfg.variants_cfg.min_count
+        self.max_mutations = cfg.variants_cfg.max_mutations
+        if cfg.variants_cfg.use_aligner:
+            self.aligner = Aligner()
+            self.aligner_cache = dict()
+        else:
+            self.aligner = None
+            self.aligner_cache = None
 
     def serialize(self):
         """

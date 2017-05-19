@@ -75,6 +75,7 @@ class BaseLibraryConfigTest(TestCase):
 
     def test_error_invalid_timepoint_in_cfg(self):
         cfg = self.basic_cfg.copy()
+        cfg[FASTQ] = self.fastq_cfg
         cfg[TIMEPOINT] = '1'
         with self.assertRaises(TypeError):
             BaseLibraryConfiguration(cfg).validate()
@@ -86,6 +87,7 @@ class BaseLibraryConfigTest(TestCase):
     def test_error_report_filtered_reads_not_bool(self):
         cfg = self.basic_cfg.copy()
         cfg[REPORT_FILTERED_READS] = 'True'
+        cfg[FASTQ] = self.fastq_cfg
         with self.assertRaises(TypeError):
             BaseLibraryConfiguration(cfg).validate()
 
@@ -382,11 +384,6 @@ class BcidSeqLibConfigTest(TestCase):
         self.assertEqual(cfg.seqlib_type, "BcidSeqLib")
         self.assertEqual(cfg.report_filtered_reads, False)
 
-        barcodemap = {
-            'AAAAAA': 'AAAAAAAAAAAA',
-            'AACAAT': 'AACAATAAAAAA'
-        }
-        self.assertEqual(cfg.barcodes_cfg.barcodemap, barcodemap)
         self.assertEqual(cfg.barcodes_cfg.map_file, self.map_path)
         self.assertEqual(cfg.barcodes_cfg.min_count, 0)
 
@@ -449,11 +446,6 @@ class BcvSeqLibConfigTest(TestCase):
         self.assertEqual(cfg.seqlib_type, "BcvSeqLib")
         self.assertEqual(cfg.report_filtered_reads, False)
 
-        barcodemap = {
-            'AAAAAA': 'AAAAAAAAAAAA',
-            'AACAAT': 'AACAATAAAAAA'
-        }
-        self.assertEqual(cfg.barcodes_cfg.barcodemap, barcodemap)
         self.assertEqual(cfg.barcodes_cfg.map_file, self.map_path)
         self.assertEqual(cfg.barcodes_cfg.min_count, 0)
 
