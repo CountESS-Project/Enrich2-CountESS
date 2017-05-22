@@ -22,6 +22,7 @@ import tkinter.filedialog
 import tkinter.messagebox
 import tkinter.simpledialog
 import tkinter.ttk
+from tkinter.messagebox import askyesno
 
 from ..base.storemanager import SCORING_METHODS, LOGR_METHODS
 from ..experiment.condition import Condition
@@ -38,6 +39,7 @@ from ..libraries.overlap import OverlapSeqLib
 from ..libraries.seqlib import SeqLib
 from ..experiment.experiment import Experiment
 from .options_frame import ScorerScriptsDropDown
+from .logging_frame import show_log_window
 
 available_scoring_methods = SCORING_METHODS
 available_logr_methods = LOGR_METHODS
@@ -355,6 +357,15 @@ class Configurator(tk.Tk):
         )
         menubar.add_cascade(label="Edit", menu=filemenu)
 
+        # tools menu
+        filemenu = tk.Menu(menubar, tearoff=0)
+        filemenu.add_command(
+            label="Show Log",
+            accelerator="{}L".format(accel_string),
+            command=show_log_window
+        )
+        menubar.add_cascade(label="Tools", menu=filemenu)
+
         # add the menubar
         self.config(menu=menubar)
 
@@ -367,6 +378,10 @@ class Configurator(tk.Tk):
         # add edit menu keybinds
         self.bind("<{}a>".format(accel_bind),
                   lambda event: self.menu_selectall())
+
+        # add show log menu keybinds
+        # add edit menu keybinds
+        self.bind("<{}l>".format(accel_bind), lambda event: show_log_window())
 
     def menu_open(self):
         fname = tkinter.filedialog.askopenfilename()
@@ -395,15 +410,32 @@ class Configurator(tk.Tk):
                 obj.output_dir_override = False
                 try:
                     obj.configure(cfg)
+
+                    # Try load the scorer into the GUI
+                    from ..config.types import SCORER, \
+                        SCORER_OPTIONS, SCORER_PATH
+                    scorer_path = cfg.get(SCORER, {}).get(SCORER_PATH, "")
+                    scorer_attrs = cfg.get(SCORER, {}).get(SCORER_OPTIONS, {})
+                    if scorer_path:
+                        self.scorer_plugin.load_from_cfg_file(
+                            scorer_path, scorer_attrs)
+
                 except Exception as e:
                     tkinter.messagebox.showerror(
-                        None, "Failed to process config file:\n{}".format(e))
+                        None, "Failed to load config file:\n\n{}".format(e))
                 else:
                     self.root_element = obj
                     self.cfg_file_name.set(fname)
                     self.refresh_treeview()
 
     def menu_save(self):
+        save = askyesno(
+            "Save Configuration.",
+            "Overwrite existing configuration?"
+        )
+        if not save:
+            return
+
         if len(self.cfg_file_name.get()) == 0:
             self.menu_saveas()
         elif self.root_element is None:

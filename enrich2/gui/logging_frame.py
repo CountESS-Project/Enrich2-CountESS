@@ -17,7 +17,7 @@
 
 
 from tkinter import *
-from tkinter.messagebox import askyesno
+from tkinter.messagebox import askokcancel
 from tkinter.filedialog import asksaveasfile
 import logging
 
@@ -31,6 +31,7 @@ class ScrolledText(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
         self.text = self._make_scrolling_text()
+        self.text.bind("<Key>", lambda e: "break")
         self.pack(expand=YES, fill=BOTH)
 
         self.menu = Menu(self, tearoff=0)
@@ -64,7 +65,7 @@ class ScrolledText(Frame):
         self.set_text_widget_state("normal")
         self.text.insert(END, text)
         self.text.see(END)
-        self.set_text_widget_state("disabled")
+        # self.set_text_widget_state("disabled")
         return self
 
     def get_text(self):
@@ -102,14 +103,18 @@ class WindowLoggingHandler(logging.Handler):
 
         close_btn = Button(
             master=self.window,
-            text='Close',
-            command=self.close
+            text='Hide',
+            command=self.hide
         )
         close_btn.pack(side=RIGHT, anchor=S, padx=2, pady=2)
-        self.window.protocol("WM_DELETE_WINDOW", self.close)
+        self.window.protocol("WM_DELETE_WINDOW", self.hide)
 
-    def close(self):
-        if askyesno('Verify', 'Do you really want to quit?'):
+    def close_window(self):
+        close = askokcancel(
+            'Close Logger',
+            'Do you really want to close the logging window?'
+        )
+        if close:
             self.close()
             logger = logging.getLogger()
             logger.removeHandler(self)
@@ -136,3 +141,31 @@ class WindowLoggingHandler(logging.Handler):
         formatter = logging.Formatter(fmt=fmt)
         handler.setFormatter(formatter)
         return handler
+
+
+def show_log_window():
+    """
+    Utility function to open a new logging window if one doesn't already exist,
+    otherwise show the current one.
+    
+    Parameters
+    ----------
+
+    Returns
+    -------
+    None
+
+    """
+    current_handlers = logging.getLogger().handlers
+    log_windows = [
+        h for h in current_handlers
+        if h.__class__.__name__ == 'WindowLoggingHandler'
+    ]
+    if not log_windows:
+        log_win = WindowLoggingHandler.basic_handler(Toplevel())
+        logging.getLogger().addHandler(log_win)
+        logging.info("Starting new log...", extra={'oname': 'Main'})
+    else:
+        log_win = log_windows[0]
+        log_win.show()
+

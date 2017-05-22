@@ -240,28 +240,6 @@ class OptionsFileFrame(Frame):
         button = Button(self, text='Load...', command=self.load_from_file)
         button.grid(row=self.row, column=1, sticky=E)
 
-    def load_from_cfg(self, cfg):
-        if 'scorer' in cfg:
-            if 'scorer_options' in cfg:
-                return cfg['scorer']['scorer_options']
-        elif 'scorer_options' in cfg:
-            return cfg['scorer_options']
-        else:
-            raise ValueError("Unrecognised config file, couldn't find "
-                             "expected keys. File requires the nested key"
-                             "'scorer/scorer_options' "
-                             "or the key 'scorer_options'")
-
-        success = 'Successfully parsed and validated config.'
-        if self.options_frame:
-            if self.update_option_frame(cfg):
-                self.active_cfg = cfg
-                if not self.options_file_incomplete():
-                    messagebox.showinfo('Success!', success)
-        else:
-            self.active_cfg = cfg
-            messagebox.showinfo('Success!', success)
-
     def load_from_file(self):
         file_path = askopenfilename()
         if not file_path:
@@ -358,16 +336,34 @@ class OptionsFileFrame(Frame):
             try:
                 option = self.options_frame.get_option_by_varname(varname)
                 current.append((varname, option.get_value()))
-                self.options_frame.set_variable(varname, value)
                 self.options_frame.set_option(varname, value)
+                if option.choices:
+                    self.options_frame.set_variable(
+                        varname, option.get_choice_key()
+                    )
+                else:
+                    self.options_frame.set_variable(
+                        varname, option.get_value()
+                    )
             except (KeyError, TclError, TypeError, ValueError) as error:
-                for vname, old_val in current:
-                    self.options_frame.set_variable(vname, old_val)
-                    self.options_frame.set_option(vname, old_val)
+                for varname, old_val in current:
+                    self.options_frame.set_option(varname, old_val)
+                    option = self.options_frame.get_option_by_varname(varname)
+                    if option.choices:
+                        self.options_frame.set_variable(
+                            varname,
+                            option.get_choice_key()
+                        )
+                    else:
+                        self.options_frame.set_variable(
+                            varname,
+                            option.get_value()
+                        )
                 messagebox.showwarning(
                     title="Error setting option!",
                     message=bad_input_msg.format(varname, error)
                 )
+                logging.exception(error, extra={'oname': self.__class__.__name__})
                 return False
         return True
 
@@ -387,6 +383,8 @@ class ScorerScriptsDropDown(LabelFrame):
         self.row = 0
         self.current_view = 'Regression'
         self.btn_frame = None
+        self.drop_menu_tkvar = None
+        self.drop_menu = None
         self.plugins = {}
 
         self.parse_directory(scripts_dir)
@@ -394,36 +392,105 @@ class ScorerScriptsDropDown(LabelFrame):
         self.make_buttons()
         self.show_new_view(self.current_view)
 
+    def load_from_cfg_file(self, script_path, script_attrs):
+        # Check to see if the script has already been loaded.
+        create_new = True
+        _, _, current_options_file_frame, current_path = \
+            self.plugins[self.current_view]
+        if os.path.join(current_path) == os.path.join(script_path):
+            create_new = False
+
+        # Load script class and options
+        klass, options, options_file = self.parse_file(script_path)
+        if klass is None and options_file is None and options is None:
+            logging.warning(
+                "Could not load plugin {}.".format(script_path),
+                extra={"oname": self.__class__.__name__}
+            )
+            return
+
+        # Update the options from the script_attrs provided by cfg file
+        scorer_cfg = options.to_dict()
+        for k, v in script_attrs.items():
+            scorer_cfg[k] = v
+
+        # If the script has already been loaded, update the options
+        # Otherwise create new frames for rendering.
+        if create_new:
+            options_frame, options_file_frame = self.make_options_frames(
+                options, options_file
+            )
+            options_file_frame.update_option_frame(scorer_cfg)
+            key = self.populate_plugins(
+                klass,
+                options_frame,
+                options_file_frame,
+                script_path
+            )
+            self.drop_menu.set_menu(key, *sorted(self.plugins.keys()))
+            self.drop_menu_tkvar.set(key)
+            self.update_options_view(key)
+            logging.info(
+                "Loaded plugin from path {}.".format(script_path),
+                extra={"oname": self.__class__.__name__}
+            )
+        else:
+            current_options_file_frame.update_option_frame(scorer_cfg)
+            logging.info(
+                "Plugin from path {} updated.".format(script_path),
+                extra={"oname": self.__class__.__name__}
+            )
+
     def parse_directory(self, scripts_dir):
-        for path in glob.glob("{}/*.py".format(scripts_dir)):
+        files = sorted(glob.glob("{}/*.py".format(scripts_dir)))
+        for path in files:
             path = path.replace("\\", '/')
             full_path = os.path.join(os.getcwd(), path)
-            if "__init__.py" in path:
-                continue
-            try:
-                result = load_scorer_class_and_options(path)
-                klass, options, options_file = result
-                options_frame, options_file_frame = self.make_options_frames(
-                    options, options_file
-                )
-            except Exception as e:
-                logging.exception(e, extra={'oname': self.__class__.__name__})
-                messagebox.showerror(
-                    "Error loading plugin...",
-                    "There was an error loading the script:\n\n{}."
-                    "\n\nSee log for details\n\n{}.".format(full_path, e)
-                )
-                continue
 
-            # Rename plugins with the same 'name' attribute.
-            key = klass.name
-            if key in self.plugins:
-                same_name = [n for n in self.plugins.keys()
-                             if n.split('[')[0].strip() == key]
+            klass, options, options_file = self.parse_file(full_path)
+            if klass is None and options is None and options_file is None:
+                continue
+            options_frame, options_file_frame = self.make_options_frames(
+                options, options_file
+            )
+            self.populate_plugins(
+                klass,
+                options_frame,
+                options_file_frame,
+                full_path
+            )
+
+    def parse_file(self, path):
+        if "__init__.py" in path:
+            return None, None, None
+        try:
+            result = load_scorer_class_and_options(path)
+            klass, options, options_file = result
+            print(klass.name)
+            return klass, options, options_file
+        except Exception as e:
+            logging.exception(e, extra={'oname': self.__class__.__name__})
+            messagebox.showerror(
+                "Error loading plugin...",
+                "There was an error loading the script:\n\n{}."
+                "\n\nSee log for details\n\n{}.".format(path, e)
+            )
+            return None, None, None
+
+    def populate_plugins(self, klass, options_frame,
+                                options_file_frame, path):
+        # Rename plugins with the same 'name' attribute.
+        key = klass.name
+        if key in self.plugins:
+            same_name = [n for n in self.plugins.keys()
+                         if n.split('[')[0].strip() == key]
+            # No need to add plugin if it already exists
+            same_path = any([path == p for (_, _, _, p) in self.plugins.values()])
+            if not same_path:
                 num = len(same_name)
                 key = "{} [{}]".format(key, num)
-            self.plugins[key] = (klass, options_frame,
-                                 options_file_frame, full_path)
+        self.plugins[key] = (klass, options_frame, options_file_frame, path)
+        return key
 
     def make_options_frames(self, options, options_file):
         options_frame = OptionsFrame(self, options)
@@ -438,8 +505,9 @@ class ScorerScriptsDropDown(LabelFrame):
 
         if not self.plugins:
             default = 'No plugins detected'
-            popup_menu = OptionMenu(self, StringVar(), default, *[default])
-            popup_menu.grid(sticky=E, column=1, row=self.row)
+            drop_menu = OptionMenu(self, StringVar(), default, *[default])
+            drop_menu.grid(sticky=E, column=1, row=self.row)
+            self.drop_menu = drop_menu
             self.increment_row()
         else:
             self.make_drop_down_widget()
@@ -447,11 +515,13 @@ class ScorerScriptsDropDown(LabelFrame):
     def make_drop_down_widget(self):
         choices = [n for n, _ in self.plugins.items()]
         menu_var = StringVar(self)
+        self.drop_menu_tkvar = menu_var
 
         switch = lambda v: self.update_options_view(v)
-        popup_menu = OptionMenu(self, menu_var, self.current_view,
+        drop_menu = OptionMenu(self, menu_var, self.current_view,
                                 *choices, command=switch)
-        popup_menu.grid(sticky=E, column=1, row=self.row)
+        drop_menu.grid(sticky=E, column=1, row=self.row)
+        self.drop_menu = drop_menu
         self.increment_row()
 
         details = lambda v=menu_var: self.show_plugin_details(v.get())
@@ -539,11 +609,11 @@ class ScorerScriptsDropDown(LabelFrame):
                 "No plugin loaded or no attributes to log."
             )
             return
-        msg = "Parsing parameters...\nFormat: (value, type) "
+        msg = "Scorer Parameters "
         msg += nested_format(cfg, False, tab_level=0)
         logging.info(msg, extra={'oname': self.__class__.__name__})
-        messagebox.showinfo("Parameters logged!",
-                            "See log for loaded parameters.")
+        # messagebox.showinfo("Parameters logged!",
+        #                     "See log for loaded parameters.")
 
     def show_plugin_details(self, name):
         klass, _, _, path = self.plugins[name]
