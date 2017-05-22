@@ -137,34 +137,6 @@ class Selection(StoreManager):
                     lib.configure(lib_cfg)
                     self.add_child(lib)
 
-        # if configure_children:
-        #     if 'libraries' not in cfg:
-        #         raise KeyError("Missing required config value "
-        #                        "{} [{}]".format('libraries', self.name))
-        #
-        #     for lib_cfg in cfg['libraries']:
-        #         libtype = seqlib_type(lib_cfg)
-        #         if libtype is None:
-        #             raise ValueError("Unrecognized SeqLib config")
-        #         elif libtype in ('BcvSeqLib', 'BcidSeqLib'):
-        #             lib = globals()[libtype]()
-        #             # don't re-parse the barcode maps if possible
-        #             mapfile = lib_cfg['barcodes']['map file']
-        #             if mapfile in list(self.barcode_maps.keys()):
-        #                 lib.configure(
-        #                     lib_cfg, barcode_map=self.barcode_maps[mapfile])
-        #             else:
-        #                 lib.configure(lib_cfg)
-        #                 self.barcode_maps[mapfile] = lib.barcode_map
-        #             self.add_child(lib)
-        #         else:
-        #             # requires that the SeqLib derived classes be
-        #             # imported into the module namespace
-        #             # using "from x import y" style
-        #             lib = globals()[libtype]()
-        #             lib.configure(lib_cfg)
-        #             self.add_child(lib)
-
     def validate(self):
         """
         Raises an informative ``ValueError`` if the time points in the

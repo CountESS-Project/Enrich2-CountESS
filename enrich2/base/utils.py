@@ -22,13 +22,17 @@ def nested_format(data, default, tab_level=1):
     
     Parameters
     ----------
-    data : Data to print.
-    default:     
-    tab_level : Number of tabs to indent with.  
+    data : Any
+        Data to print.
+    default: bool
+        Indicator indicating if a value is a default. 
+    tab_level : int
+        Number of tabs to indent with.  
 
     Returns
     -------
-    rtype : A formatted string.
+    str
+        A formatted string.
 
     """
     msg = ""
