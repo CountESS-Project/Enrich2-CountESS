@@ -24,7 +24,6 @@ import tkinter.simpledialog
 import tkinter.ttk
 from tkinter.messagebox import askyesno, showinfo
 
-from ..base.storemanager import SCORING_METHODS, LOGR_METHODS
 from ..experiment.condition import Condition
 from ..selection.selection import Selection
 from .create_root_dialog import CreateRootDialog
@@ -40,9 +39,6 @@ from ..libraries.seqlib import SeqLib
 from ..experiment.experiment import Experiment
 from .options_frame import ScorerScriptsDropDown
 from .logging_frame import show_log_window
-
-available_scoring_methods = SCORING_METHODS
-available_logr_methods = LOGR_METHODS
 
 
 def write_json(d, handle):
