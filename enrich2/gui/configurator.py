@@ -22,7 +22,7 @@ import tkinter.filedialog
 import tkinter.messagebox
 import tkinter.simpledialog
 import tkinter.ttk
-from tkinter.messagebox import askyesno
+from tkinter.messagebox import askyesno, showinfo
 
 from ..base.storemanager import SCORING_METHODS, LOGR_METHODS
 from ..experiment.condition import Condition
@@ -31,7 +31,7 @@ from .create_root_dialog import CreateRootDialog
 from .create_seqlib_dialog import CreateSeqLibDialog
 from .delete_dialog import DeleteDialog
 from .edit_dialog import EditDialog, clear_nones
-from .runner_window import RunnerWindow, RunnerSavePrompt
+from .runner_window import RunnerWindow, AnalysisThread
 from .seqlib_apply_dialog import SeqLibApplyDialog
 from ..config.config_check import is_selection, seqlib_type
 from ..config.config_check import is_seqlib, is_experiment
@@ -80,12 +80,14 @@ class Configurator(tk.Tk):
         self.columnconfigure(0, weight=1)
 
         # create UI elements
+        self.go_button = None
         self.scorer_plugin = None
         self.scorer = None
         self.scorer_attrs = None
         self.create_main_frame()
         self.create_menubar()
         self.create_treeview_context_menu()
+
 
     def create_treeview_context_menu(self):
         self.treeview_popup = tk.Menu(self, tearoff=0)
@@ -217,6 +219,7 @@ class Configurator(tk.Tk):
         go_button = tkinter.ttk.Button(
             go_button_frame, text="Run Analysis", command=self.go_button_press)
         go_button.grid(column=0, row=0)
+        self.go_button = go_button
 
     def get_selected_scorer_class(self):
         return self.scorer
@@ -233,13 +236,23 @@ class Configurator(tk.Tk):
                 "Incomplete Configuration", "No scoring plugin selected."
             )
         elif self.root_element is None:
-            print(self.scorer, self.scorer_attrs)
             tkinter.messagebox.showwarning(
                 "Incomplete Configuration", "No experimental design specified."
             )
         else:
-            RunnerSavePrompt(self)
-            RunnerWindow(self)
+            if askyesno("Save Configuration?",
+                        "Would you like to save the confiugration "
+                        "file before proceeding?"):
+                self.menu_save()
+            thread = AnalysisThread(self)
+            showinfo(
+                "Begin Analysis?",
+                "Click OK when you arere ready to start.\n\n This could take some"
+                " time so grab a cup of tea, or a beer if that's your thing, "
+                "and enjoy the logging window."
+            )
+            print("Starting")
+            thread.start()
 
     def create_new_element(self):
         """
@@ -429,19 +442,18 @@ class Configurator(tk.Tk):
                     self.refresh_treeview()
 
     def menu_save(self):
-        save = askyesno(
-            "Save Configuration.",
-            "Overwrite existing configuration?"
-        )
-        if not save:
-            return
-
         if len(self.cfg_file_name.get()) == 0:
             self.menu_saveas()
         elif self.root_element is None:
             tkinter.messagebox.showwarning(
                 None, "Cannot save empty configuration.")
         else:
+            save = askyesno(
+                "Save Configuration.",
+                "Overwrite existing configuration?"
+            )
+            if not save:
+                return
             try:
                 with open(self.cfg_file_name.get(), "w") as handle:
                     write_json(self.root_element.serialize(), handle)
