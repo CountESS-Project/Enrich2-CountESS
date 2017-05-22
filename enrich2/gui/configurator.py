@@ -31,7 +31,7 @@ from .create_root_dialog import CreateRootDialog
 from .create_seqlib_dialog import CreateSeqLibDialog
 from .delete_dialog import DeleteDialog
 from .edit_dialog import EditDialog, clear_nones
-from .runner_window import RunnerWindow, AnalysisThread
+from .runner_window import AnalysisThread
 from .seqlib_apply_dialog import SeqLibApplyDialog
 from ..config.config_check import is_selection, seqlib_type
 from ..config.config_check import is_seqlib, is_experiment
@@ -249,7 +249,7 @@ class Configurator(tk.Tk):
                 "Begin Analysis?",
                 "Click OK when you arere ready to start.\n\n This could take some"
                 " time so grab a cup of tea, or a beer if that's your thing, "
-                "and enjoy the logging window."
+                "and enjoy the show."
             )
             print("Starting")
             thread.start()
