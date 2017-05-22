@@ -1,0 +1,91 @@
+{
+  "conditions": [
+    {
+      "name": "Condition_1",
+      "selections": [
+        {
+          "libraries": [
+            {
+              "barcodes": {},
+              "fastq": {
+                "filters": {},
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t0_s1_c1.fq",
+                "reverse": false
+              },
+              "name": "polyA_t0_s1_c1",
+              "report filtered reads": false,
+              "timepoint": 0
+            },
+            {
+              "barcodes": {},
+              "fastq": {
+                "filters": {},
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t1_s1_c1.fq",
+                "reverse": false
+              },
+              "name": "polyA_t1_s1_c1",
+              "report filtered reads": false,
+              "timepoint": 1
+            },
+            {
+              "barcodes": {},
+              "fastq": {
+                "filters": {},
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t2_s1_c1.fq",
+                "reverse": false
+              },
+              "name": "polyA_t2_s1_c1",
+              "report filtered reads": false,
+              "timepoint": 2
+            }
+          ],
+          "name": "Selection_1"
+        },
+        {
+          "libraries": [
+            {
+              "barcodes": {},
+              "fastq": {
+                "filters": {},
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t0_s2_c1.fq",
+                "reverse": false
+              },
+              "name": "polyA_t0_s2_c1",
+              "report filtered reads": false,
+              "timepoint": 0
+            },
+            {
+              "barcodes": {},
+              "fastq": {
+                "filters": {},
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t1_s2_c1.fq",
+                "reverse": false
+              },
+              "name": "polyA_t1_s2_c1",
+              "report filtered reads": false,
+              "timepoint": 1
+            },
+            {
+              "barcodes": {},
+              "fastq": {
+                "filters": {},
+                "reads": "enrich2/tests/data/reads/experiment/polyA_t2_s2_c1.fq",
+                "reverse": false
+              },
+              "name": "polyA_t2_s2_c1",
+              "report filtered reads": false,
+              "timepoint": 2
+            }
+          ],
+          "name": "Selection_2"
+        }
+      ]
+    }
+  ],
+  "name": "barcode_experiment_test",
+  "output directory": "test_output/experiment/",
+  "scorer": {
+    "scorer_path": "/Users/daniel/Git/Enrich2-py3/plugins/regression_scorer.py",
+    "scorer_options": {"logr_method": "full"}
+  }
+}

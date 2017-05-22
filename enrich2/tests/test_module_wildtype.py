@@ -124,12 +124,12 @@ class TestWildTypeModule(unittest.TestCase):
     def test_error_invalid_offset_not_a_number(self):
         cfg = make_cfg("AAAAAA", offset='a')
         wt = WildTypeSequence("Test")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
              wt.configure(cfg)
 
         cfg = make_cfg("AAAAAA", offset=None)
         wt = WildTypeSequence("Test")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
              wt.configure(cfg)
 
     def test_error_invalid_offset_negative(self):
