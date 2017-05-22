@@ -282,8 +282,9 @@ class Option(BaseOption):
         -------
 
         """
-        key = self.keytransform(key)
-        self._choice_key = key
+        if self.choices:
+            key = self.keytransform(key)
+            self._choice_key = key
         return self
 
     def get_choice_key(self):

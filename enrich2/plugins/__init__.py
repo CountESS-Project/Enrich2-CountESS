@@ -17,7 +17,8 @@
 
 
 import os
-import sys
+import importlib
+
 from .scoring import BaseScorerPlugin
 from .options import Options, OptionsFile
 
@@ -29,6 +30,7 @@ class ModuleLoader(object):
         if not os.path.exists(path):
             raise IOError("Invalid plugin path {}.".format(path))
 
+        path = os.path.join(path, '')[:-1]
         path_to_module_folder = '/'.join(path.split('/')[:-1])
         module_folder = path_to_module_folder.split('/')[-1]
         module_name, ext = os.path.splitext(path.split('/')[-1])
@@ -36,11 +38,11 @@ class ModuleLoader(object):
             raise IOError("Plugin must be a python file.")
 
         try:
-            sys.path.append(path_to_module_folder)
-            top_module = __import__("{}.{}".format(module_folder, module_name))
+            spec = importlib.util.spec_from_file_location("module.name", path)
+            self.module = importlib.util.module_from_spec(spec)
             self.module_name = module_name
             self.module_folder = module_folder
-            self.module = getattr(top_module, self.module_name)
+            spec.loader.exec_module(self.module)
         except BaseException as err:
             raise ImportError(err)
 
