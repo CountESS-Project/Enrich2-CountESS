@@ -243,7 +243,7 @@ class Configurator(tk.Tk):
             thread = AnalysisThread(self)
             showinfo(
                 "Begin Analysis?",
-                "Click OK when you arere ready to start.\n\n This could take some"
+                "Click OK when you are ready to start.\n\nThis could take some"
                 " time so grab a cup of tea, or a beer if that's your thing, "
                 "and enjoy the show."
             )
