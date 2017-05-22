@@ -46,7 +46,6 @@ from abc import ABC, abstractclassmethod
 from .config_check import *
 from ..plugins import load_scorer_class_and_options
 from ..plugins.options import Options
-from ..libraries.barcodemap import BarcodeMap
 
 
 NAME = 'name'
@@ -156,7 +155,7 @@ class ScorerConfiguration(Configuration):
 
         # Check for unused params in attrs and throw error
         unused = list(passed_varnames - expected_varnames)
-        unused_str = ', '.join(unused)
+        unused_str = ', '.join(["'{}'".format(v) for v in unused])
         if unused:
             raise ValueError("The options {} in the provided configuration are"
                              " not defined in the plugin.".format(unused_str))
@@ -169,7 +168,7 @@ class ScorerConfiguration(Configuration):
 
         # If missing params log warning and set to default
         defaults = list(expected_varnames - passed_varnames)
-        defaults_str = ', '.join(defaults)
+        defaults_str = ', '.join(["'{}'".format(v) for v in defaults])
         if defaults:
             logging.warning("The options {} were not found in the provided"
                             " configuration file. Setting as default "
@@ -178,6 +177,17 @@ class ScorerConfiguration(Configuration):
 
         self.scorer_class_attrs = self.__options.to_dict()
         return self
+
+    def get_options(self, keep_defaults=True):
+        attrs = {}
+        if keep_defaults:
+            for varname, opt in self.__options.items():
+                value = opt.get_value()
+                default = opt.get_default_value()
+                attrs[varname] = (value, value == default)
+            return attrs
+        else:
+            return self.__options.to_dict()
 
 
 class FASTQConfiguration(Configuration):
@@ -423,6 +433,10 @@ class WildTypeConfiguration(Configuration):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for wildtype configuration.")
 
+        if SEQUENCE not in cfg:
+            raise KeyError("Missing '{}' from base library "
+                             "configuration.".format(SEQUENCE))
+
         self.coding = cfg.get(CODING, False)
         self.reference_offset = cfg.get(REF_OFFSET, 0)
         self.sequence = cfg.get(SEQUENCE, "")
@@ -459,6 +473,11 @@ class WildTypeConfiguration(Configuration):
             raise TypeError("Variants `sequence` must be a string. "
                             "Found type "
                             "{}".format(type(self.sequence).__name__))
+
+        if not self.sequence:
+            raise ValueError(
+                "Cannot have an empty sequence [{}].".format(
+                    type(self.sequence).__name__))
 
         if self.sequence and os.path.isfile(self.sequence):
             _, tail = os.path.split(self.sequence)
