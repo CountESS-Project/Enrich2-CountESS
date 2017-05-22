@@ -22,6 +22,7 @@ import json
 import logging
 import os.path
 import sys
+from tkinter import Toplevel
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 from .base.storemanager import SCORING_METHODS, LOGR_METHODS
@@ -35,7 +36,7 @@ from .libraries.barcodeid import BcidSeqLib
 from .libraries.barcodevariant import BcvSeqLib
 from .libraries.basic import BasicSeqLib
 from .libraries.idonly import IdOnlySeqLib
-from .libraries.overlap import OverlapSeqLib
+from .gui.logging_frame import WindowLoggingHandler
 
 
 __author__ = "Alan F Rubin"
@@ -54,7 +55,6 @@ globals()['BcidSeqLib'] = BcidSeqLib
 globals()['BcvSeqLib'] = BcvSeqLib
 globals()['BasicSeqLib'] = BasicSeqLib
 globals()['IdOnlySeqLib'] = IdOnlySeqLib
-globals()['OverlapSeqLib'] = OverlapSeqLib
 
 
 #: Name of the driver script. Used for logging output.
@@ -72,7 +72,7 @@ def start_logging(log_file, log_level):
     Message format is defined by :py:const:`LOG_FORMAT`.
 
     Args:
-        log_file (str): Name of the log output file, or 
+        log_file (str, None): Name of the log output file, or 
         ``None`` to output to console.
 
         log_level: Requested logging level. 
@@ -82,9 +82,14 @@ def start_logging(log_file, log_level):
 
     """
     if log_file is not None:
-        logging.basicConfig(filename=log_file, level=log_level, format=LOG_FORMAT)
+        logging.basicConfig(
+            filename=log_file, level=log_level, format=LOG_FORMAT)
     else:
-        logging.basicConfig(level=log_level, format=LOG_FORMAT)
+        stream_handler = logging.StreamHandler()
+        formatter = logging.Formatter(LOG_FORMAT)
+        stream_handler.setFormatter(formatter)
+        logging.basicConfig(
+            level=log_level, format=LOG_FORMAT, handlers=[stream_handler])
 
 
 def main_gui():
@@ -94,6 +99,16 @@ def main_gui():
     """
     start_logging(None, logging.DEBUG)
     app = Configurator()
+
+    # GUI logger to the logger's handlers
+    win = Toplevel(master=app)
+    win.title('Enrich 2 Log')
+    log_window = WindowLoggingHandler(window=win)
+    formatter = logging.Formatter(LOG_FORMAT)
+    log_window.setFormatter(formatter)
+    logging.getLogger().addHandler(log_window)
+    logging.info("Starting Enrich 2...", extra={'oname': DRIVER_NAME})
+
     app.mainloop()
 
 
@@ -117,10 +132,11 @@ def main_cmd():
 
     # add command line arguments
     parser.add_argument("config", help="JSON configuration file")
-    parser.add_argument("scoring_method", help="scoring method",
-                        choices=list(SCORING_METHODS.keys()))
-    parser.add_argument("logr_method", help="log ratio method",
-                        choices=list(LOGR_METHODS.keys()))
+
+    # parser.add_argument("scoring_method", help="scoring method",
+    #                     choices=list(SCORING_METHODS.keys()))
+    # parser.add_argument("logr_method", help="log ratio method",
+    #                     choices=list(LOGR_METHODS.keys()))
 
     # add support for semantic version checking
     parser.add_argument("--version", action="version",
@@ -177,8 +193,6 @@ def main_cmd():
             obj = BcvSeqLib()
         elif seqlib_type == "BasicSeqLib":
             obj = BasicSeqLib()
-        elif seqlib_type == "OverlapSeqLib":
-            obj = OverlapSeqLib()
         elif seqlib_type == "IdOnlySeqLib":
             obj = IdOnlySeqLib()
         else:
@@ -190,8 +204,8 @@ def main_cmd():
     # set analysis options
     obj.force_recalculate = args.force_recalculate
     obj.component_outliers = args.component_outliers
-    obj.scoring_method = args.scoring_method
-    obj.logr_method = args.logr_method
+    # obj.scoring_method = args.scoring_method
+    # obj.logr_method = args.logr_method
     obj.tsv_requested = args.tsv_requested
 
     if args.output_dir_override is not None:
@@ -200,13 +214,17 @@ def main_cmd():
     else:
         obj.output_dir_override = False
 
-    # configure the object
-    obj.configure(cfg)
-
     # make sure objects are valid
     try:
+        # configure the object
+        from .config.types import SelectionConfiguration
+        # If Selection is root, require that scorer parameters be present
+        if isinstance(obj, Selection):
+            cfg = SelectionConfiguration(cfg, has_scorer=True)
+        obj.configure(cfg)
         obj.validate()
-    except ValueError:
+    except Exception:
+        print("Program finished running but with errors. See log for details.")
         logging.exception("Invalid configuration",
                           extra={'oname': DRIVER_NAME})
     else:
@@ -214,16 +232,31 @@ def main_cmd():
         obj.store_open(children=True)
 
         # perform the analysis
-        obj.calculate()
+        try:
+            obj.calculate()
+        except Exception as e:
+            print("Program finished running but with errors. "
+                  "See log for details.")
+            logging.exception(e, extra={'oname': DRIVER_NAME})
+            obj.store_close(children=True)
+            sys.exit(0)
 
         try:
             obj.write_tsv()
         except Exception:
-            logging.exception("Calculations completed, but TSV ouput failed.",
-                              extra={'oname': DRIVER_NAME})
+            print("Program finished running but with errors. "
+                  "See log for details.")
+            logging.exception(
+                "Calculations completed, but TSV ouput failed.",
+                extra={'oname': DRIVER_NAME}
+            )
+            obj.store_close(children=True)
+            sys.exit(0)
 
         # clean up
         obj.store_close(children=True)
+        print("Program finished successfully! See log for information.")
+        logging.info("Done!", extra={'oname': DRIVER_NAME})
 
 
 if __name__ == "__main__":
