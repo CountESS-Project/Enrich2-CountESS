@@ -19,7 +19,6 @@
 import os
 import importlib
 
-from .scoring import BaseScorerPlugin
 from .options import Options, OptionsFile
 
 
@@ -60,7 +59,7 @@ def load_scorer_class_and_options(path):
     loader = ModuleLoader(path)
     scorers = []
     for attr_name, attr in loader.get_module_attrs():
-        if implements_methods(attr) and attr != BaseScorerPlugin:
+        if implements_methods(attr):
             scorers.append(attr)
     if len(scorers) < 1:
         raise ImportError("Could not find any classes implementing "
@@ -93,6 +92,8 @@ def implements_methods(class_):
     if not getattr(class_, "_base_name") == 'BaseScorerPlugin':
         return False
     if not hasattr(class_, "compute_scores"):
+        return False
+    if hasattr(getattr(class_, "compute_scores"), '__isabstractmethod__'):
         return False
     return True
 

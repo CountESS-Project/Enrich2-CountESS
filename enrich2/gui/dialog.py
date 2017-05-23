@@ -56,7 +56,11 @@ class CustomDialog(Toplevel):
 
         self.overall_frame = Frame(self)
 
-        self.body_frame = LabelFrame(self.overall_frame, text=body_frame_text)
+        if body_frame_text:
+            self.body_frame = LabelFrame(
+                self.overall_frame, text=body_frame_text)
+        else:
+            self.body_frame =Frame(self.overall_frame)
         self.initial_focus = self.body(self.body_frame)
 
         self.body_frame.grid(

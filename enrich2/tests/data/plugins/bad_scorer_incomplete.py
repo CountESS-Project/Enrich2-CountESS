@@ -21,7 +21,7 @@ from enrich2.plugins.scoring import BaseScorerPlugin
 
 class CountsScorer(BaseScorerPlugin):
 
-    name = 'Counts Only'
+    name = 'Counts Only Incomplete'
     version = '1.0'
     author = 'Alan Rubin, Daniel Esposito'
 

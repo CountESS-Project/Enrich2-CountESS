@@ -512,10 +512,10 @@ class WildTypeConfigTest(TestCase):
         pass
 
     def test_defaults_load_correctly(self):
-        cfg = {}
+        cfg = {SEQUENCE: "AAA"}
         wt_cfg = WildTypeConfiguration(cfg).validate()
         self.assertEqual(wt_cfg.coding, False)
-        self.assertEqual(wt_cfg.sequence, "")
+        self.assertEqual(wt_cfg.sequence, "AAA")
         self.assertEqual(wt_cfg.reference_offset, 0)
 
     def test_override_defaults_correctly(self):
@@ -526,27 +526,27 @@ class WildTypeConfigTest(TestCase):
         self.assertEqual(wt_cfg.reference_offset, 3)
 
     def test_error_coding_not_bool(self):
-        cfg = {CODING: 1}
+        cfg = {CODING: 1, SEQUENCE: "AAA"}
         with self.assertRaises(TypeError):
             WildTypeConfiguration(cfg).validate()
 
     def test_error_ref_offset_not_int(self):
-        cfg = {REF_OFFSET: '1'}
+        cfg = {REF_OFFSET: '1', SEQUENCE: "AAA"}
         with self.assertRaises(TypeError):
             WildTypeConfiguration(cfg).validate()
 
     def test_ref_offset_negative(self):
-        cfg = {REF_OFFSET: -1}
+        cfg = {REF_OFFSET: -1, SEQUENCE: "AAA"}
         with self.assertRaises(ValueError):
             WildTypeConfiguration(cfg).validate()
 
     def test_ref_offset_not_multiple_of_three_noncoding(self):
-        cfg = {REF_OFFSET: 2, CODING: False}
+        cfg = {SEQUENCE: "AAA", REF_OFFSET: 2, CODING: False}
         wt_cfg = WildTypeConfiguration(cfg).validate()
         self.assertEqual(wt_cfg.reference_offset, 2)
 
     def test_ignore_ref_offset_not_multiple_of_three_coding(self):
-        cfg = {REF_OFFSET: 2, CODING: True}
+        cfg = {SEQUENCE: "AAA", REF_OFFSET: 2, CODING: True}
         wt_cfg = WildTypeConfiguration(cfg).validate()
         self.assertEqual(wt_cfg.reference_offset, 0)
 

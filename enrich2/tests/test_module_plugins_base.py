@@ -51,15 +51,9 @@ class PluginLoadingTest(TestCase):
             self.directory, 'data/plugins/two_options.py')
         self.empty_options = os.path.join(
             self.directory, 'data/plugins/empty_options.py')
-        self.non_module = os.path.join(
-            self.directory, 'data/plugins_non_module/counts_scorer.py')
 
     def tearDown(self):
         pass
-
-    def test_error_non_module(self):
-        with self.assertRaises(ImportError):
-            load_scorer_class_and_options(self.non_module)
 
     def test_error_non_python_file(self):
         with self.assertRaises(IOError):
