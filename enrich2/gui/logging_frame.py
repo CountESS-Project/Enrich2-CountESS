@@ -123,6 +123,7 @@ class WindowLoggingHandler(logging.Handler):
     def show(self):
         self.window.update()
         self.window.deiconify()
+        self.window.lift()
 
     def hide(self):
         self.window.withdraw()

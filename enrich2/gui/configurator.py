@@ -21,7 +21,8 @@ import tkinter as tk
 import tkinter.filedialog
 import tkinter.messagebox
 import tkinter.simpledialog
-import tkinter.ttk
+
+from tkinter.ttk import Frame, Button, Checkbutton, Treeview, LabelFrame
 from tkinter.messagebox import askyesno, showinfo
 
 from ..experiment.condition import Condition
@@ -76,6 +77,7 @@ class Configurator(tk.Tk):
         self.columnconfigure(0, weight=1)
 
         # create UI elements
+        self.treeview_buttons = []
         self.go_button = None
         self.scorer_plugin = None
         self.scorer = None
@@ -102,7 +104,7 @@ class Configurator(tk.Tk):
 
     def create_main_frame(self):
         # Frame for the Treeview and New/Edit/Delete buttons
-        main = tkinter.ttk.Frame(self, padding=(3, 3, 12, 12))
+        main = Frame(self, padding=(3, 3, 12, 12))
         main.rowconfigure(0, weight=1)
         main.columnconfigure(0, weight=1)
         main.columnconfigure(1, weight=0)
@@ -110,7 +112,7 @@ class Configurator(tk.Tk):
 
         # ------------------------------------------------------- #
         # Frame for the Treeview and its scrollbars
-        tree_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
+        tree_frame = Frame(main, padding=(3, 3, 12, 12))
         tree_frame.rowconfigure(0, weight=1)
         tree_frame.rowconfigure(1, weight=0)
         tree_frame.columnconfigure(0, weight=1)
@@ -119,7 +121,7 @@ class Configurator(tk.Tk):
 
         # ------------------------------------------------------- #
         # Treeview with column headings
-        self.treeview = tkinter.ttk.Treeview(tree_frame)
+        self.treeview = Treeview(tree_frame)
         self.treeview["columns"] = ("class", "barcodes", "variants")
         self.treeview.column("class", width=120)
         self.treeview.heading("class", text="Type")
@@ -145,21 +147,23 @@ class Configurator(tk.Tk):
 
         # ------------------------------------------------------- #
         # Frame for New/Edit/Delete buttons
-        button_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
+        button_frame = Frame(main, padding=(3, 3, 12, 12))
         button_frame.grid(row=1, column=0)
-        new_button = tkinter.ttk.Button(button_frame, text="New...",
+        new_button = Button(button_frame, text="New...",
                                         command=self.new_button_press)
         new_button.grid(row=0, column=0)
-        edit_button = tkinter.ttk.Button(button_frame, text="Edit...",
+        edit_button = Button(button_frame, text="Edit...",
                                          command=self.edit_button_press)
         edit_button.grid(row=0, column=1)
-        delete_button = tkinter.ttk.Button(button_frame, text="Delete",
+        delete_button = Button(button_frame, text="Delete",
                                            command=self.delete_button_press)
         delete_button.grid(row=0, column=2)
+        
+        self.treeview_buttons = [new_button, delete_button, edit_button]
 
         # ------------------------------------------------------- #
         # Frame for Plugin and Analysis Options
-        right_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
+        right_frame = Frame(main, padding=(3, 3, 12, 12))
         right_frame.rowconfigure(0, weight=1)
         right_frame.rowconfigure(1, weight=0)
         right_frame.columnconfigure(0, weight=1)
@@ -176,12 +180,12 @@ class Configurator(tk.Tk):
         # ------------------------------------------------------- #
         # LabelFrame for Analysis Options
         row = 0
-        options_frame = tkinter.ttk.LabelFrame(
+        options_frame = LabelFrame(
             right_frame, text="Analysis Options", padding=(3, 3, 12, 12))
         options_frame.grid(row=1, column=0, sticky="new", pady=4)
 
         # force recalculate
-        force_recalculate = tkinter.ttk.Checkbutton(
+        force_recalculate = Checkbutton(
             options_frame,
             text="Force Recalculation",
             variable=self.force_recalculate
@@ -190,7 +194,7 @@ class Configurator(tk.Tk):
         row += 1
 
         # component outliers
-        component_outliers = tkinter.ttk.Checkbutton(
+        component_outliers = Checkbutton(
             options_frame,
             text="Component Outlier Statistics",
             variable=self.component_outliers
@@ -199,7 +203,7 @@ class Configurator(tk.Tk):
         row += 1
 
         # write tsv
-        tsv_requested = tkinter.ttk.Checkbutton(
+        tsv_requested = Checkbutton(
             options_frame,
             text="Write TSV Files",
             variable=self.tsv_requested
@@ -210,9 +214,9 @@ class Configurator(tk.Tk):
 
         # ------------------------------------------------------- #
         # Run Analysis button frame
-        go_button_frame = tkinter.ttk.Frame(main, padding=(3, 3, 12, 12))
+        go_button_frame = Frame(main, padding=(3, 3, 12, 12))
         go_button_frame.grid(row=1, column=1)
-        go_button = tkinter.ttk.Button(
+        go_button = Button(
             go_button_frame, text="Run Analysis", command=self.go_button_press)
         go_button.grid(column=0, row=0)
         self.go_button = go_button
@@ -247,7 +251,6 @@ class Configurator(tk.Tk):
                 " time so grab a cup of tea, or a beer if that's your thing, "
                 "and enjoy the show."
             )
-            print("Starting")
             thread.start()
 
     def create_new_element(self):
@@ -520,6 +523,7 @@ class Configurator(tk.Tk):
 
             # delete the element from the dictionary
             del self.element_dict[tree_id]
+        self.refresh_treeview()
 
     def refresh_treeview(self):
         """

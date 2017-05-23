@@ -46,7 +46,7 @@ OptionMenu = ttk.OptionMenu
 # -------------------------------------------------------------------------- #
 class OptionsFrame(Frame, Iterable):
     def __init__(self, parent, options, **kw):
-        super().__init__(parent, **kw)
+        super(OptionsFrame, self).__init__(parent, **kw)
         self.parent = parent
         self.row = 0
 
@@ -363,7 +363,8 @@ class OptionsFileFrame(Frame):
                     title="Error setting option!",
                     message=bad_input_msg.format(varname, error)
                 )
-                logging.exception(error, extra={'oname': self.__class__.__name__})
+                logging.exception(error, extra={
+                    'oname': self.__class__.__name__})
                 return False
         return True
 
@@ -432,14 +433,12 @@ class ScorerScriptsDropDown(LabelFrame):
             self.update_options_view(key)
             logging.info(
                 "Loaded plugin from path {}.".format(script_path),
-                extra={"oname": self.__class__.__name__}
-            )
+                extra={"oname": self.__class__.__name__})
         else:
             current_options_file_frame.update_option_frame(scorer_cfg)
             logging.info(
                 "Plugin from path {} updated.".format(script_path),
-                extra={"oname": self.__class__.__name__}
-            )
+                extra={"oname": self.__class__.__name__})
 
     def parse_directory(self, scripts_dir):
         files = sorted(glob.glob("{}/*.py".format(scripts_dir)))
@@ -451,14 +450,12 @@ class ScorerScriptsDropDown(LabelFrame):
             if klass is None and options is None and options_file is None:
                 continue
             options_frame, options_file_frame = self.make_options_frames(
-                options, options_file
-            )
+                options, options_file)
             self.populate_plugins(
                 klass,
                 options_frame,
                 options_file_frame,
-                full_path
-            )
+                full_path)
 
     def parse_file(self, path):
         if "__init__.py" in path:
@@ -477,15 +474,15 @@ class ScorerScriptsDropDown(LabelFrame):
             )
             return None, None, None
 
-    def populate_plugins(self, klass, options_frame,
-                                options_file_frame, path):
+    def populate_plugins(self, klass, options_frame, options_file_frame, path):
         # Rename plugins with the same 'name' attribute.
         key = klass.name
         if key in self.plugins:
             same_name = [n for n in self.plugins.keys()
                          if n.split('[')[0].strip() == key]
             # No need to add plugin if it already exists
-            same_path = any([path == p for (_, _, _, p) in self.plugins.values()])
+            same_path = any(
+                [path == p for (_, _, _, p) in self.plugins.values()])
             if not same_path:
                 num = len(same_name)
                 key = "{} [{}]".format(key, num)
@@ -499,7 +496,6 @@ class ScorerScriptsDropDown(LabelFrame):
         return options_frame, options_file_frame
 
     def make_widgets(self):
-        # Main Scoring plugin frame
         label = Label(self, text="Scoring Plugin: ", justify=LEFT)
         label.grid(sticky=EW, column=0, row=self.row)
 
@@ -562,16 +558,19 @@ class ScorerScriptsDropDown(LabelFrame):
     def show_new_view(self, next_view):
         _, options_frame, options_file_frame, _ = self.plugins[next_view]
         if options_frame.has_options():
-            options_frame.grid(sticky=NSEW, row=self.row,
-                               columnspan=2, pady=(12, 0))
+            options_frame.grid(
+                sticky=NSEW, row=self.row,
+                columnspan=2, pady=(12, 0))
             self.increment_row()
 
-            options_file_frame.grid(sticky=NSEW, row=self.row,
-                                    columnspan=2, pady=(12, 0))
+            options_file_frame.grid(
+                sticky=NSEW, row=self.row,
+                columnspan=2, pady=(12, 0))
             self.increment_row()
 
-            self.btn_frame.grid(row=self.row, columnspan=2,
-                                sticky=E, pady=(12, 0))
+            self.btn_frame.grid(
+                row=self.row, columnspan=2,
+                sticky=E, pady=(12, 0))
             self.increment_row()
 
     def get_class_and_attrs(self, keep_defult_bool=False):

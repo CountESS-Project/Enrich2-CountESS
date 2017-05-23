@@ -15,16 +15,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import tkinter as tk
-import tkinter.ttk
-import tkinter.simpledialog
-import tkinter.messagebox
-import tkinter.filedialog
+
+from .dialog import CustomDialog
+from tkinter.ttk import *
+from tkinter import E
 
 
 def subtree_ids(treeview, x, level=0):
     """
-    Return a list of tuples containing the ids and levels for *x* and every element below it in the Treeview *treeview*.
+    Return a list of tuples containing the ids and levels for *x* 
+    and every element below it in the Treeview *treeview*.
 
     The level of *x* is 0, children of *x* are 1, and so forth.
     """
@@ -35,7 +35,7 @@ def subtree_ids(treeview, x, level=0):
     return id_list
 
 
-class DeleteDialog(tkinter.simpledialog.Dialog):
+class DeleteDialog(CustomDialog):
     """
     Confirmation dialog box for deleting the selected items from the Treeview.
     """
@@ -45,7 +45,7 @@ class DeleteDialog(tkinter.simpledialog.Dialog):
         for x in self.tree.treeview.selection():
             if x not in [y[0] for y in self.id_tuples]:
                 self.id_tuples.extend(subtree_ids(self.tree.treeview, x))
-        tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
+        CustomDialog.__init__(self, parent_window, title)
 
 
     def body(self, master):
@@ -57,7 +57,8 @@ class DeleteDialog(tkinter.simpledialog.Dialog):
         if len(self.id_tuples) == 0:
             message_string = "No elements selected."
         elif len(self.id_tuples) == 1:
-            message_string = 'Delete "{}"?'.format(self.tree.get_element(self.id_tuples[0][0]).name)
+            message_string = 'Delete "{}"?'.format(self.tree.get_element(
+                self.id_tuples[0][0]).name)
         else:
             message_string = "Delete the following items?\n"
             for x, level in self.id_tuples:
@@ -65,26 +66,27 @@ class DeleteDialog(tkinter.simpledialog.Dialog):
                     bullet = "    " + u"\u25C6"
                 else:
                     bullet = "    " * (level + 1) + u"\u25C7"
-                message_string += u"{bullet} {name}\n".format(bullet=bullet, name=self.tree.get_element(x).name)
-        message = tkinter.ttk.Label(master, text=message_string, justify="left")
+                message_string += u"{bullet} {name}\n".format(
+                    bullet=bullet, name=self.tree.get_element(x).name)
+        message = Label(master, text=message_string, justify="left")
         message.grid(row=0, sticky="w")
 
 
     def buttonbox(self):
         """
-        Display only one button if there's no selection. Otherwise, use the default method to display two buttons.
+        Display only one button if there's no selection. 
+        Otherwise, use the default method to display two buttons.
         """
         if len(self.id_tuples) == 0:
-            box = tk.Frame(self)
+            box = Frame(self)
 
-            w = tk.Button(box, text="OK", width=10, command=self.cancel, default="active")
+            w = Button(
+                box, text="OK", width=10, command=self.cancel, anchor=E)
             w.pack(side="left", padx=5, pady=5)
-
             self.bind("<Return>", self.cancel)
-
-            box.pack()
+            box.pack(anchor=E)
         else:
-            tkinter.simpledialog.Dialog.buttonbox(self)
+            CustomDialog.buttonbox(self)
 
 
     def apply(self):

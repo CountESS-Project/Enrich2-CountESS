@@ -23,6 +23,7 @@ import tkinter.ttk
 from collections import OrderedDict
 from sys import maxsize
 
+from .dialog import CustomDialog
 from .dialog_elements import FileEntry, IntegerEntry, Checkbox
 from .dialog_elements import StringEntry, SectionLabel, DEFAULT_COLUMNS
 from ..libraries.barcode import BarcodeSeqLib
@@ -33,6 +34,8 @@ from ..libraries.idonly import IdOnlySeqLib
 from ..libraries.overlap import OverlapSeqLib
 from ..libraries.seqlib import SeqLib
 from ..libraries.variant import VariantSeqLib
+
+from tkinter.ttk import *
 
 
 def clear_nones(d):
@@ -84,15 +87,19 @@ class CountsToggle(object):
         self.rb_coutns = None
 
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
-        self.rb_fastq = tkinter.ttk.Radiobutton(master, text="FASTQ File Mode",
-                                        variable=self.mode, value="FASTQ",
-                                        command=self.fastq_mode)
+        self.rb_fastq = Radiobutton(
+            master, text="FASTQ File Mode",
+            variable=self.mode, value="FASTQ",
+            command=self.fastq_mode
+        )
         self.rb_fastq.grid(row=row, column=0, columnspan=columns, sticky="ew")
-        self.rb_counts = tkinter.ttk.Radiobutton(master, text="Count File Mode",
-                                         variable=self.mode, value="Counts",
-                                         command=self.counts_mode)
-        self.rb_counts.grid(row=row + 1, column=0, columnspan=columns,
-                            sticky="ew")
+        self.rb_counts = Radiobutton(
+            master, text="Count File Mode",
+            variable=self.mode, value="Counts",
+            command=self.counts_mode
+        )
+        self.rb_counts.grid(
+            row=row + 1, column=0, columnspan=columns, sticky="ew")
         return 2
 
     def counts_mode(self):
@@ -140,7 +147,7 @@ class CountsToggle(object):
         pass
 
 
-class EditDialog(tkinter.simpledialog.Dialog):
+class EditDialog(CustomDialog):
     """
     Dialog box for editing elements. Also used to set properties 
     on newly-created elements.
@@ -156,6 +163,7 @@ class EditDialog(tkinter.simpledialog.Dialog):
         self.element_cfg = None
         self.frame_dict = OrderedDict()
         self.toggle = None
+        self.parent_window = parent_window
 
         # create the editable version of the config object
         self.element_cfg = self.element.serialize()
@@ -366,19 +374,19 @@ class EditDialog(tkinter.simpledialog.Dialog):
                         self.element_cfg['variants'], 'use aligner'
                     )
                 )
-        tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
+        CustomDialog.__init__(self, parent_window, title)
 
     def body(self, master):
         """
         Add the UI elements to the edit window. Ordering and placement of UI 
         elements in columns is defined by the ``element_layouts`` dictionary.
         """
-        main = tkinter.ttk.Frame(master, padding=(3, 3, 12, 12))
+        main = Frame(master, padding=(3, 3, 12, 12))
         main.grid(row=0, column=0, sticky="nsew")
 
         layout = element_layouts[type(self.element).__name__]
         for i, column_tuple in enumerate(layout):
-            new_frame = tkinter.ttk.Frame(master, padding=(3, 3, 12, 12))
+            new_frame = Frame(master, padding=(3, 3, 12, 12))
             new_frame.grid(row=0, column=i, sticky="nsew")
             row_no = 0
             for row_frame_key in layout[i]:
@@ -407,7 +415,6 @@ class EditDialog(tkinter.simpledialog.Dialog):
                     tkinter.messagebox.showwarning(
                         "", "Sibling names must be unique.")
                     return False
-
         return True
 
     def apply(self):
@@ -430,3 +437,5 @@ class EditDialog(tkinter.simpledialog.Dialog):
         if self.element.parent is not None:
             if self.element not in self.element.parent.children:
                 self.element.parent.add_child(self.element)
+
+        self.parent_window.refresh_treeview()

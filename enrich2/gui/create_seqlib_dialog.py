@@ -15,15 +15,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import tkinter as tk
-import tkinter.ttk
-import tkinter.simpledialog
+import tkinter
 import tkinter.messagebox
 import tkinter.filedialog
 
-import json
-from copy import deepcopy
+from tkinter.ttk import *
+from tkinter import E
+
 from collections import OrderedDict
+from .dialog import CustomDialog
 
 from ..libraries.basic import BasicSeqLib
 from ..libraries.barcodevariant import BcvSeqLib
@@ -35,30 +35,30 @@ from ..libraries.variant import VariantSeqLib
 from ..libraries.idonly import IdOnlySeqLib
 
 
+
 seqlib_label_text = OrderedDict([("BcvSeqLib", "Barcoded Variant"),
                                  ("BcidSeqLib", "Barcoded Identifier"),
-                                 ("OverlapSeqLib", "Overlap"),
                                  ("BasicSeqLib", "Basic"),
                                  ("BarcodeSeqLib", "Barcodes Only"),
                                  ("IdOnlySeqLib", "Identifiers Only"),
                                  ])
 
 
-class CreateSeqLibDialog(tkinter.simpledialog.Dialog):
+class CreateSeqLibDialog(CustomDialog):
     """
     Dialog box for creating a new SeqLib.
     """
     def __init__(self, parent_window, title="New SeqLib"):
-        self.element_tkstring = tk.StringVar()
+        self.element_tkstring = tkinter.StringVar()
         self.element_type = None
-        tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
+        CustomDialog.__init__(self, parent_window, title)
 
     def body(self, master):
-        message = tkinter.ttk.Label(master, text="SeqLib type:")
+        message = Label(master, text="SeqLib type:")
         message.grid(column=0, row=0)
 
         for i, k in enumerate(seqlib_label_text.keys()):
-            rb = tkinter.ttk.Radiobutton(
+            rb = Radiobutton(
                 master, text=seqlib_label_text[k],
                 variable=self.element_tkstring, value=k
             )
@@ -70,14 +70,13 @@ class CreateSeqLibDialog(tkinter.simpledialog.Dialog):
         """
         Display only one button.
         """
-        box = tk.Frame(self)
-
-        w = tk.Button(box, text="OK", width=10, command=self.ok, default="active")
-        w.pack(side="left", padx=5, pady=5)
-
+        box = Frame(self)
+        w = Button(box, text="OK", width=10, command=self.ok)
+        w.grid(column=0, row=0, padx=5, pady=5, sticky=E)
+        box.rowconfigure(0, weight=1)
+        box.columnconfigure(0, weight=1)
         self.bind("<Return>", self.ok)
-
-        box.pack()
+        box.grid(column=self.column, row=self.row, sticky="e")
 
     def apply(self):
         try:

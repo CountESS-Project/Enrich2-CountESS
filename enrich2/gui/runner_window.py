@@ -34,24 +34,25 @@ class AnalysisThread(threading.Thread):
 
     def run(self):
         # gray out the "Run" button
+        for btn in self.pw.treeview_buttons:
+            btn.config(state='disabled')
         self.pw.go_button.config(state='disabled')
+        self.pw.treeview.bind("<Button-2>", lambda event: event)
 
-        scorer_class = self.pw.get_selected_scorer_class()
-        scorer_class_attrs = self.pw.get_selected_scorer_attrs()
-
-        # set the analysis options
-        self.pw.root_element.force_recalculate = \
-            self.pw.force_recalculate.get()
-        self.pw.root_element.component_outliers = \
-            self.pw.component_outliers.get()
-
-        # self.pw.root_element.scoring_method = self.pw.scoring_method.get()
-        self.pw.root_element.scoring_class = scorer_class
-        self.pw.root_element.scoring_class_attrs = scorer_class_attrs
-        self.pw.root_element.tsv_requested = self.pw.tsv_requested.get()
-
-        # run the analysis, catching any errors to display in a dialog box
         try:
+            scorer_class = self.pw.get_selected_scorer_class()
+            scorer_class_attrs = self.pw.get_selected_scorer_attrs()
+
+            # set the analysis options
+            self.pw.root_element.force_recalculate = \
+                self.pw.force_recalculate.get()
+            self.pw.root_element.component_outliers = \
+                self.pw.component_outliers.get()
+
+            self.pw.root_element.scoring_class = scorer_class
+            self.pw.root_element.scoring_class_attrs = scorer_class_attrs
+            self.pw.root_element.tsv_requested = self.pw.tsv_requested.get()
+
             # ensure that all objects are valid
             print("Validating")
             self.pw.root_element.validate()
@@ -86,7 +87,13 @@ class AnalysisThread(threading.Thread):
 
         finally:
             # close the HDF5 files
-            self.pw.root_element.store_close(children=True)
+            self.pw.treeview.bind("<Button-2>", self.pw.treeview_context_menu)
             self.pw.go_button.config(state='normal')
+            for btn in self.pw.treeview_buttons:
+                btn.config(state='normal')
+            self.pw.root_element.store_close(children=True)
 
+        for btn in self.pw.treeview_buttons:
+            btn.config(state='normal')
         self.pw.go_button.config(state='normal')
+        self.pw.treeview.bind("<Button-2>", self.pw.treeview_context_menu)
