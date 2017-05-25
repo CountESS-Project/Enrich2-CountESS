@@ -43,52 +43,10 @@ import sys
 import logging
 from abc import ABC, abstractclassmethod
 
+from ..base.config_constants import *
 from .config_check import *
 from ..plugins import load_scorer_class_and_options
 from ..plugins.options import Options
-
-
-NAME = 'name'
-CONDITIONS = 'conditions'
-LIBRARIES = 'libraries'
-SELECTIONS = 'selections'
-TIMEPOINT = 'timepoint'
-OUTPUT_DIR = 'output directory'
-REPORT_FILTERED_READS = 'report filtered reads'
-STORE = 'store'
-
-FASTQ = 'fastq'
-READS = 'reads'
-REVERSE = 'reverse'
-FILTERS = 'filters'
-FILTERS_MAX_N = 'max N'
-FILTERS_MIN_COUNT = 'min count'
-FILTERS_AVG_Q = 'avg quality'
-FILTERS_MIN_Q = 'min quality'
-FILTERS_CHASTITY = 'chastity'
-TRIM_START = 'start'
-TRIM_LENGTH = 'length'
-SCORER = 'scorer'
-SCORER_PATH = 'scorer_path'
-SCORER_OPTIONS = 'scorer_options'
-
-
-COUNTS_FILE = 'counts file'
-IDENTIFIERS = 'identifiers'
-IDENTIFIERS_MIN_COUNT = 'min count'
-
-VARIANTS = 'variants'
-VARIANTS_MIN_COUNT = 'min count'
-VARIANTS_MAX_MUTATIONS = 'max mutations'
-USE_ALIGNER = 'use aligner'
-WILDTYPE = 'wild type'
-CODING = 'coding'
-REF_OFFSET = 'reference offset'
-SEQUENCE = 'sequence'
-
-BARCODES = 'barcodes'
-BARCODE_MAP_FILE = 'map file'
-BARCODE_MIN_COUNT = 'min count'
 
 
 class Configuration(ABC):

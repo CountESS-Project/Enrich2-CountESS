@@ -19,15 +19,17 @@ import os
 import json
 import pandas as pd
 
+from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
+from ..base.config_constants import FORCE_RECALCULATE, COMPONENT_OUTLIERS
+from ..base.config_constants import TSV_REQUESTED, OUTPUT_DIR_OVERRIDE
+
 
 TOP_LEVEL = os.path.dirname(__file__)
-
-
 DEFAULT_STORE_PARAMS = {
-    'force_recalculate': False,
-    'component_outliers': False,
-    'tsv_requested': False,
-    'output_dir_override': False,
+    FORCE_RECALCULATE: False,
+    COMPONENT_OUTLIERS: False,
+    TSV_REQUESTED: False,
+    OUTPUT_DIR_OVERRIDE: False,
 }
 
 
@@ -61,7 +63,7 @@ def load_config_data(fname, direc='data/config/'):
     fname : str
         Name of file in the directory `direc`.
     direc : str (optional)
-        Directory where the file is relative to :py:module: `~..tests`.
+        Directory where the file is relative to :py:mod:`enrich2.tests`.
 
     Returns
     -------
@@ -84,9 +86,9 @@ def load_df_from_txt(fname, direc='data/result/', sep='\t'):
     Parameters
     ----------
     fname : str
-        Name of file in the directory `direc`.
+        Name of file in the directory ``direc``.
     direc : str
-        Directory where the file is relative to :py:module: `~..tests`.
+        Directory where the file is relative to :py:mod:`enrich2.tests`
     sep : str
         Delimiter to use between columns.
         
@@ -109,9 +111,9 @@ def load_df_from_pkl(fname, direc='data/result/'):
     Parameters
     ----------
     fname : str
-        Name of file in the directory `direc`.
+        Name of file in the directory ``direc``.
     direc : str
-        Directory where the file is relative to :py:module: `~..tests`.
+        Directory where the file is relative to :py:mod:`enrich2.tests`.
 
     Returns
     -------
@@ -127,18 +129,18 @@ def load_df_from_pkl(fname, direc='data/result/'):
 
 def save_result_to_txt(test_obj, direc, prefix, sep='\t'):
     """
-    Utility function to save a :py:class: `pd.HDFStore` as a series of 
-    delimited tsv. One file is created for each :py:class: `pd.DataFrame` in
+    Utility function to save a :py:class:`pd.HDFStore` as a series of 
+    delimited tsv. One file is created for each :py:class:`pd.DataFrame` in
     the store.
     
     Parameters
     ----------
-    test_obj : pd.HDFStore
+    test_obj : :py:class:`pd.HDFStore`
         HDFStore object to save to delimited text files.
     direc : str
         Directory to save the file.
     prefix : str
-        Prefix to add to each key in the store to use as a filename,
+        Prefix to add to each key in the store to use as a filename.
     sep : str
         Delimiter to use between columns.
 
@@ -162,8 +164,8 @@ def save_result_to_txt(test_obj, direc, prefix, sep='\t'):
 
 def save_result_to_pkl(test_obj, direc, prefix):
     """
-    Utility function to save a :py:class: `pd.HDFStore` as a series of 
-    pickle files. One file is created for each :py:class: `pd.DataFrame` in
+    Utility function to save a :py:class:`pd.HDFStore` as a series of 
+    pickle files. One file is created for each :py:class:`pd.DataFrame` in
     the store. Each file has the extension 'pkl'.
 
     Parameters
@@ -199,8 +201,8 @@ def dispatch_loader(fname, direc, sep='\t'):
     
     Parameters
     ----------
-    fname : str
-        Filename with extension in {'pkl', 'tsv', 'txt'}
+    fname : str {'pkl', 'tsv', 'txt'}
+        Filename with extension
     direc : str
         Directory to save the file.
     sep : str
@@ -261,11 +263,11 @@ def update_cfg_file(cfg, scoring, logr):
     ----------
     cfg : dict
         Dictionary that can initialize a 
-        :py:class: `~..enrich2.base.store.StoreManager` object.
+        :py:class: `enrich2.base.store.StoreManager` object.
     scoring : {'WLS', 'OLS', 'counts', 'ratios', 'simple'}
-        Choice of scoring option in {'WLS', 'OLS', 'counts', 'ratios', 'simple'}
+        Choice of scoring option
     logr : {'complete', 'full', 'wt'}
-        Choice of scoring normalization method in {'complete', 'full', 'wt'}
+        Choice of scoring normalization method
 
     Returns
     -------
@@ -273,8 +275,8 @@ def update_cfg_file(cfg, scoring, logr):
         Modified dictionary (in-place)
 
     """
-    cfg["scorer"]["scorer_path"] = SCORING_PATHS.get(scoring)
-    cfg["scorer"]["scorer_options"] = SCORING_ATTRS.get(scoring).get(logr)
+    cfg[SCORER][SCORER_PATH] = SCORING_PATHS.get(scoring)
+    cfg[SCORER][SCORER_OPTIONS] = SCORING_ATTRS.get(scoring).get(logr)
     return cfg
 
 

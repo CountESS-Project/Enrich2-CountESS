@@ -23,6 +23,37 @@ WILD_TYPE_VARIANT = "_wt"
 SYNONYMOUS_VARIANT = "_sy"
 
 
+#: HDFStore keys used by enrich2
+GROUP_RAW = "raw"
+GROUP_MAIN = "main"
+BARCODEMAP_TABLE = "barcodemap"
+IDENTIFIERS_TABLE = "identifiers"
+SYNONYMOUS_TABLE = "synonymous"
+VARIANTS_TABLE = "variants"
+BARCODES_TABLE = "barcodes"
+COUNTS_TABLE = "counts"
+COUNTS_UNFILTERED_TABLE = "counts_unfiltered"
+SCORES_TABLE = "scores"
+SCORES_SHARED_TABLE = "scores_shared"
+SCORES_SHARED_FULL_TABLE = "scores_shared_full"
+SCORES_PVALUES_WT = "scores_pvalues_wt"
+SCORES_PVALUES = "scores_pvalues"
+OUTLIERS_TABLE = 'outliers'
+
+
+#: Dataframe columns used by Enrich2
+PVALUE_RAW = "pvalue_raw"
+Z_STAT = "z"
+SCORE = "score"
+COUNT = "count"
+SE = "SE"
+EPSILON = "epsilon"
+INDEX = "index"
+REPLICATES = "replicates"
+VARIANCE = "var"
+PARENT = "parent"
+
+
 #: Standard codon table for translating wild type and variant DNA sequences
 CODON_TABLE = {
         'TTT':'F', 'TCT':'S', 'TAT':'Y', 'TGT':'C',

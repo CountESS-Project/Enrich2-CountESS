@@ -24,7 +24,10 @@ import scipy.stats as stats
 
 from ..base.constants import WILD_TYPE_VARIANT
 from ..base.storemanager import StoreManager
-from ..config.config_check import seqlib_type
+
+from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
+from ..base.config_constants import LIBRARIES
+
 from ..libraries.barcode import BarcodeSeqLib
 from ..libraries.barcodeid import BcidSeqLib
 from ..libraries.barcodevariant import BcvSeqLib
@@ -168,14 +171,12 @@ class Selection(StoreManager):
                 if self.children[0].wt != child.wt:
                     logging.warning(
                         msg="Inconsistent wild type sequences",
-                        extra={'oname': self.name}
-                    )
+                        extra={'oname': self.name})
                     break
         
         # check that we're not doing wild type normalization
         # on something with no wild type
-        logr_method = self.get_root().scorer_class_attrs.get(
-            'logr_method', '')
+        logr_method = self.get_root().scorer_class_attrs.get('logr_method', '')
         if not self.has_wt_sequence() and logr_method == "wt":
             raise ValueError("No wild type sequence for wild "
                              "type normalization [{}]".format(self.name))
@@ -190,12 +191,12 @@ class Selection(StoreManager):
         suitable for dumping to a config file.
         """
         cfg = StoreManager.serialize(self)
-        cfg['libraries'] = [child.serialize() for child in self.children]
+        cfg[LIBRARIES] = [child.serialize() for child in self.children]
         if self.get_root() is self \
                 and self.get_root().scorer_class is not None:
-            cfg['scorer'] = {
-                "scorer_path": self.get_root().scorer_path,
-                "scorer_options": self.get_root().scorer_class_attrs
+            cfg[SCORER] = {
+                SCORER_PATH: self.get_root().scorer_path,
+                SCORER_OPTIONS: self.get_root().scorer_class_attrs
             }
         return cfg
 

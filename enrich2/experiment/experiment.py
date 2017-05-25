@@ -22,6 +22,9 @@ import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
+from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
+from ..base.config_constants import CONDITIONS
+
 from enrich2.base.constants import WILD_TYPE_VARIANT
 from enrich2.base.storemanager import StoreManager
 from enrich2.statistics.random_effects import rml_estimator
@@ -85,11 +88,11 @@ class Experiment(StoreManager):
         dumping to a config file.
         """
         cfg = StoreManager.serialize(self)
-        cfg['conditions'] = [child.serialize() for child in self.children]
+        cfg[CONDITIONS] = [child.serialize() for child in self.children]
         if self.get_root().scorer_class is not None:
-            cfg['scorer'] = {
-                "scorer_path": self.get_root().scorer_path,
-                "scorer_options": self.get_root().scorer_class_attrs
+            cfg[SCORER] = {
+                SCORER_PATH: self.get_root().scorer_path,
+                SCORER_OPTIONS: self.get_root().scorer_class_attrs
             }
         return cfg
 

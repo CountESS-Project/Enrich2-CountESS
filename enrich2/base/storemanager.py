@@ -25,6 +25,9 @@ import time
 
 from .utils import nested_format
 
+from .config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
+from .config_constants import LIBRARIES
+
 #: Dictionary specifying available scoring methods for the analysis
 #: Key is the internal name of the method, value is the GUI label
 #: For command line options, internal name is used for the option string itself
@@ -480,7 +483,7 @@ class StoreManager(object):
         """
         from ..config.types import StoreConfiguration
         if isinstance(cfg, dict):
-            has_scorer = bool(cfg.get('scorer', {}).get('scorer_path', ""))
+            has_scorer = bool(cfg.get(SCORER, {}).get(SCORER_PATH, ""))
             cfg = StoreConfiguration(cfg, has_scorer=has_scorer)
         elif not isinstance(cfg, StoreConfiguration):
             raise TypeError("`cfg` was neither a StoreConfiguration or dict.")

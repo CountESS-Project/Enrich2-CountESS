@@ -24,21 +24,30 @@ given configuration object (decoded from a JSON file as described `here
 
 """
 
+from ..base.config_constants import CONDITIONS, SELECTIONS, LIBRARIES
+from ..base.config_constants import FASTQ, IDENTIFIERS, BARCODES, VARIANTS
+from ..base.config_constants import BARCODE_MAP_FILE, OVERLAP
+
+
 
 def is_experiment(cfg):
     """
     Check if the given configuration object specifies an 
-    :py:class:`~enrich2.experiment.Experiment`.
+    :py:class:`~enrich2.experiment.experiment.Experiment`.
 
-    Args:
-        cfg (dict): decoded JSON object
+    Parameters
+    ----------
+    cfg : dict 
+        Decoded JSON object
 
-    Returns:
-        bool: True if `cfg` if specifies an 
-        :py:class:`~enrich2.experiment.Experiment`, else False.
+    Returns
+    -------
+    bool
+        True if `cfg` if specifies a 
+        :py:class:`~enrich2.experiment.experiment.Experiment`, else False.
 
     """
-    if 'conditions' in list(cfg.keys()):
+    if CONDITIONS in list(cfg.keys()):
         return True
     else:
         return False
@@ -47,17 +56,20 @@ def is_experiment(cfg):
 def is_condition(cfg):
     """
     Check if the given configuration object specifies a 
-    :py:class:`~enrich2.condition.Condition`.
+    :py:class:`~enrich2.expierment.condition.Condition`.
 
-    Args:
-        cfg (dict): decoded JSON object
+    Parameters
+    ----------
+    cfg : dict 
+        Decoded JSON object
 
-    Returns:
-        bool: True if `cfg` if specifies a 
-        :py:class:`~enrich2.condition.Condition`, else False.
-
+    Returns
+    -------
+    bool
+        True if `cfg` if specifies a 
+        :py:class:`~enrich2.experiment.condition.Condition`, else False.
     """
-    if 'selections' in list(cfg.keys()):
+    if SELECTIONS in list(cfg.keys()):
         return True
     else:
         return False
@@ -66,17 +78,20 @@ def is_condition(cfg):
 def is_selection(cfg):
     """
     Check if the given configuration object specifies a 
-    :py:class:`~enrich2.selection.Selection`.
+    :py:class:`~enrich2.selection.selection.Selection`.
 
-    Args:
-        cfg (dict): decoded JSON object
+    Parameters
+    ----------
+    cfg : dict 
+        Decoded JSON object
 
-    Returns:
-        bool: True if `cfg` if specifies a 
-        :py:class:`~enrich2.selection.Selection`, else False.
-
+    Returns
+    -------
+    bool
+        True if `cfg` if specifies a 
+        :py:class:`~enrich2.selection.selection.Selection`, else False.
     """
-    if 'libraries' in list(cfg.keys()):
+    if LIBRARIES in list(cfg.keys()):
         return True
     else:
         return False
@@ -85,17 +100,22 @@ def is_selection(cfg):
 def is_seqlib(cfg):
     """
     Check if the given configuration object specifies a 
-    :py:class:`~enrich2.seqlib.SeqLib` derived object.
+    :py:class:`enrich2.libraries.seqlib.SeqLib` derived object.
 
-    Args:
-        cfg (dict): decoded JSON object
+    Parameters
+    ----------
+    cfg : dict 
+        Decoded JSON object
 
-    Returns:
-        bool: True if `cfg` if specifies a :py:class:`~enrich2.seqlib.SeqLib` 
+    Returns
+    -------
+    bool
+        True if `cfg` if specifies a :py:class:`enrich2.libraries.seqlib.SeqLib` 
         derived object, else False.
 
     """
-    if 'fastq' in list(cfg.keys()) or 'identifiers' in list(cfg.keys()):
+    keys = list(cfg.keys())
+    if FASTQ in keys or IDENTIFIERS in keys:
         return True
     else:
         return False
@@ -103,37 +123,42 @@ def is_seqlib(cfg):
 
 def seqlib_type(cfg):
     """
-    Get the type of :py:class:`~enrich2.seqlib.SeqLib` derived object 
+    Get the type of :py:class:`enrich2.libraries.seqlib.SeqLib` derived object 
     specified by the configuration object.
 
-    Args:
-        cfg (dict): decoded JSON object
+    Parameters
+    ----------
+    cfg : dict 
+        Decoded JSON object
 
-    Returns:
-        str: The class name of the :py:class:`~seqlib.seqlib.SeqLib` derived 
-        object specified by `cfg`.
+    Returns
+    -------
+    str 
+        The class name of the :py:class:`enrich2.libraries.seqlib.SeqLib`
+        derived object specified by `cfg`.
 
-    Raises:
-        ValueError: If the class name cannot be determined.
-
+    Raises
+    ------
+    ValueError
+        If the class name cannot be determined.
     """
-    if 'barcodes' in cfg:
-        if 'map file' in cfg['barcodes']:
-            if 'variants' in cfg and 'identifiers' in cfg:
+    if BARCODES in cfg:
+        if BARCODE_MAP_FILE in cfg[BARCODES]:
+            if VARIANTS in cfg and IDENTIFIERS in cfg:
                 raise ValueError("Unable to determine SeqLib type.")
-            elif 'variants' in cfg:
+            elif VARIANTS in cfg:
                 return "BcvSeqLib"
-            elif 'identifiers' in cfg:
+            elif IDENTIFIERS in cfg:
                 return "BcidSeqLib"
             else:
                 raise ValueError("Unable to determine SeqLib type.")
         else:
             return "BarcodeSeqLib"
-    elif 'overlap' in cfg and 'variants' in cfg:
+    elif OVERLAP in cfg and 'variants' in cfg:
         return "OverlapSeqLib"
-    elif 'variants' in cfg:
+    elif VARIANTS in cfg:
         return "BasicSeqLib"
-    elif 'identifiers' in cfg:
+    elif IDENTIFIERS in cfg:
         return "IdOnlySeqLib"
     else:
         raise ValueError("Unable to determine SeqLib type for configuration "
@@ -145,18 +170,21 @@ def element_type(cfg):
     Get the type of :py:class:`~enrich2.storemanager.StoreManager` derived 
     object specified by the configuration object.
 
-    Args:
-        cfg (dict): decoded JSON object
+    Parameters
+    ----------
+    cfg : dict 
+        Decoded JSON object
 
-    Returns:
-        str: The class name of the 
-        :py:class:`~enrich2.storemanager.StoreManager`
-        derived object specified
-        by `cfg`.
+    Returns
+    -------
+    str 
+        Class name of the :py:class:`~enrich2.base.storemanager.StoreManager`
+        derived object specified by `cfg`.
 
-    Raises:
-        ValueError: If the class name cannot be determined.
-
+    Raises
+    ------
+    ValueError
+        If the class name cannot be determined.
     """
     if is_experiment(cfg):
         return "Experiment"
