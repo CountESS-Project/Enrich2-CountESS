@@ -144,6 +144,7 @@ class ScorerConfiguration(Configuration):
         self.__options = options if options is not None else Options()
         self.scorer_class = scorer_class
         self.scorer_class_attrs = attrs
+        self.scorer_path = path
         self.validate()
 
     def validate(self):
@@ -527,13 +528,11 @@ class BaseLibraryConfiguration(Configuration):
         if TIMEPOINT not in cfg:
             raise KeyError("Missing '{}' from base library "
                              "configuration.".format(TIMEPOINT))
-        if REPORT_FILTERED_READS not in cfg:
-            raise KeyError("Missing '{}' from base library "
-                             "configuration.".format(REPORT_FILTERED_READS))
 
         if init_fastq and FASTQ not in cfg:
             raise KeyError("Missing '{}' from base library "
                              "configuration.".format(FASTQ))
+
         if not init_fastq and COUNTS_FILE not in cfg:
             raise KeyError("Missing '{}' from base library "
                              "configuration.".format(COUNTS_FILE))
@@ -705,33 +704,37 @@ class BasicSeqLibConfiguration(BaseVariantSeqLibConfiguration):
 # -------------------------------------------------------------------------- #
 class ExperimentConfiguration(Configuration):
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, init_from_gui=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for experiment configuration.")
 
         if CONDITIONS not in cfg:
             raise KeyError("Missing required config value `{}` [{}]"
                            "".format(CONDITIONS, self.__class__.__name__))
-        if SCORER not in cfg:
-            raise KeyError("Missing required config value `{}` [{}]"
-                           "".format(SCORER, self.__class__.__name__))
 
-        self.store_cfg = StoreConfiguration(cfg, has_scorer=True).validate()
+        has_scorer = not init_from_gui
+        if not init_from_gui:
+            if SCORER not in cfg:
+                raise KeyError("Missing required config value `{}` [{}]"
+                               "".format(SCORER, self.__class__.__name__))
+
+        self.store_cfg = StoreConfiguration(cfg, has_scorer).validate()
         condition_cfgs = cfg.get(CONDITIONS)
         self.condition_cfgs = []
 
-        if not isinstance(condition_cfgs, list):
-            raise TypeError("Experiment `conditions` must be a list.")
-
-        if len(condition_cfgs) == 0:
-            raise ValueError("At least 1 experimental condition must be "
-                             "present in an experiment.")
-
         for cfg in condition_cfgs:
-            self.condition_cfgs.append(ConditonConfiguration(cfg))
+            self.condition_cfgs.append(
+                ConditonConfiguration(cfg, init_from_gui))
         self.validate()
 
     def validate(self):
+        if not isinstance(self.condition_cfgs, list):
+            raise TypeError("Experiment `conditions` must be a list.")
+
+        if len(self.condition_cfgs) == 0:
+            raise ValueError("At least 1 experimental condition must be "
+                             "present in an experiment.")
+
         condition_names = []
         for cfg in self.condition_cfgs:
             cfg.validate()
@@ -750,12 +753,13 @@ class ExperimentConfiguration(Configuration):
             raise ValueError("Non-unique selection names across conditions "
                              "[{}].".format(self.__class__.__name__))
 
+        self.store_cfg.validate()
         return self
 
 
 class ConditonConfiguration(Configuration):
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, init_from_gui=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for condition configuration.")
 
@@ -765,23 +769,29 @@ class ConditonConfiguration(Configuration):
                                               self.__class__.__name__))
 
         self.selection_cfgs = []
-        self.store_cfg = StoreConfiguration(cfg, has_scorer=False).validate()
+        self.init_from_gui = init_from_gui
+        self.store_cfg = StoreConfiguration(cfg, has_scorer=False)
         selection_cfgs = cfg.get(SELECTIONS, [])
-
-        if not isinstance(selection_cfgs, list):
-            raise TypeError("Condition `selections` must be a list.")
-        if len(selection_cfgs) == 0:
-            raise ValueError("At least 1 selection must be "
-                             "present in a condition.")
 
         for cfg in selection_cfgs:
             self.selection_cfgs.append(
-                SelectionConfiguration(cfg, has_scorer=False))
+                SelectionConfiguration(
+                    cfg, has_scorer=False, init_from_gui=init_from_gui))
         self.validate()
 
     def validate(self):
+        if not isinstance(self.selection_cfgs, list):
+            raise TypeError("Condition `selections` must be a list.")
+
+        if not self.init_from_gui:
+            if len(self.selection_cfgs) == 0:
+                raise ValueError("At least 1 selection must be "
+                                 "present in a condition.")
+
         for cfg in self.selection_cfgs:
             cfg.validate()
+
+        self.store_cfg.validate()
         return self
 
 
@@ -795,26 +805,25 @@ class SelectionConfiguration(Configuration):
         "BasicSeqLib": BasicSeqLibConfiguration
     }
 
-    def __init__(self, cfg, has_scorer=True):
+    def __init__(self, cfg, has_scorer=True, init_from_gui=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for selection configuration.")
 
         self.lib_cfgs = []
         self.timepoints = []
+        self.init_from_gui = init_from_gui
+        has_scorer = has_scorer and not init_from_gui
         self.store_cfg = StoreConfiguration(cfg, has_scorer).validate()
 
         if LIBRARIES not in cfg:
             raise KeyError("Selection has no `{}` element.".format(
                 LIBRARIES))
 
-        libraries_cfg = cfg.get(LIBRARIES, [])
-        if not isinstance(libraries_cfg, list):
+        library_cfgs = cfg.get(LIBRARIES)
+        if not isinstance(library_cfgs, list):
             raise TypeError("Selection library config must be a list.")
-        if len(libraries_cfg) == 0:
-            raise ValueError("At least 1 library must be "
-                             "present in a selection.")
 
-        for libraries_cfg in cfg[LIBRARIES]:
+        for libraries_cfg in library_cfgs:
             library_type = seqlib_type(libraries_cfg)
             if library_type is None:
                 raise ValueError("Unrecognized SeqLib config")
@@ -823,29 +832,38 @@ class SelectionConfiguration(Configuration):
         self.validate()
 
     def validate(self):
-        for lib_cfg in self.lib_cfgs:
-            lib_cfg.validate()
+        if not self.init_from_gui:
+            if len(self.lib_cfgs) == 0:
+                raise ValueError("At least 1 library must be "
+                                 "present in a selection.")
 
-        self.timepoints = set([l.timepoint for l in self.lib_cfgs])
-        if 0 not in self.timepoints:
-            raise ValueError("Missing timepoint 0 [{}].".format(
-                self.__class__.__name__))
+            self.timepoints = set([l.timepoint for l in self.lib_cfgs])
+            if 0 not in self.timepoints:
+                raise ValueError("Missing timepoint 0 [{}].".format(
+                    self.__class__.__name__))
 
-        if len(self.timepoints) < 2:
-            raise ValueError("Multiple timepoints "
-                             "required [{}].".format(self.__class__.__name__))
+            if len(self.timepoints) < 2:
+                raise ValueError(
+                    "Multiple timepoints required [{}].".format(
+                        self.__class__.__name__))
 
-        if self.store_cfg.has_scorer:
-            name = self.store_cfg.scorer_cfg.scorer_class.name
-            if len(self.timepoints) < 3 and name == 'Regression':
-                raise ValueError("Insufficient number of timepoints for "
-                                 "regression scoring "
-                                 "[{}].".format(self.__class__.__name__))
+            if self.store_cfg.has_scorer:
+                name = self.store_cfg.scorer_cfg.scorer_class.name
+                if len(self.timepoints) < 3 and name == 'Regression':
+                    raise ValueError("Insufficient number of timepoints for "
+                                     "regression scoring "
+                                     "[{}].".format(self.__class__.__name__))
 
-        num_names = len(set([lib_cfg.store_cfg.name for lib_cfg in self.lib_cfgs]))
+        num_names = len(
+            set([lib_cfg.store_cfg.name for lib_cfg in self.lib_cfgs]))
         if num_names != len(self.lib_cfgs):
             raise ValueError("Libraries must have unique names within a "
                              "selection [{}].".format(self.__class__.__name__))
+
+        for lib_cfg in self.lib_cfgs:
+            lib_cfg.validate()
+
+        self.store_cfg.validate()
         return self
 
 
@@ -896,7 +914,6 @@ class StoreConfiguration(Configuration):
             self.scorer_cfg = ScorerConfiguration(self.scorer_cfg)
         else:
             self.scorer_cfg = None
-
         self.validate()
 
     def validate(self):

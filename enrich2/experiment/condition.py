@@ -33,11 +33,11 @@ class Condition(StoreManager):
         StoreManager.__init__(self)
         self.selections = list()
 
-    def configure(self, cfg, configure_children=True):
+    def configure(self, cfg, configure_children=True, init_from_gui=False):
         from ..config.types import ConditonConfiguration
 
         if isinstance(cfg, dict):
-            cfg = ConditonConfiguration(cfg)
+            cfg = ConditonConfiguration(cfg, init_from_gui)
         elif not isinstance(cfg, ConditonConfiguration):
             raise TypeError("`cfg` was neither a ConditonConfiguration or dict.")
 

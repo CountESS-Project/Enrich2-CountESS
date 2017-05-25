@@ -57,14 +57,14 @@ class Experiment(StoreManager):
             else:
                 return None
 
-    def configure(self, cfg, configure_children=True):
+    def configure(self, cfg, configure_children=True, init_from_gui=False):
         """
         Set up the :py:class:`~experiment.Experiment` using the *cfg* object,
         usually from a ``.json`` configuration file.
         """
         from ..config.types import ExperimentConfiguration
         if isinstance(cfg, dict):
-            cfg = ExperimentConfiguration(cfg)
+            cfg = ExperimentConfiguration(cfg, init_from_gui)
         elif not isinstance(cfg, ExperimentConfiguration):
             raise TypeError("`cfg` was neither a "
                             "ExperimentConfiguration or dict.")
@@ -86,6 +86,11 @@ class Experiment(StoreManager):
         """
         cfg = StoreManager.serialize(self)
         cfg['conditions'] = [child.serialize() for child in self.children]
+        if self.get_root().scorer_class is not None:
+            cfg['scorer'] = {
+                "scorer_path": self.get_root().scorer_path,
+                "scorer_options": self.get_root().scorer_class_attrs
+            }
         return cfg
 
     def _children(self):

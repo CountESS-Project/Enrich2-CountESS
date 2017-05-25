@@ -98,7 +98,7 @@ class Selection(StoreManager):
             else:
                 return None
 
-    def configure(self, cfg, configure_children=True):
+    def configure(self, cfg, configure_children=True, init_from_gui=False):
         """
         Set up the :py:class:`~selection.Selection` using the *cfg* object, 
         usually from a ``.json`` configuration file.
@@ -110,7 +110,9 @@ class Selection(StoreManager):
 
         if isinstance(cfg, dict):
             has_scorer = True
-            cfg = SelectionConfiguration(cfg, has_scorer)
+            if init_from_gui:
+                has_scorer = False
+            cfg = SelectionConfiguration(cfg, has_scorer, init_from_gui)
         elif not isinstance(cfg, SelectionConfiguration):
             raise TypeError("`cfg` was neither a "
                             "SelectionConfiguration or dict.")
@@ -189,6 +191,12 @@ class Selection(StoreManager):
         """
         cfg = StoreManager.serialize(self)
         cfg['libraries'] = [child.serialize() for child in self.children]
+        if self.get_root() is self \
+                and self.get_root().scorer_class is not None:
+            cfg['scorer'] = {
+                "scorer_path": self.get_root().scorer_path,
+                "scorer_options": self.get_root().scorer_class_attrs
+            }
         return cfg
 
     def add_child(self, child):
