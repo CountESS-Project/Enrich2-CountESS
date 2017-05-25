@@ -32,7 +32,7 @@ class PluginLoadingTest(TestCase):
         self.counts_scorer = os.path.join(
             self.directory, 'data/plugins/counts_scorer.py')
         self.no_scorers = os.path.join(
-            self.directory, 'data/plugins/no_scorers.py')
+            self.directory, 'data/plugins/no_sciodate90orers.py')
         self.non_py_file = os.path.join(
             self.directory, 'data/plugins/non_python_file.txt')
         self.regression_scorer = os.path.join(
