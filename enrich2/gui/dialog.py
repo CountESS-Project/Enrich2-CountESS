@@ -146,6 +146,7 @@ class CustomDialog(Toplevel):
 
         try:
             self.apply()
+            self.parent.refresh_treeview()
         finally:
             self.cancel()
 

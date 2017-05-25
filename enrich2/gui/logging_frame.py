@@ -99,14 +99,14 @@ class WindowLoggingHandler(logging.Handler):
             text='Save As...',
             command=self.scrolling_text.save_text
         )
-        save_btn.pack(side=RIGHT, anchor=S, padx=2, pady=2)
+        save_btn.pack(side=RIGHT, anchor=S, padx=5, pady=5)
 
         close_btn = Button(
             master=self.window,
             text='Hide',
             command=self.hide
         )
-        close_btn.pack(side=RIGHT, anchor=S, padx=2, pady=2)
+        close_btn.pack(side=RIGHT, anchor=S, padx=5, pady=5)
         self.window.protocol("WM_DELETE_WINDOW", self.hide)
 
     def close_window(self):

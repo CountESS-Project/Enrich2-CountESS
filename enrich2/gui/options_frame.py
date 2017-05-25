@@ -379,6 +379,24 @@ class OptionsFileFrame(Frame):
 #                           Main GUI Frame
 # -------------------------------------------------------------------------- #
 class ScorerScriptsDropDown(LabelFrame):
+    """
+    This class represents the Frame containing a currently selected plugin
+    in the GUI and it's associated editable options, if there are any.
+    
+    Parameters
+    ----------
+    parent : 
+        Tkinter object which is the master of this frame 
+    scripts_dir : str
+        Directory for containing Enrich2 plugins.
+    config : dict
+        Keyword arguments for :py:class: `tkinter.ttk.LabelFrame`
+        
+    Methods
+    -------
+    load_from_cfg_file :
+        
+    """
     def __init__(self, parent=None, scripts_dir='plugins/', **config):
         super().__init__(parent, **config)
         self.row = 0
@@ -388,20 +406,24 @@ class ScorerScriptsDropDown(LabelFrame):
         self.drop_menu = None
         self.plugins = {}
 
-        self.parse_directory(scripts_dir)
+        self._parse_directory(scripts_dir)
         self.make_widgets()
         self.make_buttons()
         self.show_new_view(self.current_view)
 
     def load_from_cfg_file(self, script_path, script_attrs):
-        # Check to see if the script has already been loaded.
-        create_new = True
-        _, _, current_options_file_frame, current_path = \
-            self.plugins[self.current_view]
-        if os.path.join(current_path) == os.path.join(script_path):
-            create_new = False
-
-        # Load script class and options
+        """
+        Load a plugin which has been specified in a configuration file.
+        If a plugin already exists, the plugin view will be updated otherwise
+        a new plugin view will be created.
+        
+        Parameters
+        ----------
+        script_path : str
+            Path pointing to the script
+        script_attrs : dict
+            Dictionary of attributes that were defined in a configuration file.
+        """
         klass, options, options_file = self.parse_file(script_path)
         if klass is None and options_file is None and options is None:
             logging.warning(
@@ -417,30 +439,44 @@ class ScorerScriptsDropDown(LabelFrame):
 
         # If the script has already been loaded, update the options
         # Otherwise create new frames for rendering.
-        if create_new:
+        if not self.plugin_exists(klass, script_path):
             options_frame, options_file_frame = self.make_options_frames(
                 options, options_file
             )
             options_file_frame.update_option_frame(scorer_cfg)
-            key = self.populate_plugins(
+            self.add_plugin(
                 klass,
                 options_frame,
                 options_file_frame,
                 script_path
             )
-            self.drop_menu.set_menu(key, *sorted(self.plugins.keys()))
-            self.drop_menu_tkvar.set(key)
-            self.update_options_view(key)
+            _, _, _, _, tkname = \
+                self.plugins[self.plugin_hash(klass, script_path)]
+            self.drop_menu.set_menu(tkname, *self.get_views())
+            self.drop_menu_tkvar.set(tkname)
+            self.update_options_view(tkname)
             logging.info(
                 "Loaded plugin from path {}.".format(script_path),
                 extra={"oname": self.__class__.__name__})
         else:
-            current_options_file_frame.update_option_frame(scorer_cfg)
+            _, _, options_file_frame, _, tkname = \
+                self.plugins[self.plugin_hash(klass, script_path)]
+            self.drop_menu_tkvar.set(tkname)
+            self.update_options_view(tkname)
+            options_file_frame.update_option_frame(scorer_cfg)
             logging.info(
                 "Plugin from path {} updated.".format(script_path),
                 extra={"oname": self.__class__.__name__})
 
-    def parse_directory(self, scripts_dir):
+    def _parse_directory(self, scripts_dir):
+        """
+        Parses a directory into plugins stored in the plugins dictionary.
+        
+        Parameters
+        ----------
+        scripts_dir : str
+            Directory containing a selection of scripts
+        """
         files = sorted(glob.glob("{}/*.py".format(scripts_dir)))
         for path in files:
             path = path.replace("\\", '/')
@@ -451,19 +487,35 @@ class ScorerScriptsDropDown(LabelFrame):
                 continue
             options_frame, options_file_frame = self.make_options_frames(
                 options, options_file)
-            self.populate_plugins(
+            self.add_plugin(
                 klass,
                 options_frame,
                 options_file_frame,
-                full_path)
+                full_path
+            )
 
     def parse_file(self, path):
+        """
+        Parse a plugin file located at path into 
+        :py:class: `~..plugins.scoring.BaseScorerPlugin`,
+        :py:class: `~..plugins.options.Options` and 
+        :py:class: `~..plugins.options.OptionsFile`
+        
+        Parameters
+        ----------
+        path : str
+            The path to the plugin file.
+
+        Returns
+        -------
+        tuple
+            Loaded class, options and options_file
+        """
         if "__init__.py" in path:
             return None, None, None
         try:
             result = load_scorer_class_and_options(path)
             klass, options, options_file = result
-            print(klass.name)
             return klass, options, options_file
         except Exception as e:
             logging.exception(e, extra={'oname': self.__class__.__name__})
@@ -474,28 +526,129 @@ class ScorerScriptsDropDown(LabelFrame):
             )
             return None, None, None
 
-    def populate_plugins(self, klass, options_frame, options_file_frame, path):
-        # Rename plugins with the same 'name' attribute.
-        key = klass.name
+    def plugin_hash(self, klass, path):
+        """
+        Generate a hash key based on name, authors, version and path
+        
+        Parameters
+        ----------
+        klass : :py:class: `~..plugins.scoring.BaseScorerPlugin`
+            The class loaded from a plugin file
+        path : str
+            The path pointing to the plugin
+        
+        Returns
+        -------
+        int
+            integer hash returned by :py:func: `hash`
+
+        """
+        return hash((klass.name, klass.version, klass.author, path))
+
+    def plugin_exists(self, klass, path):
+        """
+        Check if a plugin exist based on name, authors, version and path
+        
+        Parameters
+        ----------
+        klass : :py:class: `~..plugins.scoring.BaseScorerPlugin`
+            The class loaded from a plugin file
+        path : str
+            The path pointing to the plugin
+        
+        Returns
+        -------
+        bool
+            True if plugin already exists
+        """
+        key = self.plugin_hash(klass, path)
         if key in self.plugins:
-            same_name = [n for n in self.plugins.keys()
-                         if n.split('[')[0].strip() == key]
-            # No need to add plugin if it already exists
-            same_path = any(
-                [path == p for (_, _, _, p) in self.plugins.values()])
-            if not same_path:
-                num = len(same_name)
-                key = "{} [{}]".format(key, num)
-        self.plugins[key] = (klass, options_frame, options_file_frame, path)
-        return key
+            return True
+        return False
+
+    def get_plugin_gui_name(self, klass, path):
+        """
+        Returns the name the GUI uses to render the plugin in the drop down.
+        
+        Parameters
+        ----------
+        klass : :py:class: `~..plugins.scoring.BaseScorerPlugin`
+            The class loaded from a plugin file
+        path : str
+            The path pointing to the plugin
+        
+        Returns
+        -------
+        str
+            String name used by GUI
+        """
+        _, _, _, _, tkname = self.plugins[self.plugin_hash(klass, path)]
+        return tkname
+
+    def add_plugin(self, klass, options_frame, options_file_frame, path):
+        """
+        Add a plugin to the plugins dictionary. Creates a unique name
+        for the GUI if there are name collisions using the name defined in
+        the class being added.
+        
+        Parameters
+        ----------
+        klass : :py:class: `~..plugins.scoring.BaseScorerPlugin` 
+            The class loaded from a plugin file
+        options_frame : :py:class: `OptionsFileFrame`
+            OptionsFileFrame create from the class
+        options_file_frame : :py:class: `OptionsFrame`
+            OptionsFrame object created from the class
+        path : str
+            The path pointing to the plugin
+
+        Returns
+        -------
+        None
+
+        """
+        if self.plugin_exists(klass, path):
+           return
+
+        # Rename plugins with the same 'name' attribute.
+        tkname = klass.name
+        tknames = set(name for _, _, _, _, name in self.plugins.values())
+        if tkname in tknames:
+            same_name = [n for n in tknames if n.split('[')[0].strip() == tkname]
+            num = len(same_name)
+            tkname = "{} [{}]".format(tkname, num)
+        self.plugins[self.plugin_hash(klass, path)] = \
+            (klass, options_frame, options_file_frame, path, tkname)
 
     def make_options_frames(self, options, options_file):
+        """
+        Creates the :py:class: `~OptionsFrame` and 
+        :py:class: `~OptionsFileFrame` from 
+        :py:class: `~..plugins.options.Options` and 
+        :py:class: `~..plugins.options.OptionsFile` 
+        
+        Parameters
+        ----------
+        options : :py:class: `~..plugins.options.Options`
+            Options object loaded from a plugin
+        options_file : :py:class: `~..plugins.options.OptionsFile`
+            OptionsFile object loaded from a plugin
+        
+        Returns
+        -------
+        tuple
+            Tuple of (OptionsFrame, OptionsFileFrame)
+
+        """
         options_frame = OptionsFrame(self, options)
         options_file_frame = OptionsFileFrame(self, options_file)
         options_file_frame.link_to_options_frame(options_frame)
         return options_frame, options_file_frame
 
     def make_widgets(self):
+        """
+        Make the drop-down menu and label.
+        """
         label = Label(self, text="Scoring Plugin: ", justify=LEFT)
         label.grid(sticky=EW, column=0, row=self.row)
 
@@ -509,7 +662,10 @@ class ScorerScriptsDropDown(LabelFrame):
             self.make_drop_down_widget()
 
     def make_drop_down_widget(self):
-        choices = [n for n, _ in self.plugins.items()]
+        """
+        Make the drop-down menu.
+        """
+        choices = self.get_views()
         menu_var = StringVar(self)
         self.drop_menu_tkvar = menu_var
 
@@ -526,6 +682,10 @@ class ScorerScriptsDropDown(LabelFrame):
         self.increment_row()
 
     def make_buttons(self):
+        """
+        Make the print to log and save as buttons for interacting with a 
+        plugin.
+        """
         btn_frame = Frame(self)
         log_btn = Button(btn_frame, text='Print to Log',
                          command=self.log_parameters)
@@ -536,17 +696,61 @@ class ScorerScriptsDropDown(LabelFrame):
         self.btn_frame = btn_frame
 
     def increment_row(self):
-        # self.rowconfigure(self.row, weight=1)
+        """
+        Increment the row for grid packing.
+        """
         self.row += 1
 
     def update_options_view(self, next_view):
+        """
+        Updates the current plugin view
+        
+        Parameters
+        ----------
+        next_view : str:
+            A string name used by :py:module: `tkinter` in the drop down menu.
+
+        """
         self.hide_current_view()
         self.show_new_view(next_view)
         self.current_view = next_view
 
+    def get_plugin_by_tkname(self, tkname):
+        """
+        Get a plugin tuple in plugins dictionary by its tkname
+        
+        Parameters
+        ----------
+        tkname : str
+            A string name used by :py:module: `tkinter` in the drop down menu.
+
+        Returns
+        -------
+        tuple
+            Size 4 tuple with klass, OptionsFrame, OptionsFileFrame and path
+        """
+        tkname_map = {
+            n: (a, b, c, d) for (a, b, c, d, n) in self.plugins.values()
+        }
+        return tkname_map[tkname]
+
+    def get_views(self):
+        """
+        Get the current possible views able to be rendered by the GUI.
+        
+        Returns
+        -------
+        list
+            List of string tknames
+        """
+        return sorted([view for (_, _, _, _, view) in self.plugins.values()])
+
     def hide_current_view(self):
+        """
+        Hide the current view and forget the current grid packing structure
+        """
         _, options_frame, options_file_frame, _ = \
-            self.plugins[self.current_view]
+            self.get_plugin_by_tkname(self.current_view)
         if options_frame.has_options():
             options_frame.grid_forget()
             self.row -= 1
@@ -556,7 +760,16 @@ class ScorerScriptsDropDown(LabelFrame):
             self.row -= 1
 
     def show_new_view(self, next_view):
-        _, options_frame, options_file_frame, _ = self.plugins[next_view]
+        """
+        Updates the plugin frame to render the view specified by next_view
+        
+        Parameters
+        ----------
+        next_view : str:
+            A string name used by :py:module: `tkinter` in the drop down menu.
+        """
+        _, options_frame, options_file_frame, _ = \
+            self.get_plugin_by_tkname(next_view)
         if options_frame.has_options():
             options_frame.grid(
                 sticky=NSEW, row=self.row,
@@ -573,27 +786,54 @@ class ScorerScriptsDropDown(LabelFrame):
                 sticky=E, pady=(12, 0))
             self.increment_row()
 
-    def get_class_and_attrs(self, keep_defult_bool=False):
+    def get_scorer_class_attrs_path(self, keep_defult_bool=False):
+        """
+        Returns the current scorer class, attributes and path
+        
+        Parameters
+        ----------
+        keep_defult_bool : bool
+            Values in attribute dictionary will be a tuple with the second
+            element indicating if the value is the same as the default value
+            defined in the plugin.
+
+        Returns
+        -------
+        tuple
+            Plugin class, dictionary of option varname-value pairs and the 
+            plugin path.
+        """
         if not self.plugins:
-            return None, None
+            return None, None, None
 
         attrs = {}
-        klass, opt_frame, opt_file_frame, _ = self.plugins[self.current_view]
+        klass, opt_frame, opt_file_frame, path = \
+            self.get_plugin_by_tkname(self.current_view)
         options_cfg = opt_frame.get_option_cfg()
         for k, (v, default) in options_cfg.items():
             if keep_defult_bool:
                 attrs[k] = (v, default)
             else:
                 attrs[k] = v
-        return klass, attrs
+        return klass, attrs, path
 
     def save_config(self):
+        """
+        Saves the scorer portion of the current plugin to a config JSON file.
+        """
         fp = asksaveasfile()
         if fp:
-            _, attrs = self.get_class_and_attrs()
-            if attrs and attrs is not None:
-                json_cfg = {'scorer_options': attrs}
+            _, attrs, path = self.get_scorer_class_attrs_path()
+            if attrs and path:
+                json_cfg = {
+                    'scorer_path': path,
+                    'scorer_options': attrs
+                }
                 json.dump(json_cfg, fp)
+                messagebox.showinfo(
+                    "Configuration Saved!",
+                    "Successfully saved plugin configuration!"
+                )
             else:
                 messagebox.showwarning(
                     "Nothing to save.",
@@ -601,7 +841,10 @@ class ScorerScriptsDropDown(LabelFrame):
                 )
 
     def log_parameters(self):
-        _, cfg = self.get_class_and_attrs(keep_defult_bool=True)
+        """
+        Prints the current plugin's parameters to the current log handler(s).
+        """
+        _, cfg, _ = self.get_scorer_class_attrs_path(keep_defult_bool=True)
         if not cfg or cfg is None:
             messagebox.showwarning(
                 "Nothing to log.",
@@ -611,11 +854,18 @@ class ScorerScriptsDropDown(LabelFrame):
         msg = "Scorer Parameters "
         msg += nested_format(cfg, False, tab_level=0)
         logging.info(msg, extra={'oname': self.__class__.__name__})
-        # messagebox.showinfo("Parameters logged!",
-        #                     "See log for loaded parameters.")
+
 
     def show_plugin_details(self, name):
-        klass, _, _, path = self.plugins[name]
+        """
+        Create a messagebox displaying the current plugin
+        
+        Parameters
+        ----------
+        name : str:
+            A string name used by :py:module: `tkinter` in the drop down menu.
+        """
+        klass, _, _, path = self.get_plugin_by_tkname(name)
         messagebox.showinfo(
             '{} Information\n\n'.format(name),
             'Name: {}\n\nVersion: {}\n\nAuthors: '

@@ -78,16 +78,13 @@ class DeleteDialog(CustomDialog):
         Otherwise, use the default method to display two buttons.
         """
         if len(self.id_tuples) == 0:
-            box = Frame(self)
-
+            box = self.button_box
             w = Button(
                 box, text="OK", width=10, command=self.cancel, anchor=E)
             w.pack(side="left", padx=5, pady=5)
             self.bind("<Return>", self.cancel)
-            box.pack(anchor=E)
         else:
             CustomDialog.buttonbox(self)
-
 
     def apply(self):
         """

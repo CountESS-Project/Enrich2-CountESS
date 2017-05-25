@@ -22,6 +22,7 @@ import tkinter.simpledialog
 import tkinter.ttk
 from collections import OrderedDict
 from sys import maxsize
+import logging
 
 from .dialog import CustomDialog
 from .dialog_elements import FileEntry, IntegerEntry, Checkbox
@@ -426,16 +427,33 @@ class EditDialog(CustomDialog):
             for tk_element in tk_list:
                 tk_element.apply()
 
-        # use the configuration dictionary to change values
-        if isinstance(self.element, SeqLib):
-            self.element.configure(clear_nones(self.element_cfg))
-        else:
-            self.element.configure(clear_nones(self.element_cfg),
-                                   configure_children=False)
+        current_cfg = self.element.serialize()
+        try:
+            if isinstance(self.element, SeqLib):
+                self.element.configure(clear_nones(self.element_cfg))
+            else:
+                self.element.configure(
+                    clear_nones(self.element_cfg),
+                    configure_children=False, init_from_gui=True)
 
-        # insert into the object if necessary
-        if self.element.parent is not None:
-            if self.element not in self.element.parent.children:
-                self.element.parent.add_child(self.element)
+            # insert into the object if necessary
+            if self.element.parent is not None:
+                if self.element:
+                    self.element.parent.add_child(self.element)
+                    self.parent_window.refresh_treeview()
 
-        self.parent_window.refresh_treeview()
+        except Exception as e:
+            # Reset the attempted edit
+            if isinstance(self.element, SeqLib):
+                self.element.configure(clear_nones(current_cfg))
+            else:
+                self.element.configure(
+                    clear_nones(current_cfg),
+                    configure_children=False, init_from_gui=True)
+            logging.exception(e, extra={"oname": self.element.name})
+            tkinter.messagebox.showwarning(
+                title="Configuration Error!",
+                message="The following error was encountered when trying to "
+                        "configure element with name '{}':\n\n{}\n\nSee log "
+                        "for details".format(self.element.name, e)
+            )

@@ -86,7 +86,6 @@ class Configurator(tk.Tk):
         self.create_menubar()
         self.create_treeview_context_menu()
 
-
     def create_treeview_context_menu(self):
         self.treeview_popup = tk.Menu(self, tearoff=0)
         self.treeview_popup.add_command(label="Apply FASTQ...",
@@ -228,8 +227,8 @@ class Configurator(tk.Tk):
         return self.scorer_attrs
 
     def go_button_press(self):
-        self.scorer, self.scorer_attrs = \
-            self.scorer_plugin.get_class_and_attrs()
+        self.scorer, self.scorer_attrs, _ = \
+            self.scorer_plugin.get_scorer_class_attrs_path()
 
         if self.scorer is None or self.scorer_attrs is None:
             tkinter.messagebox.showwarning(
@@ -396,6 +395,7 @@ class Configurator(tk.Tk):
         self.bind("<{}l>".format(accel_bind), lambda event: show_log_window())
 
     def menu_open(self):
+        message_title = "Open Configuration"
         fname = tkinter.filedialog.askopenfilename()
         if len(fname) > 0:  # file was selected
             try:
@@ -403,10 +403,10 @@ class Configurator(tk.Tk):
                     cfg = json.load(handle)
             except ValueError:
                 tkinter.messagebox.showerror(
-                    None, "Failed to parse config file.")
+                    message_title, "Failed to parse config file.")
             except IOError:
                 tkinter.messagebox.showerror(
-                    None, "Could not read config file.")
+                    message_title, "Could not read config file.")
             else:
                 if is_experiment(cfg):
                     obj = Experiment()
@@ -417,7 +417,7 @@ class Configurator(tk.Tk):
                     obj = globals()[sltype]()
                 else:
                     tkinter.messagebox.showerror(
-                        None, "Unrecognized config format.")
+                        message_title, "Unrecognized config format.")
                     return
                 obj.output_dir_override = False
                 try:
@@ -434,7 +434,8 @@ class Configurator(tk.Tk):
 
                 except Exception as e:
                     tkinter.messagebox.showerror(
-                        None, "Failed to load config file:\n\n{}".format(e))
+                        message_title,
+                        "Failed to load config file:\n\n{}".format(e))
                 else:
                     self.root_element = obj
                     self.cfg_file_name.set(fname)
@@ -445,45 +446,67 @@ class Configurator(tk.Tk):
             self.menu_saveas()
         elif self.root_element is None:
             tkinter.messagebox.showwarning(
-                None, "Cannot save empty configuration.")
+                "Save Configuration", "Cannot save empty configuration.")
         else:
             save = askyesno(
-                "Save Configuration.",
+                "Save Configuration",
                 "Overwrite existing configuration?"
             )
             if not save:
                 return
             try:
                 with open(self.cfg_file_name.get(), "w") as handle:
-                    write_json(self.root_element.serialize(), handle)
+                    cfg = self.root_element.serialize()
+
+                    # Get the currently selected scorer
+                    if not isinstance(self.root_element, SeqLib) and not \
+                            isinstance(self.root_element, Condition):
+                        _, attrs, scorer_path = \
+                            self.scorer_plugin.get_scorer_class_attrs_path()
+                        cfg['scorer'] = {
+                            'scorer_path': scorer_path,
+                            'scorer_options': attrs
+                        }
+                    write_json(cfg, handle)
             except IOError:
                 tkinter.messagebox.showerror(
-                    None, "Failed to save config file.")
+                    "Save Configuration", "Failed to save config file.")
             else:
                 tkinter.messagebox.showinfo(
-                    None,
-                    "Save successful:\n{}".format(self.cfg_file_name.get())
-                )
+                    "Save Configuration",
+                    "Saved file at location:\n\n{}".format(
+                        self.cfg_file_name.get()))
 
     def menu_saveas(self):
         if self.root_element is None:
             tkinter.messagebox.showwarning(
-                None, "Cannot save empty configuration.")
+                "Save Configuration", "Cannot save empty configuration.")
         else:
             fname = tkinter.filedialog.asksaveasfilename()
             if len(fname) > 0:  # file was selected
                 try:
                     with open(fname, "w") as handle:
-                        write_json(self.root_element.serialize(), handle)
+                        cfg = self.root_element.serialize()
+
+                        # Get the currently selected scorer
+                        if not isinstance(self.root_element, SeqLib) and not \
+                                isinstance(self.root_element, Condition):
+                            _, attrs, scorer_path = \
+                                self.scorer_plugin.get_scorer_class_attrs_path()
+                            cfg['scorer'] = {
+                                'scorer_path': scorer_path,
+                                'scorer_options': attrs
+                            }
+                        write_json(cfg, handle)
                 except IOError:
                     tkinter.messagebox.showerror(
-                        None, "Failed to save config file.")
+                        "Save Configuration", "Failed to save config file.")
                 else:
                     self.cfg_file_name.set(fname)
                     tkinter.messagebox.showinfo(
-                        None,
-                        "Save successful:\n{}".format(self.cfg_file_name.get())
-                    )
+                        "Save Configuration",
+                        "Saved file at location:\n\n{}".format(
+                            self.cfg_file_name.get()))
 
     def menu_selectall(self):
         """
@@ -512,18 +535,17 @@ class Configurator(tk.Tk):
             # check if deleting the root element
             if self.root_element.treeview_id == tree_id:
                 # clear the root element
+                print("None {}".format(tree_id))
                 self.root_element = None
             else:
                 try:
                     # remove the element from its parent's list of children
                     self.element_dict[tree_id].parent.remove_child_id(tree_id)
                 except AttributeError:
-                    raise AttributeError(
-                        "Non-root element lacks proper parent")
+                    raise AttributeError("Non-root element lacks proper parent")
 
             # delete the element from the dictionary
             del self.element_dict[tree_id]
-        self.refresh_treeview()
 
     def refresh_treeview(self):
         """

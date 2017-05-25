@@ -51,12 +51,9 @@ class CreateSeqLibDialog(CustomDialog):
     def __init__(self, parent_window, title="New SeqLib"):
         self.element_tkstring = tkinter.StringVar()
         self.element_type = None
-        CustomDialog.__init__(self, parent_window, title)
+        CustomDialog.__init__(self, parent_window, title, "SeqLib Type")
 
     def body(self, master):
-        message = Label(master, text="SeqLib type:")
-        message.grid(column=0, row=0)
-
         for i, k in enumerate(seqlib_label_text.keys()):
             rb = Radiobutton(
                 master, text=seqlib_label_text[k],
@@ -70,13 +67,10 @@ class CreateSeqLibDialog(CustomDialog):
         """
         Display only one button.
         """
-        box = Frame(self)
+        box = self.button_box
         w = Button(box, text="OK", width=10, command=self.ok)
         w.grid(column=0, row=0, padx=5, pady=5, sticky=E)
-        box.rowconfigure(0, weight=1)
-        box.columnconfigure(0, weight=1)
         self.bind("<Return>", self.ok)
-        box.grid(column=self.column, row=self.row, sticky="e")
 
     def apply(self):
         try:
