@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -28,6 +28,7 @@ from ..libraries.barcodemap import re_barcode, re_identifier
 from ..libraries.variant import mutation_count, re_protein, re_coding, \
     re_noncoding
 
+
 SingleMut = collections.namedtuple("SingleMut", ['pre', 'post', 'pos', 'key'])
 
 
@@ -35,6 +36,19 @@ def validate_index(index, element):
     """
     Return a boolean list for which index values are valid for the given
     element type.
+    
+    Parameters
+    ----------
+    index : `pd.Index`
+        Index found in a :py:class:`pd.DataFrame`
+    element : str :py:data:`{ELEMENT_LABELS}` 
+        A valid string
+        
+    Returns
+    -------
+    list
+        List of booleans for which index values are valid for the given
+        element type.
     """
     if element not in ELEMENT_LABELS:
         raise ValueError("Invalid element label '{}'".format(element))
@@ -59,7 +73,15 @@ def single_mutation_index(index):
     also removes unrecognized amino acids (denoted by ``"???"``) caused by
     some indels.
 
-    *index* the index to be filtered for single mutations.
+    Parameters
+    ----------
+    index : :py:class:`pd.Index`
+        The index to be filtered for single mutations.
+        
+    Returns
+    -------
+    :py:class:`pd.Index`
+        Filtered pandas index.
     """
     return pd.Index(x for x in index if mutation_count(x) == 1)
 
@@ -69,8 +91,17 @@ def filter_coding_index(index):
     Return a filtered pandas Index with any unrecognized amino acids (denoted
     by ``"???"``) removed. These are caused by some frame shift mutations.
 
-    *index* the index to be filtered.
+    Parameters
+    ----------
+    index : :py:class:`pd.Index`
+        The index to convert to SingleMut tuples.
+        
+    Returns
+    -------
+    :py:class:`pd.Index`
+        Filtered pandas index.
     """
+
     return pd.Index(x for x in index if "???" not in x)
 
 
@@ -84,14 +115,25 @@ def single_mutations_to_tuples(index):
 
     If the *index* is a protein index, the amino acids are referred to by
     single-letter codes not three-letter codes.
-
-    *index* is the index to convert to SingleMut tuples.
-
-    Raises a ValueError if non-single mutations are included in *index*.
-
-    Raises a ValueError if one of the *index* entries cannot be parsed.
-
-    Raises an IndexError if the *index* is empty.
+    
+    Parameters
+    ----------
+    index : :py:class:`pd.Index`
+        The index to convert to SingleMut tuples.
+    
+    Returns
+    -------
+    list
+        list of SingleMut namedtuples for each single mutation in the *index*.  
+    
+    Raises
+    ------
+    ValueError 
+        if non-single mutations are included in *index*.
+    ValueError 
+        if one of the *index* entries cannot be parsed.
+    IndexError 
+        if the *index* is empty.
     """
     if any(mutation_count(x) != 1 for x in index):
         raise ValueError("Non-single mutations cannot be converted into "
@@ -137,12 +179,17 @@ def fill_position_gaps(positions, gap_size):
     Create a list of integer positions with gaps filled in. Used by
     :py:func:`singleton_dataframe`.
 
-    Args:
-        positions (list): integer positions
-        gap_size (int): maximum length of gap that will be filled
+    Parameters
+    ----------
+    positions : `list`
+        integer positions
+    gap_size : int
+        maximum length of gap that will be filled
 
-    Returns:
-        list: sorted list of unique integer positions with gaps filled
+    Returns
+    -------
+    list
+        sorted list of unique integer positions with gaps filled
     """
     if len(positions) == 0:
         raise ValueError("Empty positions list.")
@@ -182,20 +229,25 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
     the data frame unless this gap is filled with rows containing no data. The
     wild type sequence entry for these rows will be blank.
 
-    Args:
-        values (|pd_Series|): data values (typically scores or counts)
+    Parameters
+    ----------
+    values : :py:class:`pd.Series`
+        Data values (typically scores or counts)
+    wt : :py:class:`enrich2.sequence.WildTypeSequence` 
+        Wild type for the data
+    gap_size : int, optional, default 5
+        Maximum length of missing data gap that will be filled
+    coding: bool, optional, default True
+        True for amino acid data, False for nucleotide
+    plot_wt_score : bool, optional, default True
+        True if the wild type positions should have the
+    aa_list : list
+        List of AA single character ids
 
-        wt (WildTypeSequence): wild type for the data
-
-        gap_size (int): maximum length of missing data gap that will be filled
-
-        coding (bool): True for amino acid data, False for nucleotide
-
-        plot_wt_score (bool): True if the wild type positions should have the
-            wild type score, False if they should be missing
-
-    Returns:
-        tuple: two-element tuple containing a |pd_DataFrame| filled with the
+    Returns
+    -------
+    tuple 
+        two-element tuple containing a |pd_DataFrame| filled with the
         data values and a list of single-character wild type values
     """
     if len(values.index) == 0:
@@ -258,5 +310,5 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
         for p in positions:
             frame.loc[p, wt_dict[p]] = wt_score
 
-    return (frame, wt_sequence)
+    return frame, wt_sequence
 

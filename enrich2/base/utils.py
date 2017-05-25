@@ -22,7 +22,7 @@ def nested_format(data, default, tab_level=1):
     
     Parameters
     ----------
-    data : Any
+    data : object
         Data to print.
     default: bool
         Indicator indicating if a value is a default. 
@@ -33,7 +33,6 @@ def nested_format(data, default, tab_level=1):
     -------
     str
         A formatted string.
-
     """
     msg = ""
     if isinstance(data, list) or isinstance(data, tuple):

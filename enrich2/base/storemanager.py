@@ -58,10 +58,16 @@ def fix_filename(s):
     """
     Clean up a file name by removing invalid characters and converting 
     spaces to underscores.
-
-    :param str s: file name
-    :return: cleaned file name
-    :rtype: str
+    
+    Parameters
+    ----------
+    s : str
+        File name
+    
+    Returns
+    -------
+    str
+        Cleaned file name
     """
     fname = "".join(c for c in s if c.isalnum() or c in (' ._~'))
     fname = fname.replace(' ', '_')
@@ -112,6 +118,7 @@ class StoreManager(object):
         # analysis parameters
         self.scorer_class = None
         self.scorer_class_attrs = None
+        self.scorer_path = None
 
         self._force_recalculate = None
         self._component_outliers = None
@@ -124,6 +131,11 @@ class StoreManager(object):
     def child_labels(self):
         """
         Returns a list of labels shared by every child.
+        
+        Returns
+        -------
+        list
+            list of labels shared by every child.
         """
         shared = list()
         for x in self.children:
@@ -401,6 +413,11 @@ class StoreManager(object):
     def child_names(self):
         """
         Return a list of the ``name`` attributes for all children.
+        
+        Returns
+        -------
+        list
+            List of children names
         """
         try:
             names = [x.name for x in self.children]
@@ -413,6 +430,21 @@ class StoreManager(object):
     def add_label(self, x):
         """
         Add element label to this object.
+        
+        Parameters
+        ----------
+        x : str
+            Label to add to labels, which must be present in ELEMENT_LABELS
+            
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        raises ValueError if the label is not in {'barcodes', 'identifiers', 
+            'variants', 'synonymous'}
+        raises AttributeError if label is not a :py:class:`str`
         """
         labels = set(self._labels)
         if isinstance(x, str):
@@ -433,14 +465,18 @@ class StoreManager(object):
         
         Parameters
         ----------
-        cfg : :py:class: `~..config.types.StoreConfiguration`, dict
+        cfg : :class:`enrich2.config.types.StoreConfiguration` or dict
             Either a configuration object or a dictionary to initialise
             a configuration object.
-
+                  
         Returns
         -------
         None
-
+        
+        Raises
+        ------
+        raises TypeError if ``cfg`` is not a :py:class:`dict` or
+            :py:class:`enrich2.config.types.StoreConfiguration`
         """
         from ..config.types import StoreConfiguration
         if isinstance(cfg, dict):
@@ -467,6 +503,7 @@ class StoreManager(object):
             self.store_path = None
 
         if cfg.has_scorer:
+            self.scorer_path = cfg.scorer_cfg.scorer_path
             self.scorer_class = cfg.scorer_cfg.scorer_class
             self.scorer_class_attrs = cfg.scorer_cfg.get_options(False)
 
@@ -478,13 +515,15 @@ class StoreManager(object):
                 msg = 'No options for scorer detected.'
             logging.info('Scorer detected.', extra={'oname': self.name})
             logging.info(msg, extra={'oname': self.name})
-        else:
-            logging.info('No scorer detected.', extra={'oname': self.name})
 
     def serialize(self):
         """
         Format this object (and its children) as a config object suitable for
         dumping to a config file.
+        
+        Returns
+        -------
+        None
         """
         cfg = {'name': self.name}
         if self.store_cfg:
@@ -511,6 +550,19 @@ class StoreManager(object):
         opening.
 
         This method needs a lot more error checking.
+        
+        Parameters
+        ----------
+        children : bool
+            Open the stores of all children objects
+            
+        force_delete : bool
+            Delete existing tables under ``'/main'`` upon store opening.
+            
+        Returns
+        -------
+        None
+
         """
         if self.has_store:
             if not self.store_cfg:
@@ -538,41 +590,75 @@ class StoreManager(object):
                 child.store_open(children=True)
 
     def store_close(self, children=False):
+        """
+        Close the HDF5 file associated with this object, and children objects
+        if ``children`` is set to ``True``
+
+        This method needs a lot more error checking.
+
+        Parameters
+        ----------
+        children : bool
+            Close the stores of all children objects
+
+        Returns
+        -------
+        None
+
+        """
         # needs more error checking
-        if self.has_store:
-            self.store.close()
-            self.store = None
         if children and self.children is not None:
             for child in self.children:
                 child.store_close(children=True)
+ 
+        if self.has_store and self.store.is_open:
+            self.store.close()
+            self.store = None
 
     def get_metadata(self, key, store=None):
         """
         Retrieve the Enrich2 metadata dictionary from the HDF5 store.
-
-        *key* is the name of the group or node in the HDF5 data store.
 
         Returns the metadata dictionary for *key*. If no metadata has been set
         for *key*, returns ``None``.
 
         *store* can be an external open HDFStore (used when copying metadata
         from raw counts). If it is ``None``, use this object's store.
-
+        
+        Parameters
+        ----------
+        key : str
+            The name of the group or node in the HDF5 data store.
+        store : :py:class:`pd.HDFStore`, optional, default None
+            Can be an external open HDFStore (used when copying metadata
+            from raw counts). If it is ``None``, use this object's store.
+        
+        Returns
+        -------
+        dict
+            The metadata held by the given store or None if *key* in 
+            store does not exist.
+        
+        Raises
+        ------
+        raises AttributeError if there no store is passed and this object's 
+            store is also ``None``.
         """
         if store is None:
             store = self.store
         try:
             metadata = store.get_storer(key).attrs['enrich2']
         except AttributeError:
-            if store is self.store:  # store parameter was None
-                raise AttributeError("Invalid HDF store node '{}' [{}]".format(
-                                     key, self.name))
+            # store parameter was None
+            if store is self.store:  
+                raise AttributeError(
+                    "Invalid HDF store node '{}' [{}]".format(key, self.name))
             else:
-                raise AttributeError("Invalid external HDF store node '{}' in "
-                                     "'{}' [{}]".format(key,
-                                                        store.filename,
-                                                        self.name))
-        except KeyError:    # no enrich2 metadata
+                raise AttributeError(
+                    "Invalid external HDF store node "
+                    "'{}' in '{}' [{}]".format(key, store.filename, self.name))
+        except KeyError:
+            # no enrich2 metadata
             return None
         else:
             return metadata
@@ -580,14 +666,21 @@ class StoreManager(object):
     def set_metadata(self, key, d, update=True):
         """
         Replace or update the metadata dictionary from the HDF5 store.
-
-        *key* is the name of the group or node in the HDF5 data store.
-
-        *d* is the dictionary containing the new metadata.
-
-        If *update* is ``False``, *d* completely replaces the existing metadata
-        for *key*. Otherwise, *d* updates the existing metadata using standard
-        dictionary update.
+       
+        Parameters
+        ----------
+        key : str
+            The name of the group or node in the HDF5 data store.
+        d : dict
+            The dictionary containing the new metadata.
+        update : bool, default True
+            If *update* is ``False``, *d* completely replaces the existing 
+            metadata for *key*. Otherwise, *d* updates the existing 
+            metadata using standard dictionary update
+        
+        Returns
+        -------
+        None
         """
         # get existing for update
         # also performs check for the node, so we don't check here
@@ -618,6 +711,11 @@ class StoreManager(object):
         location.
 
         File names are the HDF5 key with ``'_'`` substituted for ``'/'``.
+        
+        Parameters
+        ----------
+        key : str
+            *key* in this object's store to write as a tsv file.        
         """
         fname = key.strip("/")  # remove leading slash
         fname = fname.replace("/", "_") + ".tsv"
@@ -629,11 +727,15 @@ class StoreManager(object):
         Checks to see if a particular data frame in the HDF5 store already
         exists and returns it.
 
-        Args:
-            key (str): key for the requested data frame
+        Parameters
+        ----------
+        key : str
+            Key for the requested data frame
 
-        Returns:
-            bool: True if the key exists in the HDF5 store, else False.
+        Returns
+        -------
+        bool 
+            True if the key exists in the HDF5 store, else False.
         """
         if not self.check_store(key):
             raise ValueError("Store {} does not exist [{}]".format(
@@ -646,12 +748,16 @@ class StoreManager(object):
         """
         Checks to see if a particular data frame in the HDF5 store already
         exists.
+        
+        Parameters
+        ----------
+        key : str
+            Key for the requested data frame
 
-        Args:
-            key (str): key for the requested data frame
-
-        Returns:
-            bool: True if the key exists in the HDF5 store, else False.
+        Returns
+        -------
+        bool 
+            True if the key exists in the HDF5 store, else False.
         """
         if key in list(self.store.keys()):
             logging.info("Found existing '{}'".format(key),
@@ -665,8 +771,26 @@ class StoreManager(object):
                   destination_data_columns=None):
         """
         Converts source table into destination table.
-
         This method really needs a better name.
+        
+        Parameters
+        ----------
+        source : str
+            The key to access the table to map
+        destination : str:
+            The key to put the newly mapped table
+        source_query : str
+            A query string used as a predicate during mapping
+        row_callback : Callable
+            Callback function applied to each row.
+        row_callback_args : Iterable
+            Arguments required by *row_callback*
+        destination_data_columns : Iterable
+            Iterable of column names
+            
+        Returns
+        -------
+        None
         """
         if destination in list(self.store.keys()):
             # remove the current destination table because we are using append
@@ -702,6 +826,15 @@ class StoreManager(object):
     def combined_index(self, tables):
         """
         Return an index containing all elements in *tables*
+        
+        Parameters
+        ----------
+        tables : Iterable
+            Iterable object containing :py:class:`pd.HDFStore` objects.
+        
+        Returns
+        -------
+        None
         """
         shared = pd.Index()
         for t in tables:
@@ -709,6 +842,14 @@ class StoreManager(object):
         return shared
 
     def get_root(self):
+        """
+        Returns the root owner of this object, other self if this object
+        has no parents.
+        
+        Returns
+        -------
+        :py:class:`StoreManager`
+        """
         if self.parent is not None:
             return self.parent.get_root()
         else:
