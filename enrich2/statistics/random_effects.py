@@ -18,7 +18,7 @@
 import numpy as np
 
 
-def rml_estimator(y, sigma2i, iterations=50):
+def __old_rml_estimator(y, sigma2i, iterations=50):
     """Implementation of the robust maximum likelihood estimator.
 
         ::
@@ -46,3 +46,97 @@ def rml_estimator(y, sigma2i, iterations=50):
         eps = np.abs(sigma2ML - sigma2ML_new)
         sigma2ML = sigma2ML_new
     return betaML, sigma2ML, eps
+
+
+def nan_filter_generator(data):
+    """
+    Partition data based on the number of NaNs a column has, corresponding
+    to the number of replicates a variant has across selections.
+
+    Parameters
+    ----------
+    data : :py:class:`pd.ndarray`
+        The numpy array to filter
+
+    Returns
+    -------
+    `generator`
+        A generator of tuples containing a filtered array along with 
+        the number of replicates each row appears in
+    """
+    max_replicates = data.shape[0]
+    data_num_nans = np.sum(np.isnan(data), axis=0)
+    for k in range(0, max_replicates, 1):
+        selector = data_num_nans == k
+        if np.sum(selector) == 0:
+            continue
+        data_k = np.apply_along_axis(
+            lambda col: col[~np.isnan(col)], 0, data[:, selector])
+        rep_num = max_replicates - k
+        yield data_k, rep_num
+
+
+
+def rml_estimator(y, sigma2i, iterations=50):
+    """
+    Implementation of the robust maximum likelihood estimator.
+        ::
+            @book{demidenko2013mixed,
+              title={Mixed models: theory and applications with R},
+              author={Demidenko, Eugene},
+              year={2013},
+              publisher={John Wiley \& Sons}
+            }
+    """
+    # Initialize each array to be have len number of variants
+    max_replicates = y.shape[0]
+    betaML = np.zeros(shape=(y.shape[1],)) * np.nan
+    sigma2ML = np.zeros(shape=(y.shape[1],)) * np.nan
+    eps = np.zeros(shape=(y.shape[1],)) * np.nan
+    nreps = np.zeros(shape=(y.shape[1],)) * np.nan
+    y_num_nans = np.sum(np.isnan(y), axis=0)
+    for k in range(0, max_replicates, 1):
+        # Partition y based on the number of NaNs a column has,
+        # corresponding to the number of replicates a variant has
+        # across selections.
+        selector = y_num_nans == k
+        if np.sum(selector) == 0:
+            continue
+
+        y_k = np.apply_along_axis(
+            lambda col: col[~np.isnan(col)], 0, y[:, selector])
+        sigma2i_k = np.apply_along_axis(
+            lambda col: col[~np.isnan(col)], 0, sigma2i[:, selector])
+
+        # Main alogrithm on the formatted data
+        w_k = 1 / sigma2i_k
+        sw_k = np.sum(w_k, axis=0)
+        beta0_k = np.sum(y_k * w_k, axis=0) / sw_k
+        sigma2ML_k = np.sum(
+            (y_k - np.mean(y_k, axis=0)) ** 2 / (len(beta0_k) - 1), axis=0
+        )
+        eps_k = np.zeros(beta0_k.shape)
+        for _ in range(iterations):
+            w_k = 1 / (sigma2i_k + sigma2ML_k)
+            sw_k = np.sum(w_k, axis=0)
+            sw2_k = np.sum(w_k ** 2, axis=0)
+            betaML_k = np.sum(y_k * w_k, axis=0) / sw_k
+
+            num = np.sum(((y_k - betaML_k) ** 2) * (w_k ** 2),axis=0)
+            denom = (sw_k - (sw2_k / sw_k))
+            sigma2ML_k_new = sigma2ML_k * num / denom
+            eps_k = np.abs(sigma2ML_k - sigma2ML_k_new)
+            sigma2ML_k = sigma2ML_k_new
+
+        # Handles the case when SE is 0 resulting in NaN values.
+        betaML_k[np.isnan(betaML_k)] = 0.
+        sigma2ML_k[np.isnan(sigma2ML_k)] = 0.
+        eps_k[np.isnan(eps_k)] = 0.
+
+        betaML[selector] = betaML_k
+        sigma2ML[selector] = sigma2ML_k
+        eps[selector] = eps_k
+        nreps[selector] = max_replicates - k
+
+    return betaML, sigma2ML, eps, nreps
+

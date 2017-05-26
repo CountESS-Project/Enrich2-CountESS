@@ -27,7 +27,7 @@ from ..base.config_constants import CONDITIONS
 
 from enrich2.base.constants import WILD_TYPE_VARIANT
 from enrich2.base.storemanager import StoreManager
-from enrich2.statistics.random_effects import rml_estimator
+from enrich2.statistics.random_effects import rml_estimator, nan_filter_generator
 from .condition import Condition
 
 
@@ -336,24 +336,14 @@ class Experiment(StoreManager):
         if self.check_store("/main/{}/scores_shared".format(label)):
             return
 
-        idx = pd.IndexSlice
-
-        logging.info("Identifying subset shared across all Selections ({})"
-                     "".format(label), extra={'oname': self.name})
+        logging.info(
+            "Identifying subset shared across "
+            "all Selections ({})".format(label), extra={'oname': self.name})
         data = self.store.select("/main/{}/scores_shared_full".format(label))
-
-        # identify variants found in all selections in at least one condition
-        complete = np.full(len(data.index), False, dtype=bool)
-        for cnd in data.columns.levels[0]:
-            complete = np.logical_or(
-                complete,
-                data.loc[:, idx[cnd, :, :]].notnull().all(axis='columns')
-            )
-
-        data = data.loc[complete]
-
-        self.store.put("/main/{}/scores_shared".format(label), data,
-                       format="table")
+        self.store.put(
+            "/main/{}/scores_shared".format(label),
+            data, format="table"
+        )
 
     def calc_scores(self, label):
         """
@@ -371,7 +361,8 @@ class Experiment(StoreManager):
             "columns='index'"
         ).index
         columns = pd.MultiIndex.from_product(
-            [sorted(self.child_names()), sorted(["score", "SE", "epsilon"])],
+            [sorted(self.child_names()),
+             sorted(["score", "SE", "epsilon"])],
             names=["condition", "value"]
         )
         data = pd.DataFrame(np.nan, index=shared_index, columns=columns)
@@ -386,8 +377,10 @@ class Experiment(StoreManager):
             # special case for simple ratios that have no SE
             # calculates the average score
             for cnd in score_df.columns.levels[0]:
-                data.loc[:, idx[cnd, 'score']] = \
-                    score_df.loc[:, idx[cnd, :, 'score']].mean(axis=1)
+                y = np.array(score_df.loc[:, idx[cnd, :, 'score']].values).T
+                for y_k, num_reps in nan_filter_generator(y):
+                    data.loc[:, idx[cnd, 'score']] = y_k.mean(axis=0)
+                    # data.loc[:, idx[cnd, 'nreps']] = num_reps
         else:
             for cnd in score_df.columns.levels[0]:
                 y = np.array(score_df.loc[:, idx[cnd, :, 'score']].values).T
@@ -399,12 +392,15 @@ class Experiment(StoreManager):
                     data.loc[:, idx[cnd, 'score']] = y.ravel()
                     data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2i).ravel()
                     data.loc[:, idx[cnd, 'epsilon']] = 0.
+                    # data.loc[:, idx[cnd, 'nreps']] = 1
+
                 # multiple replicates
                 else:
-                    betaML, sigma2ML, eps = rml_estimator(y, sigma2i)
+                    betaML, sigma2ML, eps, reps = rml_estimator(y, sigma2i)
                     data.loc[:, idx[cnd, 'score']] = betaML
                     data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2ML)
                     data.loc[:, idx[cnd, 'epsilon']] = eps
+                    # data.loc[:, idx[cnd, 'nreps']] = reps
 
                 # special case for normalized wild type variant
                 logr_method = self.get_root().scorer_class_attrs.get(
@@ -415,7 +411,19 @@ class Experiment(StoreManager):
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'score']] = 0.
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'epsilon']] = 0.
 
+            # identify variants found in all selections in at least
+            # one condition
+            complete = np.full(len(data.index), False, dtype=bool)
+            for cnd in data.columns.levels[0]:
+                complete = np.logical_or(
+                    complete,
+                    data.loc[:, idx[cnd, :]].notnull().all(axis='columns')
+                )
+            data = data.loc[complete]
+
         # store the data
+        if data.empty:
+            raise ValueError("All {} have a NaN score.".format(label))
         self.store.put("/main/{}/scores".format(label), data, format="table")
 
     def calc_pvalues_wt(self, label):
