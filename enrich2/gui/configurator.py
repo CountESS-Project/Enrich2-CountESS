@@ -17,6 +17,7 @@
 
 import json
 import platform
+import logging
 import tkinter as tk
 import tkinter.filedialog
 import tkinter.messagebox
@@ -25,6 +26,7 @@ import tkinter.simpledialog
 from tkinter.ttk import Frame, Button, Checkbutton, Treeview, LabelFrame
 from tkinter.messagebox import askyesno, showinfo
 
+from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
 from ..experiment.condition import Condition
 from ..selection.selection import Selection
 from .create_root_dialog import CreateRootDialog
@@ -82,6 +84,7 @@ class Configurator(tk.Tk):
         self.scorer_plugin = None
         self.scorer = None
         self.scorer_attrs = None
+        self.scorer_path = None
         self.create_main_frame()
         self.create_menubar()
         self.create_treeview_context_menu()
@@ -226,8 +229,11 @@ class Configurator(tk.Tk):
     def get_selected_scorer_attrs(self):
         return self.scorer_attrs
 
+    def get_selected_scorer_path(self):
+        return self.scorer_path
+
     def go_button_press(self):
-        self.scorer, self.scorer_attrs, _ = \
+        self.scorer, self.scorer_attrs, self.scorer_path = \
             self.scorer_plugin.get_scorer_class_attrs_path()
 
         if self.scorer is None or self.scorer_attrs is None:
@@ -421,16 +427,22 @@ class Configurator(tk.Tk):
                     return
                 obj.output_dir_override = False
                 try:
-                    obj.configure(cfg)
+                    if isinstance(obj, Experiment) or isinstance(obj, Selection):
+                        obj.configure(cfg, init_from_gui=True)
+                    else:
+                        obj.configure(cfg)
 
                     # Try load the scorer into the GUI
-                    from ..config.types import SCORER, \
-                        SCORER_OPTIONS, SCORER_PATH
                     scorer_path = cfg.get(SCORER, {}).get(SCORER_PATH, "")
                     scorer_attrs = cfg.get(SCORER, {}).get(SCORER_OPTIONS, {})
                     if scorer_path:
                         self.scorer_plugin.load_from_cfg_file(
                             scorer_path, scorer_attrs)
+                    else:
+                        logging.warning(
+                            "No plugin could be loaded from configuration.",
+                            extra={"oname": self.__class__.__name__}
+                        )
 
                 except Exception as e:
                     tkinter.messagebox.showerror(
@@ -463,9 +475,9 @@ class Configurator(tk.Tk):
                             isinstance(self.root_element, Condition):
                         _, attrs, scorer_path = \
                             self.scorer_plugin.get_scorer_class_attrs_path()
-                        cfg['scorer'] = {
-                            'scorer_path': scorer_path,
-                            'scorer_options': attrs
+                        cfg[SCORER] = {
+                            SCORER_PATH: scorer_path,
+                            SCORER_OPTIONS: attrs
                         }
                     write_json(cfg, handle)
             except IOError:
@@ -493,9 +505,9 @@ class Configurator(tk.Tk):
                                 isinstance(self.root_element, Condition):
                             _, attrs, scorer_path = \
                                 self.scorer_plugin.get_scorer_class_attrs_path()
-                            cfg['scorer'] = {
-                                'scorer_path': scorer_path,
-                                'scorer_options': attrs
+                            cfg[SCORER] = {
+                                SCORER_PATH: scorer_path,
+                                SCORER_OPTIONS: attrs
                             }
                         write_json(cfg, handle)
                 except IOError:

@@ -42,6 +42,7 @@ class AnalysisThread(threading.Thread):
         try:
             scorer_class = self.pw.get_selected_scorer_class()
             scorer_class_attrs = self.pw.get_selected_scorer_attrs()
+            scorer_path = self.pw.get_selected_scorer_path()
 
             # set the analysis options
             self.pw.root_element.force_recalculate = \
@@ -49,8 +50,9 @@ class AnalysisThread(threading.Thread):
             self.pw.root_element.component_outliers = \
                 self.pw.component_outliers.get()
 
-            self.pw.root_element.scoring_class = scorer_class
-            self.pw.root_element.scoring_class_attrs = scorer_class_attrs
+            self.pw.root_element.scorer_class = scorer_class
+            self.pw.root_element.scorer_class_attrs = scorer_class_attrs
+            self.pw.root_element.scorer_path = scorer_path
             self.pw.root_element.tsv_requested = self.pw.tsv_requested.get()
 
             # ensure that all objects are valid
@@ -67,9 +69,10 @@ class AnalysisThread(threading.Thread):
 
         except Exception as e:
             # display error
-            logging.error(e, extra={'oname': self.pw.root_element.name})
+            logging.exception(e, extra={'oname': self.pw.root_element.name})
             tkinter.messagebox.showerror(
-                "Enrich2 Error", "Enrich2 encountered an error:\n{}".format(e))
+                "Enrich2 Error", "Enrich2 encountered an error:\n{}".format(e)
+            )
 
         else:
             # no exception occurred during calculation and setup
