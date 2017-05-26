@@ -374,7 +374,7 @@ class TestExperimentBcvLibSimpleScoringWTNormNC(unittest.TestCase):
 
     def test_all_hdf5_dataframes(self):
         self.general_test_component.runTest()
-        
-        
+
+
 if __name__ == "__main__":
     unittest.main()

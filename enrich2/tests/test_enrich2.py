@@ -24,7 +24,10 @@ from io import StringIO
 # pr.enable()
 
 loader = unittest.TestLoader()
-tests = loader.discover(start_dir='./', pattern="test_*.py")
+tests = loader.discover(
+    start_dir='./',
+    pattern="test_experiment_basic_lib_coding.py"
+)
 test_runner = unittest.TextTestRunner()
 test_runner.run(tests)
 
