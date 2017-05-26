@@ -16,6 +16,10 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import numpy as np
+import pandas as pd
+
+
 def nested_format(data, default, tab_level=1):
     """
     Print a human readable nested dictionary or nested list.
@@ -76,5 +80,71 @@ def nested_format(data, default, tab_level=1):
             msg += "({}, {})".format(data, dtype)
     return msg
 
+
+def count_nans(data, axis):
+    """
+    Sums the number of NaN values along an axis of data.
+
+    Parameters
+    ----------
+    data : :py:class:`np.ndarray`
+        The data to count NaNs along *axis*
+    axis : int {0, 1}
+        1 for row-wise sum and 0 for column-wise sum
+
+    Returns
+    -------
+    :py:class:`np.ndarray`
+        The number of NaN appearing in each column
+    """
+    return np.sum(np.isnan(data), axis=axis)
+
+
+def generate_selector(data, threshold):
+    """
+    Generates a truthy selector array for elements in data greater than
+    *threshold*
+    
+    Parameters
+    ----------
+    data : :py:class:`np.ndarray`
+        The numpy array to turn into a boolean numpy array.
+    threshold : int or float
+        An integer or floating point value to compare each element
+        in *data* to.
+        
+    Returns
+    -------
+    :py:class:`np.ndarray`
+        A boolean numpy array for each element greater than *threshold*
+    """
+    return data > threshold
+
+
+def multi_index_tsv_to_dataframe(filepath, header_rows):
+    """
+    Loads a multi-header tsv file into a :py:class:`pd.DataFrame`.
+    
+    Parameters
+    ----------
+    filepath : str
+        Path pointing to the tsv file.
+    header_rows : list
+        0-based indicies corresponding to the row locations to use as the 
+        multi-index column names in the dataframe. Example:
+        
+        condition	E3	E3
+        value	pvalue_raw	z
+        _sy	8.6e-05	3.92
+        p.Ala16Arg	0.0	3.76
+        
+        The *header_rows* for this instance will be [0, 1]
+
+    Returns
+    -------
+    :py:class:`pd.DataFrame`
+        A :py:class:`pd.MultiIndex` dataframe.
+    """
+    return pd.read_table(filepath, index_col=0, header=header_rows)
 
     

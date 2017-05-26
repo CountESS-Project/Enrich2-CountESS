@@ -38,8 +38,8 @@ FILTERS_CHASTITY = 'chastity'
 TRIM_START = 'start'
 TRIM_LENGTH = 'length'
 SCORER = 'scorer'
-SCORER_PATH = 'scorer_path'
-SCORER_OPTIONS = 'scorer_options'
+SCORER_PATH = 'scorer path'
+SCORER_OPTIONS = 'scorer options'
 
 
 COUNTS_FILE = 'counts file'

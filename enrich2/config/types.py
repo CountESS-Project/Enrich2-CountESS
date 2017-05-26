@@ -677,18 +677,18 @@ class ExperimentConfiguration(Configuration):
                                "".format(SCORER, self.__class__.__name__))
 
         self.store_cfg = StoreConfiguration(cfg, has_scorer).validate()
-        condition_cfgs = cfg.get(CONDITIONS)
-        self.condition_cfgs = []
 
+        condition_cfgs = cfg.get(CONDITIONS)
+        if not isinstance(condition_cfgs, list):
+            raise TypeError("Experiment `conditions` must be a list.")
+
+        self.condition_cfgs = []
         for cfg in condition_cfgs:
             self.condition_cfgs.append(
                 ConditonConfiguration(cfg, init_from_gui))
         self.validate()
 
     def validate(self):
-        if not isinstance(self.condition_cfgs, list):
-            raise TypeError("Experiment `conditions` must be a list.")
-
         if len(self.condition_cfgs) == 0:
             raise ValueError("At least 1 experimental condition must be "
                              "present in an experiment.")
@@ -729,7 +729,9 @@ class ConditonConfiguration(Configuration):
         self.selection_cfgs = []
         self.init_from_gui = init_from_gui
         self.store_cfg = StoreConfiguration(cfg, has_scorer=False)
-        selection_cfgs = cfg.get(SELECTIONS, [])
+        selection_cfgs = cfg.get(SELECTIONS)
+        if not isinstance(selection_cfgs, list):
+            raise TypeError("Condition `selections` must be a list.")
 
         for cfg in selection_cfgs:
             self.selection_cfgs.append(
@@ -738,17 +740,12 @@ class ConditonConfiguration(Configuration):
         self.validate()
 
     def validate(self):
-        if not isinstance(self.selection_cfgs, list):
-            raise TypeError("Condition `selections` must be a list.")
-
         if not self.init_from_gui:
             if len(self.selection_cfgs) == 0:
                 raise ValueError("At least 1 selection must be "
                                  "present in a condition.")
-
         for cfg in self.selection_cfgs:
             cfg.validate()
-
         self.store_cfg.validate()
         return self
 
