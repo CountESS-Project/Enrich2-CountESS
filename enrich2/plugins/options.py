@@ -16,15 +16,81 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 plugin option module
+============================
+
+:py:module:`enrich2.options` is a module providing classes and methods
+required for defining Option objects for use by plugin authors. It provides 
+additional container classes Options to define a collection of options with
+associated utility methods. The OptionsFile class defines a representation
+of an Enrich2 options configuration. Several utility functions are provided
+for basic operations over an Options object.
+"""
+
+
 import json
 import yaml
 from collections import Mapping
+
+from ..base.config_constants import SCORER, SCORER_OPTIONS
+
+
+__all__ = [
+    'BaseOption',
+    'Option',
+    'BaseOptions',
+    'Options'
+    'OptionsFile',
+    'parse',
+    'validate',
+    'get_unused_options',
+    'get_unused_options_ls',
+    'option_names_not_in_cfg',
+    'option_varnames_not_in_cfg',
+    'options_not_in_config',
+    'apply_cfg_to_options'
+]
 
 
 # -------------------------------------------------------------------------- #
 #                           Option Types
 # -------------------------------------------------------------------------- #
 class BaseOption(object):
+    """
+    This class represents the base of an Option, containing all
+    common attributes and methods.
+    
+    Parameters
+    ----------
+    name : str 
+        GUI name of the option.
+    varname : str
+        Variable name used by the script it is defined in.
+    dtype : 
+        Data-type of the option value.
+    default : ``dtype``
+        Default value option assumes upon instantiation.
+    hidden : bool
+        Inidcate if the option should be rendered by the GUI.
+        
+    Methods
+    -------
+    _validate
+        Must be called by the subclass to validate the base attributes.
+    _set_value
+        Must be called bu the subclass to set the base attributes.
+    get_value
+        Returns the value of an option.
+    get_default_value
+        Returns the default value of an option.
+    visible
+        Returns a boolean indicating if the option is rendered by the GUI.
+        
+    See Also
+    --------
+    :py:class:`enrich2.plugins.options.Option`
+    """
 
     def __init__(self, name, varname, dtype, default, hidden):
         if not isinstance(name, str):
@@ -39,10 +105,10 @@ class BaseOption(object):
 
         if not name:
             raise ValueError("Parameter 'name' in option '{}' must be a "
-                            "non-empty string.".format(name))
+                             "non-empty string.".format(name))
         if not varname:
             raise ValueError("Parameter 'varname' in option '{}' must be a "
-                            "non-empty string.".format(name))
+                             "non-empty string.".format(name))
         if dtype is None:
             raise TypeError("Parameter 'dtype' in option '{}' cannot be "
                             "NoneType.".format(name))
@@ -78,10 +144,6 @@ class BaseOption(object):
         ----------
         value : 
             A value that must match the dtype attribute.
-
-        Returns
-        -------
-        rtype : None
         """
         if not isinstance(value, self.dtype):
             raise TypeError("Option '{}' with type {} does not match "
@@ -91,37 +153,32 @@ class BaseOption(object):
 
     def _set_value(self, value):
         """
+        Set the value of an option.
         
         Parameters
         ----------
         value : 
-
-        Returns
-        -------
-
+            A value that must match the dtype attribute.
         """
         self._validate(value)
         self._value = value
 
     def get_value(self):
         """
-        
-        Returns
-        -------
-
+        Gets the current value of the option.
         """
         return self._value
 
     def get_default_value(self):
         """
-
-        Returns
-        -------
-
+        Gets the default value of the option.
         """
         return self._default
 
     def visible(self):
+        """
+        Returns a ``bool`` indicating if the option is visible in the GUI.
+        """
         return not self.hidden
 
 
@@ -129,20 +186,42 @@ class Option(BaseOption):
     """
     Utility class to represent a user defined option. Mainly used by the 
     GUI to render to a dialogue box.
+    
+    Parameters
+    ----------
+    name : str 
+        GUI name of the option.
+    varname : str
+        Variable name used by the script it is defined in.
+    dtype : 
+        Data-type of the option value.
+    default : ``dtype``
+        Default value option assumes upon instantiation.
+    hidden : bool
+        Inidcate if the option should be rendered by the GUI.
+    choices : `dict`
+        A key-value map representing values with a predefined set of
+        allowable values. The key should a nice/readable string used 
+        in the GUI.
+        
+    Methods
+    -------
+    keytransform
+    validate
+    get_value
+    set_value
+    get_choice_key
+    set_choice_key
+    get_default_value
+    
+    See Also
+    --------
+    :py:class:`enrich2.plugins.options.BaseOption`
     """
-
     def __init__(self, name, varname, dtype, default,
                  choices=None, hidden=True):
         """
-        Option Constructor.
 
-        Parameters
-        ----------
-        name : `str` like
-        varname : `str` like
-        dtype :
-        default : 
-        choices : `dict` or `Iterable` like
         """
         super(Option, self).__init__(name, varname, dtype, default, hidden)
         self.choices = {} if choices is None else choices
@@ -200,13 +279,13 @@ class Option(BaseOption):
 
         Parameters
         ----------
-        value : `str` like
+        value : str
             A string value appearing in either the keys of choices or the 
             values of choices.
 
         Returns
         -------
-        rtype : `str` like
+        str
             The key value of a choice.
         """
 
@@ -232,10 +311,6 @@ class Option(BaseOption):
         ----------
         value : 
             A value that must match the dtype attribute.
-
-        Returns
-        -------
-        rtype : None
         """
         super()._validate(value)
         if self.choices:
@@ -244,14 +319,14 @@ class Option(BaseOption):
 
     def set_value(self, value):
         """
+        Set the value of this option. Should also make a call to the 
+        inherited classes _validate function.
         
         Parameters
         ----------
         value : 
-
-        Returns
-        -------
-
+            Set the value of this option, which must match the *dtype* of
+            the option.
         """
         self.validate(value)
         if self.choices:
@@ -262,10 +337,8 @@ class Option(BaseOption):
 
     def get_value(self):
         """
-
-        Returns
-        -------
-
+        Returns the value of this option. If this option has choices
+        then it will return the current value selected in *choices*.
         """
         if self.choices:
             return self.choices[self._choice_key]
@@ -273,14 +346,14 @@ class Option(BaseOption):
 
     def set_choice_key(self, key):
         """
+        The choice key is the current selected key in the *choices* attribute.
+        This method sets the choice key. *key* must be either a valid
+        value in *choices* or a valid key in *choices*.
 
         Parameters
         ----------
-        key : 
-
-        Returns
-        -------
-
+        key : str
+            Value to set the choice key to.
         """
         if self.choices:
             key = self.keytransform(key)
@@ -289,14 +362,12 @@ class Option(BaseOption):
 
     def get_choice_key(self):
         """
-
-        Parameters
-        ----------
-        value : 
+        The choice key is the current selected key in the *choices* attribute.
+        This method get the choice key that is currently selected.
 
         Returns
         -------
-
+        Currently selected key in the *choices* attribute.
         """
         if not self.choices:
             return self._choice_key
@@ -304,10 +375,8 @@ class Option(BaseOption):
 
     def get_default_value(self):
         """
-
-        Returns
-        -------
-
+        Return default value of this option. If this option has choices
+        then it will return the current value selected in *choices*.
         """
         if self.choices:
             key = self.keytransform(self._default)
@@ -319,7 +388,24 @@ class Option(BaseOption):
 #                           Option containers
 # -------------------------------------------------------------------------- #
 class BaseOptions(Mapping):
-
+    """
+    A :py:class:`collections.Mapping` subclass representing the mapping
+    of option *varname* to corresponding 
+    :py:class:`enrich2.plugins.options.Option` objects.
+    
+    Methods
+    -------
+    put
+    to_dict
+    has_options
+    option_varnames
+    option_names
+    set_option_by_varname
+    get_option_by_varname
+    validate_option_by_varname
+    get_visible_options
+    get_hidden_options
+    """
     def __init__(self):
         self._options = dict()
 
@@ -352,76 +438,155 @@ class BaseOptions(Mapping):
         return not self == other
 
     def to_dict(self):
+        """
+        Builds a new mapping of :py:class:`enrich2.plugins.options.Option` 
+        *varname* to *value* key-value pairs.
+        
+        Returns
+        -------
+        dict
+        """
         return {k: o.get_value() for (k, o) in self._options.items()}
 
     def has_options(self):
+        """
+        Indicates if the instance is currently populated with any options.
+        
+        Returns
+        -------
+        bool
+        """
         return bool(self)
 
     def option_varnames(self):
+        """
+        Returns a KeysView of the object
+        """
         return self._options.keys()
 
     def option_names(self):
+        """
+        Returns a list of option names.
+        """
         return [o.name for o in self._options.values()]
 
     def set_option_by_varname(self, varname, value):
+        """
+        Set an option by it's *varname*
+        
+        Parameters
+        ----------
+        varname : str
+            Varname of the option to set.
+        value : 
+            Value to set option with.
+        """
         if varname not in self._options:
             raise KeyError("Key '{}' not found in {}.".format(
                 varname, self.__class__.__name__))
         self._options[varname].set_value(value)
 
     def validate_option_by_varname(self, varname, value):
+        """
+        Validate an option by it's *varname*
+
+        Parameters
+        ----------
+        varname : str
+            Varname of the option to be validated.
+        value : 
+            Value to validate option with.
+        """
         if varname not in self._options:
             raise KeyError("Key '{}' not found in {}.".format(
                 varname, self.__class__.__name__))
         self._options[varname].validate(value)
 
     def get_option_by_varname(self, varname):
+        """
+        Get an option by it's *varname*
+
+        Parameters
+        ----------
+        varname : str
+            Varname of the option to be validated.
+        """
         if varname not in self._options:
             raise KeyError("Key '{}' not found in {}.".format(
                 varname, self.__class__.__name__))
         return self._options[varname]
 
     def put(self, varname, option):
+        """
+        Insert a varname: option item into the mapping.
+
+        Parameters
+        ----------
+        varname : str
+            Varname of the option to be validated.
+        option: :py:class:`enrich2.plugins.options.Option`
+            Option to insert.
+            
+        Raises
+        ------
+        ValueError
+            If trying to insert a key that already exists.
+        """
         if varname in set(self._options.keys()):
             raise ValueError("Cannot define two options with the same "
                              "varname '{}'.".format(varname))
         self._options[varname] = option
 
     def get_visible_options(self):
+        """
+        Return a `list` of :py:class:`enrich2.plugins.options.Option` that
+        are not hidden.
+        """
         return [o for o in self._options.values() if o.visible()]
 
     def get_hidden_options(self):
+        """
+        Return a `list` of :py:class:`enrich2.plugins.options.Option` that
+        are hidden.
+        """
         return [o for o in self._options.values() if not o.visible()]
 
 
 class Options(BaseOptions):
     """
     Utility class that is to be used by a plugin developer to add options
-    to their scoring script.
+    to their scoring script. Subclasses 
+    :py:class:`enrich2.plugins.options.BaseOptions`
+    
+    See Also
+    --------
+    :py:class:`enrich2.plugins.options.BaseOptions`
     """
 
     def __init__(self):
-        """
-
-        """
         super().__init__()
 
     def add_option(self, name, varname, dtype, default, choices=None,
                    hidden=True):
         """
+        Adds an option.
 
         Parameters
         ----------
-        name : 
-        varname : 
+        name : str 
+            GUI name of the option.
+        varname : str
+            Variable name used by the script it is defined in.
         dtype : 
-        default : 
-        choices :
-        hidden :
-
-        Returns
-        -------
-
+            Data-type of the option value.
+        default : ``dtype``
+            Default value option assumes upon instantiation.
+        hidden : bool
+            Inidcate if the option should be rendered by the GUI.
+        choices : `dict`
+            A key-value map representing values with a predefined set of
+            allowable values. The key should a nice/readable string used 
+            in the GUI.
         """
         option = Option(
             name=name,
@@ -437,11 +602,22 @@ class Options(BaseOptions):
 # -------------------------------------------------------------------------- #
 #                       Utility parse/validate methods
 # -------------------------------------------------------------------------- #
-SCORER = 'scorer'
-SCORER_PATH = 'scorer_path'
-SCORER_OPTIONS = 'scorer_options'
-
 def parse(file_path, backend=json):
+    """
+    Parses a configuration file into an options `dict`. File must be a 
+    json/yaml file with keys 'scorer' and 'scorer options'.
+    
+    Parameters
+    ----------
+    file_path : str
+        Path pointing to the configuration file to be parsed.
+    backend : Default :py:module:`json`
+        Backend to be used to parse file.
+
+    Returns
+    -------
+    dict
+    """
     if isinstance(file_path, str):
         cfg = backend.load(open(file_path, 'r'))
     else:
@@ -461,14 +637,24 @@ def parse(file_path, backend=json):
                          "expected keys. File requires the nested key"
                          "'scorer/scorer_options' or the key 'scorer_options'")
 
+
 def validate(cfg_dict):
+    """
+    Validates that *cfg_dict* is a valid dictionary.
+
+    Parameters
+    ----------
+    cfg_dict : dict
+       Dictionary to validate
+
+    Returns
+    -------
+    dict
+    """
     if not isinstance(cfg_dict, dict):
         raise TypeError(
             "Expected parsed configuration to be type 'dict'"
             " Found {}.".format(type(cfg_dict).__name__))
-    if not bool(cfg_dict):
-        empty_error = "Parsing function returned an empty dictionary"
-        raise ValueError(empty_error)
 
 
 # -------------------------------------------------------------------------- #
@@ -476,12 +662,45 @@ def validate(cfg_dict):
 # -------------------------------------------------------------------------- #
 class OptionsFile(object):
     """
-    Utility class to represent an 'Options file' and it's associated parsing
+    Utility class to represent a configuration file and it's associated parsing
     and validation funcitons.
+    
+            
+    Parameters
+    ----------
+    name : str
+        Descriptive name of the file to be rendered in the GUI.
+    parsing_func : Callable
+        Function to parse file with.
+    parsing_func_kwargs : dict
+        Keyword arguments required by ``parsing_func``.
+    validator_func : Callable
+        Function to validate parsing output.
+    validator_func_kwargs : dict
+        Keyword arguments required by ``validator_func``.
+    
+    Methods
+    -------
+    parse_to_dict
+    validate_cfg
     """
 
     @staticmethod
     def default_json_options_file(name="Options File"):
+        """
+        Returns a default ``json`` 
+        :py:class:`enrich2.plugins.options.OptionsFile` for loading
+        ``Enrich2`` config files.
+        
+        Parameters
+        ----------
+        name : str
+            Descriptive name of the file to be rendered in the GUI.
+
+        Returns
+        -------
+        :py:class:`enrich2.plugins.options.OptionsFile`
+        """
         options_file = OptionsFile(
             name=name,
             parsing_func=parse,
@@ -493,6 +712,20 @@ class OptionsFile(object):
 
     @staticmethod
     def default_yaml_options_file(name="Options File"):
+        """
+        Returns a default ``yaml`` 
+        :py:class:`enrich2.plugins.options.OptionsFile` for loading
+        ``Enrich2`` config files.
+
+        Parameters
+        ----------
+        name : str
+            Descriptive name of the file to be rendered in the GUI.
+
+        Returns
+        -------
+        :py:class:`enrich2.plugins.options.OptionsFile`
+        """
         options_file = OptionsFile(
             name=name,
             parsing_func=parse,
@@ -517,9 +750,30 @@ class OptionsFile(object):
             raise TypeError("Argument 'valid_kwargs' must be a dictionary.")
 
     def parse_to_dict(self, file_path):
+        """
+        Parse a configuration file into an options attributes dictionary
+        with *varname* : *vale* pairs required by a plugin.
+        
+        Parameters
+        ----------
+        file_path : str
+            Path pointing to the file to parse.
+
+        Returns
+        -------
+        dict
+        """
         return self._parser_func(file_path, **self.parse_kwargs)
 
     def validate_cfg(self, cfg):
+        """
+        Validate a parsed config.
+        
+        Parameters
+        ----------
+        cfg : dict
+            The attribute dictionary to validate.
+        """
         self._validator_func(cfg, **self.valid_kwargs)
 
 
@@ -528,15 +782,18 @@ class OptionsFile(object):
 # -------------------------------------------------------------------------- #
 def get_unused_options(cfg_dict, options):
     """
+    Returns the unused keys in a configuration dictionary. An unused key
+    is a key that is not seen in *options*.
     
     Parameters
     ----------
-    cfg_dict : 
-    options : 
+    cfg_dict : dict
+    options : :py:class:`enrich2.plugins.options.Options`
 
     Returns
     -------
-
+    `set`
+        Set of unused keys.
     """
     unused = set()
     option_keys = set(options.keys())
@@ -548,15 +805,19 @@ def get_unused_options(cfg_dict, options):
 
 def get_unused_options_ls(cfg_dict, options_ls):
     """
-    
+    Returns the unused keys in a configuration dictionary. An unused key
+    is a key that is not seen in any *options_ls* item.
+
     Parameters
     ----------
-    cfg_dict : 
-    options_ls : 
+    cfg_dict : dict
+    options_ls : list
+        list of :py:class:`enrich2.plugins.options.Options` objects.
 
     Returns
     -------
-
+    `set`
+        Set of unused keys.
     """
     unused = set()
     option_keys = set([k for opts in options_ls for k in opts])
@@ -568,15 +829,19 @@ def get_unused_options_ls(cfg_dict, options_ls):
 
 def options_not_in_config(cfg, options):
     """
-    
+    Returns a list of :py:class:`enrich2.plugins.options.Options` objects
+    with keys in *options* not seen in the *cfg* dictionary, typically
+    parsed from an external configuration file.
+
     Parameters
     ----------
-    cfg : 
-    options : 
+    cfg : dict
+    options : :py:class:`enrich2.plugins.options.Options`
 
     Returns
     -------
-
+    `list`
+        List of :py:class:`enrich2.plugins.options.Options`
     """
     missing = []
     for varname, option in options.items():
@@ -587,45 +852,50 @@ def options_not_in_config(cfg, options):
 
 def option_varnames_not_in_cfg(cfg, options):
     """
-    
+    Returns keys in *options* not seen in the *cfg* dictionary, typically
+    parsed from an external configuration file.
+
     Parameters
     ----------
-    cfg : 
-    options : 
+    cfg : dict
+    options : :py:class:`enrich2.plugins.options.Options`
 
     Returns
     -------
-
+    `list`
+        Subset of keys from :py:class:`enrich2.plugins.options.Options`
     """
     return [opt.varname for opt in options_not_in_config(cfg, options)]
 
 
 def option_names_not_in_cfg(cfg, options):
     """
-    
+    Returns names of *options* not seen in the *cfg* dictionary, typically
+    parsed from an external configuration file.
+
     Parameters
     ----------
-    cfg : 
-    options : 
+    cfg : dict
+    options : :py:class:`enrich2.plugins.options.Options`
 
     Returns
     -------
-
+    `list`
+        List of names from :py:class:`enrich2.plugins.options.Option` objects.
     """
     return [opt.name for opt in options_not_in_config(cfg, options)]
 
 
 def apply_cfg_to_options(cfg, options):
     """
+    Parses a cfg dictionary and sets the values of the corresponding 
+    :py:class:`enrich2.plugins.options.Option` in the mapping of
+    :py:class:`enrich2.plugins.options.Options` by *varname*
     
     Parameters
     ----------
-    cfg : 
-    options : 
-
-    Returns
-    -------
-
+    cfg : dict
+    options : :py:class:`enrich2.plugins.options.Options`
     """
     for key, value in cfg.items():
         if key in set(options.option_varnames()):

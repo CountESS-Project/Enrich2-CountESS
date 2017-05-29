@@ -288,7 +288,7 @@ class RegressionScorer(BaseScorerPlugin):
             logging.info(
                 "Calculating {} for chunk {} ({} rows)".format(
                     method, chunk, len(data.index)),
-                extra={'oname' : self.name}
+                extra={'oname': self.name}
             )
             result = data.apply(
                 self.row_apply_function,
