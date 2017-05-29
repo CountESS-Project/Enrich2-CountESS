@@ -65,7 +65,8 @@ class Aligner(object):
         if 'gap' in similarity_keys:
             similarity_keys.remove('gap')
         for key in similarity_keys:
-            keys_map_to_dicts = all(x in similarity[key] for x in similarity_keys)
+            keys_map_to_dicts = all(x in similarity[key]
+                                    for x in similarity_keys)
             symmetrical = len(similarity[key]) != len(similarity_keys)
             if not keys_map_to_dicts or symmetrical:
                 raise ValueError("Asymmetrical alignment scoring matrix")
