@@ -20,7 +20,7 @@
 Enrich2 plugin option module
 ============================
 
-:py:module:`enrich2.options` is a module providing classes and methods
+:py:module:`~enrich2.options` is a module providing classes and methods
 required for defining Option objects for use by plugin authors. It provides 
 additional container classes Options to define a collection of options with
 associated utility methods. The OptionsFile class defines a representation
@@ -89,7 +89,7 @@ class BaseOption(object):
         
     See Also
     --------
-    :py:class:`enrich2.plugins.options.Option`
+    :py:class:`~enrich2.plugins.options.Option`
     """
 
     def __init__(self, name, varname, dtype, default, hidden):
@@ -213,10 +213,12 @@ class Option(BaseOption):
     get_choice_key
     set_choice_key
     get_default_value
+    is_default
     
     See Also
     --------
-    :py:class:`enrich2.plugins.options.BaseOption`
+    :py:class:`~enrich2.plugins.options.BaseOption`
+    
     """
     def __init__(self, name, varname, dtype, default,
                  choices=None, hidden=True):
@@ -384,6 +386,13 @@ class Option(BaseOption):
         return self._default
 
 
+    def is_default(self):
+        """
+        Returns a bool if the current value is the default
+        """
+        return self.get_value() == self.get_default_value()
+
+
 # -------------------------------------------------------------------------- #
 #                           Option containers
 # -------------------------------------------------------------------------- #
@@ -391,8 +400,8 @@ class BaseOptions(Mapping):
     """
     A :py:class:`collections.Mapping` subclass representing the mapping
     of option *varname* to corresponding 
-    :py:class:`enrich2.plugins.options.Option` objects.
-    
+    :py:class:`~enrich2.plugins.options.Option` objects.
+        
     Methods
     -------
     put
@@ -405,6 +414,12 @@ class BaseOptions(Mapping):
     validate_option_by_varname
     get_visible_options
     get_hidden_options
+    to_dict_with_default_indicator
+    
+    See Also
+    --------
+    :py:class:`Mapping`
+    
     """
     def __init__(self):
         self._options = dict()
@@ -439,7 +454,7 @@ class BaseOptions(Mapping):
 
     def to_dict(self):
         """
-        Builds a new mapping of :py:class:`enrich2.plugins.options.Option` 
+        Builds a new mapping of :py:class:`~enrich2.plugins.options.Option` 
         *varname* to *value* key-value pairs.
         
         Returns
@@ -447,6 +462,19 @@ class BaseOptions(Mapping):
         dict
         """
         return {k: o.get_value() for (k, o) in self._options.items()}
+
+    def to_dict_with_default_indicator(self):
+        """
+        Builds a new mapping of :py:class:`~enrich2.plugins.options.Option` 
+        *varname* to tuple key-value pairs. Tuple is a (*value*, bool)
+        to indicate if the value is the same as the specified default.
+
+        Returns
+        -------
+        dict
+        """
+        return {k: (o.get_value(), o.is_default())
+                for (k, o) in self._options.items()}
 
     def has_options(self):
         """
@@ -524,7 +552,7 @@ class BaseOptions(Mapping):
         ----------
         varname : str
             Varname of the option to be validated.
-        option: :py:class:`enrich2.plugins.options.Option`
+        option: :py:class:`~enrich2.plugins.options.Option`
             Option to insert.
             
         Raises
@@ -539,14 +567,14 @@ class BaseOptions(Mapping):
 
     def get_visible_options(self):
         """
-        Return a `list` of :py:class:`enrich2.plugins.options.Option` that
+        Return a `list` of :py:class:`~enrich2.plugins.options.Option` that
         are not hidden.
         """
         return [o for o in self._options.values() if o.visible()]
 
     def get_hidden_options(self):
         """
-        Return a `list` of :py:class:`enrich2.plugins.options.Option` that
+        Return a `list` of :py:class:`~enrich2.plugins.options.Option` that
         are hidden.
         """
         return [o for o in self._options.values() if not o.visible()]
@@ -556,11 +584,11 @@ class Options(BaseOptions):
     """
     Utility class that is to be used by a plugin developer to add options
     to their scoring script. Subclasses 
-    :py:class:`enrich2.plugins.options.BaseOptions`
+    :py:class:`~enrich2.plugins.options.BaseOptions`
     
     See Also
     --------
-    :py:class:`enrich2.plugins.options.BaseOptions`
+    :py:class:`~enrich2.plugins.options.BaseOptions`
     """
 
     def __init__(self):
@@ -689,7 +717,7 @@ class OptionsFile(object):
     def default_json_options_file(name="Options File"):
         """
         Returns a default ``json`` 
-        :py:class:`enrich2.plugins.options.OptionsFile` for loading
+        :py:class:`~enrich2.plugins.options.OptionsFile` for loading
         ``Enrich2`` config files.
         
         Parameters
@@ -699,7 +727,7 @@ class OptionsFile(object):
 
         Returns
         -------
-        :py:class:`enrich2.plugins.options.OptionsFile`
+        :py:class:`~enrich2.plugins.options.OptionsFile`
         """
         options_file = OptionsFile(
             name=name,
@@ -714,7 +742,7 @@ class OptionsFile(object):
     def default_yaml_options_file(name="Options File"):
         """
         Returns a default ``yaml`` 
-        :py:class:`enrich2.plugins.options.OptionsFile` for loading
+        :py:class:`~enrich2.plugins.options.OptionsFile` for loading
         ``Enrich2`` config files.
 
         Parameters
@@ -724,7 +752,7 @@ class OptionsFile(object):
 
         Returns
         -------
-        :py:class:`enrich2.plugins.options.OptionsFile`
+        :py:class:`~enrich2.plugins.options.OptionsFile`
         """
         options_file = OptionsFile(
             name=name,
@@ -788,7 +816,7 @@ def get_unused_options(cfg_dict, options):
     Parameters
     ----------
     cfg_dict : dict
-    options : :py:class:`enrich2.plugins.options.Options`
+    options : :py:class:`~enrich2.plugins.options.Options`
 
     Returns
     -------
@@ -812,7 +840,7 @@ def get_unused_options_ls(cfg_dict, options_ls):
     ----------
     cfg_dict : dict
     options_ls : list
-        list of :py:class:`enrich2.plugins.options.Options` objects.
+        list of :py:class:`~enrich2.plugins.options.Options` objects.
 
     Returns
     -------
@@ -829,19 +857,19 @@ def get_unused_options_ls(cfg_dict, options_ls):
 
 def options_not_in_config(cfg, options):
     """
-    Returns a list of :py:class:`enrich2.plugins.options.Options` objects
+    Returns a list of :py:class:`~enrich2.plugins.options.Options` objects
     with keys in *options* not seen in the *cfg* dictionary, typically
     parsed from an external configuration file.
 
     Parameters
     ----------
     cfg : dict
-    options : :py:class:`enrich2.plugins.options.Options`
+    options : :py:class:`~enrich2.plugins.options.Options`
 
     Returns
     -------
     `list`
-        List of :py:class:`enrich2.plugins.options.Options`
+        List of :py:class:`~enrich2.plugins.options.Options`
     """
     missing = []
     for varname, option in options.items():
@@ -858,12 +886,12 @@ def option_varnames_not_in_cfg(cfg, options):
     Parameters
     ----------
     cfg : dict
-    options : :py:class:`enrich2.plugins.options.Options`
+    options : :py:class:`~enrich2.plugins.options.Options`
 
     Returns
     -------
     `list`
-        Subset of keys from :py:class:`enrich2.plugins.options.Options`
+        Subset of keys from :py:class:`~enrich2.plugins.options.Options`
     """
     return [opt.varname for opt in options_not_in_config(cfg, options)]
 
@@ -876,12 +904,12 @@ def option_names_not_in_cfg(cfg, options):
     Parameters
     ----------
     cfg : dict
-    options : :py:class:`enrich2.plugins.options.Options`
+    options : :py:class:`~enrich2.plugins.options.Options`
 
     Returns
     -------
     `list`
-        List of names from :py:class:`enrich2.plugins.options.Option` objects.
+        List of names from :py:class:`~enrich2.plugins.options.Option` objects.
     """
     return [opt.name for opt in options_not_in_config(cfg, options)]
 
@@ -889,13 +917,13 @@ def option_names_not_in_cfg(cfg, options):
 def apply_cfg_to_options(cfg, options):
     """
     Parses a cfg dictionary and sets the values of the corresponding 
-    :py:class:`enrich2.plugins.options.Option` in the mapping of
-    :py:class:`enrich2.plugins.options.Options` by *varname*
+    :py:class:`~enrich2.plugins.options.Option` in the mapping of
+    :py:class:`~enrich2.plugins.options.Options` by *varname*
     
     Parameters
     ----------
     cfg : dict
-    options : :py:class:`enrich2.plugins.options.Options`
+    options : :py:class:`~enrich2.plugins.options.Options`
     """
     for key, value in cfg.items():
         if key in set(options.option_varnames()):

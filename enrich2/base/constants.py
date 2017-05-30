@@ -15,6 +15,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
+
+"""
+Enrich2 constants module
+========================
+
+This module contains all the constants used in the Enrich2 source code.
+"""
+
+
+import collections
+
+
 #: Variant string for counting wild type sequences
 WILD_TYPE_VARIANT = "_wt"
 
@@ -101,6 +113,7 @@ AA_CODES = {
         '???' : '?', '?' : '???'
 }
 
+
 #: List of amino acids in row order for sequence-function maps.
 AA_LIST = ['H', 'K', 'R',                 # (+)
            'D', 'E',                      # (-)
@@ -108,6 +121,7 @@ AA_LIST = ['H', 'K', 'R',                 # (+)
            'A', 'G', 'I', 'L', 'P', 'V',  # Non-polar
            'F', 'W', 'Y',                 # Aromatic
            '*']
+
 
 #: List of tuples for amino acid physiochemical property groups.
 #: Each tuple contains the label string and the corresponding start and end
@@ -118,5 +132,36 @@ AA_LABEL_GROUPS = [("(+)", 0, 2),
                    ("Non-polar", 11, 16),
                    ("Aromatic", 17, 19)]
 
+
 #: List of nucleotides in row order for sequence-function maps.
 NT_LIST = ['A', 'C', 'G', 'T']
+
+
+#: Dictionary specifying available scoring methods for the analysis
+#: Key is the internal name of the method, value is the GUI label
+#: For command line options, internal name is used for the option string itself
+#: and the value is the help string
+SCORING_METHODS = collections.OrderedDict([
+                                ("WLS", "weighted least squares"),
+                                ("ratios", "log ratios (Enrich2)"),
+                                ("counts", "counts only"),
+                                ("OLS", "ordinary least squares"),
+                                ("simple", "log ratios (old Enrich)"),
+                                ])
+
+
+#: Dictionary specifying available scoring methods for the analysis
+#: Key is the internal name of the method, value is the GUI label
+#: For command line options, internal name is used for the option string itself
+#: and the value is the help string
+LOGR_METHODS = collections.OrderedDict([
+                            ("wt", "wild type"),
+                            ("complete", "library size (complete cases)"),
+                            ("full", "library size (all reads)"),
+                            ])
+
+
+
+#: List specifying valid labels in their sorted order
+#: Sorted order is the order in which they should be calculated in
+ELEMENT_LABELS = ['barcodes', 'identifiers', 'variants', 'synonymous']

@@ -24,7 +24,9 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 
-from ..base.storemanager import StoreManager, fix_filename, ELEMENT_LABELS
+from ..base.storemanager import StoreManager
+from enrich2.base.utils import fix_filename
+from enrich2.base.constants import ELEMENT_LABELS
 
 
 class SeqLib(StoreManager):

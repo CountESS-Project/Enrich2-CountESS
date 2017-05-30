@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,8 +16,25 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 base utility module
+===========================
+
+Contains various utility functions used through-out enrich2
+"""
+
+
 import numpy as np
 import pandas as pd
+
+
+__all__ = [
+    "nested_format",
+    "count_nans",
+    "generate_selector",
+    "fix_filename",
+    "multi_index_tsv_to_dataframe"
+]
 
 
 def nested_format(data, default, tab_level=1):
@@ -147,4 +164,22 @@ def multi_index_tsv_to_dataframe(filepath, header_rows):
     """
     return pd.read_table(filepath, index_col=0, header=header_rows)
 
+
+def fix_filename(s):
+    """
+    Clean up a file name by removing invalid characters and converting 
+    spaces to underscores.
     
+    Parameters
+    ----------
+    s : str
+        File name
+    
+    Returns
+    -------
+    str
+        Cleaned file name
+    """
+    fname = "".join(c for c in s if c.isalnum() or c in (' ._~'))
+    fname = fname.replace(' ', '_')
+    return fname

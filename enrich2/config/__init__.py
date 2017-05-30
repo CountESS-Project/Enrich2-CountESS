@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,6 +13,22 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 config module
+=====================
+
+This module contains core classes and methods for parsing and validating 
+``Enrich2`` configuration files, typically in ``json`` format.
+
+(decoded from a JSON file as described 
+`here <https://docs.python.org/2/library/json.html>`_).
+"""
+
+
+__all__ = [
+    "config_check",
+    "types"
+]

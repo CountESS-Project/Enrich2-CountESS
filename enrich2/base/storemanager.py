@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,78 +16,172 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 base storemanager module
+================================
+
+Contains the abstract data-containing class StoreManager
+"""
+
+
 import os
-import logging
-import pandas as pd
-import collections
-import getpass
 import time
+import logging
+import getpass
+import collections
+import pandas as pd
 
 from .utils import nested_format
-
-from .config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
-from .config_constants import LIBRARIES
-
-#: Dictionary specifying available scoring methods for the analysis
-#: Key is the internal name of the method, value is the GUI label
-#: For command line options, internal name is used for the option string itself
-#: and the value is the help string
-SCORING_METHODS = collections.OrderedDict([
-                                ("WLS", "weighted least squares"),
-                                ("ratios", "log ratios (Enrich2)"),
-                                ("counts", "counts only"),
-                                ("OLS", "ordinary least squares"),
-                                ("simple", "log ratios (old Enrich)"),
-                                ])
+from ..base.utils import fix_filename
+from .config_constants import SCORER, SCORER_PATH
+from ..base.constants import LOGR_METHODS, ELEMENT_LABELS
 
 
-#: Dictionary specifying available scoring methods for the analysis
-#: Key is the internal name of the method, value is the GUI label
-#: For command line options, internal name is used for the option string itself
-#: and the value is the help string
-LOGR_METHODS = collections.OrderedDict([
-                            ("wt", "wild type"),
-                            ("complete", "library size (complete cases)"),
-                            ("full", "library size (all reads)"),
-                            ])
-
-
-#: List specifying valid labels in their sorted order
-#: Sorted order is the order in which they should be calculated in
-ELEMENT_LABELS = ['barcodes', 'identifiers', 'variants', 'synonymous']
-
-
-def fix_filename(s):
-    """
-    Clean up a file name by removing invalid characters and converting 
-    spaces to underscores.
-    
-    Parameters
-    ----------
-    s : str
-        File name
-    
-    Returns
-    -------
-    str
-        Cleaned file name
-    """
-    fname = "".join(c for c in s if c.isalnum() or c in (' ._~'))
-    fname = fname.replace(' ', '_')
-    return fname
+__all__ = [
+    "StoreManager"
+]
 
 
 class StoreManager(object):
     """
     Abstract class for all data-containing classes
-    (:py:class:`~enrich2.seqlib.seqlib.SeqLib`,
-    :py:class:`~enrich2.selection.selection.Selection`, and
-    :py:class:`~enrich2.experiment.experiment.Experiment`).
 
     Contains common operations for all data-containing classes, such as HDF5
     store and directory management.
+    
+    Class Attributes
+    ----------------
+    store_suffix : str
+        The string suffix to place before ``name``.
+    has_store : bool
+        Indicates if the object is currently managing a store.
+    treeview_class_name : str
+        Class name used by the GUI treeview to render a readable name.
+    
+    Attributes
+    ----------
+    name : str
+        Name of the object, usually set through a configuration file or 
+        the GUI.
+    parent : :py:class:`StoreManager`
+        The parent :py:class:`StoreManager` of this instance.
+    
+    username : str
+        Username as returned by the :py:func:`getpass.getuser()` method.
+    creationtime : str
+        The ASCII time string generated at instantiation.
+    
+    store_cfg : dict
+        The `dict` used to instantiate the object via the ``configuration`` 
+        method, and modified by the ``serialize`` method.
+    store_path : str
+        The filepath to the store being managed by this instance.
+    store : :py:class:`pd.HDFStore`
+        The store being managed by this instance.
+    chunksize: int
+        Chunksize used when iterating and selecting rows/columns from an
+        open store.
+    
+    scorer_class : :py:class:`enrich2.plugins.scoring.BaseScorerPlugin`
+        The class that has been loaded from a plugin script.
+    scorer_class_attrs : dict
+        The attributes required by ``scorer_class`` to run score computation. 
+    scorer_path : str
+        The filepath pointing to the python script used to load the current
+        plugin.
+    
+    treeview_id : int
+        Numeric id for an instance used internally by 
+        :py:class:`~tkinter.ttk.Treeview`
+    treeview_info : str
+        String descriptor for use by :py:class:`~tkinter.ttk.Treeview` to
+        provide information in the GUI
+    
+    Methods
+    -------
+    child_labels
+        Returns a list of labels shared by every child.
+    labels
+        Property for returning labels shared by all children.
+    force_recalculate
+        Property for ``_force_recalculate`` private attribute. Sets/gets the
+        boolean indicating if all data will be recomputed despite previous
+        stores being foundl
+    component_outliers
+        Property for ``_component_outliers`` private attribute. Sets/gets the
+        boolean indicating if outliers will be computed.
+    tsv_requested
+        Property for ``_tsv_requested`` private attribute. Sets/gets the
+        boolean indicating if tsv files will be written.
+    scoring_method
+        Property for ``_scoring_method`` private attribute. Sets/gets the name
+        of the current ``scoring_class`` if present.
+    output_dir
+        Property for ``_output_dir`` private attribute. Sets/gets the current
+        output directory.
+    output_dir_override 
+        Property for ``_output_dir_override`` private attribute. Sets/gets 
+        the boolean indicating if the output directory will be overridden.
+    tsv_dir 
+        Property for ``_tsv_dir`` private attribute. Sets/gets 
+        the tsv output directory.
+    logr_method
+        Property for ``_logr_method`` private attribute. Sets/gets the name
+        of the current normalization method if it has been defined in the 
+        currently loaded plugin.
+    children
+        Returns the list of child objects owned by this instance.
+    _children 
+        Virtual method that must be overriden by a concrete implementation.
+    remove_child_id
+        Removes the child with the specified ``treeview_id`` 
+    add_child
+        Adds a child to this instance's children.
+    child_names
+        Returns a list of child names owned by this instance.
+    add_label
+        Add a string element label to this object.
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    validate
+        Validates the attributes of this instance.
+    store_open
+        Opens the currently owned store.
+    store_close
+        Closes the currently owned store.
+    get_metadata
+        Returns the metadata of this instance.
+    set_metadata
+        Sets the metadata of this instance.
+    calculate
+        Compute variant/barcode/identifier/synonymous scores. Delegates the
+        computation to the currently loaded scoring class.
+    write_tsv
+        Write results to tsv.
+    write_table_tsv
+        Write a specific table to tsv.
+    get_table
+        Returns the table located a specific key from the current store.
+    check_store
+        Checks the current store for the existence of a table with some key.
+    map_table
+        Maps a table by applying a callback function to a new table.
+    combined_index
+        Return an index containing all elements in a list of tables.
+    get_root
+        Get the root object owning this instance.
+        
+        
+    See Also
+    --------
+    :py:class:`~enrich2.seqlib.seqlib.SeqLib`
+    :py:class:`~enrich2.selection.selection.Selection`
+    :py:class:`~enrich2.experiment.experiment.Experiment`
     """
-
     store_suffix = None
     has_store = True
     treeview_class_name = None
@@ -117,12 +211,9 @@ class StoreManager(object):
         # analysis parameters
         self._scoring_method = None
         self._logr_method = None
-
-        # analysis parameters
         self.scorer_class = None
         self.scorer_class_attrs = None
         self.scorer_path = None
-
         self._force_recalculate = None
         self._component_outliers = None
         self._tsv_requested = None
@@ -131,22 +222,9 @@ class StoreManager(object):
         self.treeview_id = None
         self.treeview_info = None
 
-    def child_labels(self):
-        """
-        Returns a list of labels shared by every child.
-        
-        Returns
-        -------
-        list
-            list of labels shared by every child.
-        """
-        shared = list()
-        for x in self.children:
-            shared.extend(x.labels)
-        shared = collections.Counter(shared)
-        shared = [x for x in shared.keys() if shared[x] == len(self.children)]
-        return sorted(shared, key=lambda a: ELEMENT_LABELS.index(a))
-
+    # -----------------------------------------------------------------------#
+    #                           Properties
+    # -----------------------------------------------------------------------#
     @property
     def labels(self):
         """
@@ -269,11 +347,7 @@ class StoreManager(object):
         """
         Make sure the *value* is valid and set it.
         """
-        if value in list(SCORING_METHODS.keys()):
-            self._scoring_method = value
-        else:
-            raise ValueError("Invalid setting for scoring_method "
-                             "[{}]".format(self.name))
+        self._scoring_method = value
 
     @property
     def output_dir(self):
@@ -394,6 +468,25 @@ class StoreManager(object):
         """
         return self._children()
 
+    # -----------------------------------------------------------------------#
+    #                       Tree Structure Methods
+    # -----------------------------------------------------------------------#
+    def child_labels(self):
+        """
+        Returns a list of labels shared by every child.
+
+        Returns
+        -------
+        list
+            list of labels shared by every child.
+        """
+        shared = list()
+        for x in self.children:
+            shared.extend(x.labels)
+        shared = collections.Counter(shared)
+        shared = [x for x in shared.keys() if shared[x] == len(self.children)]
+        return sorted(shared, key=lambda a: ELEMENT_LABELS.index(a))
+
     def _children(self):
         """
         Pure virtual method for returning children.
@@ -430,37 +523,23 @@ class StoreManager(object):
         else:
             return names
 
-    def add_label(self, x):
+    def get_root(self):
         """
-        Add element label to this object.
-        
-        Parameters
-        ----------
-        x : str
-            Label to add to labels, which must be present in ELEMENT_LABELS
-            
+        Returns the root owner of this object, other self if this object
+        has no parents.
+
         Returns
         -------
-        None
-
-        Raises
-        ------
-        raises ValueError if the label is not in {'barcodes', 'identifiers', 
-            'variants', 'synonymous'}
-        raises AttributeError if label is not a :py:class:`str`
+        :py:class:`StoreManager`
         """
-        labels = set(self._labels)
-        if isinstance(x, str):
-            if x in ELEMENT_LABELS:
-                labels.update([x])
-            else:
-                raise ValueError("Invalid element label '{}' [{}]".format(x,
-                                 self.name))
+        if self.parent is not None:
+            return self.parent.get_root()
         else:
-            raise AttributeError("Failed to add labels [{}]".format(self.name))
-        # sort based on specified order
-        self._labels = sorted(labels, key=lambda a: ELEMENT_LABELS.index(a))
+            return self
 
+    # -----------------------------------------------------------------------#
+    #                       Class Configuration
+    # -----------------------------------------------------------------------#
     def configure(self, cfg):
         """
         Set up the object using the config object *cfg*, usually derived from
@@ -545,6 +624,9 @@ class StoreManager(object):
         """
         raise NotImplementedError("must be implemented by subclass")
 
+    # -----------------------------------------------------------------------#
+    #                           Store I/O
+    # -----------------------------------------------------------------------#
     def store_open(self, children=False, force_delete=True):
         """
         Open the HDF5 file associated with this object. If the
@@ -617,6 +699,161 @@ class StoreManager(object):
         if self.has_store and self.store.is_open:
             self.store.close()
             self.store = None
+
+    def get_table(self, key):
+        """
+        Checks to see if a particular data frame in the HDF5 store already
+        exists and returns it.
+
+        Parameters
+        ----------
+        key : str
+            Key for the requested data frame
+
+        Returns
+        -------
+        bool 
+            True if the key exists in the HDF5 store, else False.
+        """
+        if not self.check_store(key):
+            raise ValueError("Store {} does not exist [{}]".format(
+                key, self.name
+            ))
+        else:
+            return self.store[key]
+
+    def check_store(self, key):
+        """
+        Checks to see if a particular data frame in the HDF5 store already
+        exists.
+
+        Parameters
+        ----------
+        key : str
+            Key for the requested data frame
+
+        Returns
+        -------
+        bool 
+            True if the key exists in the HDF5 store, else False.
+        """
+        if key in list(self.store.keys()):
+            logging.info("Found existing '{}'".format(key),
+                         extra={'oname': self.name})
+            return True
+        else:
+            return False
+
+    def map_table(self, source, destination, source_query=None,
+                  row_callback=None, row_callback_args=None,
+                  destination_data_columns=None):
+        """
+        Converts source table into destination table.
+        This method really needs a better name.
+
+        Parameters
+        ----------
+        source : str
+            The key to access the table to map
+        destination : str:
+            The key to put the newly mapped table
+        source_query : str
+            A query string used as a predicate during mapping
+        row_callback : Callable
+            Callback function applied to each row.
+        row_callback_args : Iterable
+            Arguments required by *row_callback*
+        destination_data_columns : Iterable
+            Iterable of column names
+
+        Returns
+        -------
+        None
+        """
+        if destination in list(self.store.keys()):
+            # remove the current destination table because we are using append
+            # append takes the "min_itemsize" argument, and put doesn't
+            logging.info("Overwriting existing '{}'".format(destination),
+                         extra={'oname': self.name})
+            self.store.remove(destination)
+
+        # turn the single table name into a list to use select_as_multiple
+        if isinstance(source, str):
+            source = [source]
+
+        # assumes the source tables all have the same index
+        # find the min_itemsize
+        max_index_length = self.store.select_column(source[0],
+                                                    'index').map(
+            len).max()
+        for df in self.store.select_as_multiple(source, source_query,
+                                                chunksize=self.chunksize,
+                                                selector=source[0]):
+            if row_callback is not None:
+                df = df.apply(row_callback, args=row_callback_args,
+                              axis="columns")
+            if destination not in self.store:
+                if destination_data_columns is None:
+                    # if not specified, index all columns
+                    destination_data_columns = list(df.columns)
+                self.store.append(destination, df,
+                                  min_itemsize={'index': max_index_length},
+                                  data_columns=destination_data_columns)
+            else:
+                self.store.append(destination, df)
+
+    def combined_index(self, tables):
+        """
+        Return an index containing all elements in *tables*
+
+        Parameters
+        ----------
+        tables : Iterable
+            Iterable object containing :py:class:`pd.HDFStore` objects.
+
+        Returns
+        -------
+        None
+        """
+        shared = pd.Index()
+        for t in tables:
+            shared = shared.union(pd.Index(
+                self.store.select_column(t, 'index')))
+        return shared
+
+    # -----------------------------------------------------------------------#
+    #                       Metadata/Computations
+    # -----------------------------------------------------------------------#
+    def add_label(self, x):
+        """
+        Add element label to this object.
+
+        Parameters
+        ----------
+        x : str
+            Label to add to labels, which must be present in ELEMENT_LABELS
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        raises ValueError if the label is not in {'barcodes', 'identifiers', 
+            'variants', 'synonymous'}
+        raises AttributeError if label is not a :py:class:`str`
+        """
+        labels = set(self._labels)
+        if isinstance(x, str):
+            if x in ELEMENT_LABELS:
+                labels.update([x])
+            else:
+                raise ValueError(
+                    "Invalid element label '{}' [{}]".format(x, self.name))
+        else:
+            raise AttributeError("Failed to add labels [{}]".format(self.name))
+        # sort based on specified order
+        self._labels = sorted(labels, key=lambda a: ELEMENT_LABELS.index(a))
 
     def get_metadata(self, key, store=None):
         """
@@ -700,6 +937,9 @@ class StoreManager(object):
         """
         raise NotImplementedError("must be implemented by subclass")
 
+    # -----------------------------------------------------------------------#
+    #                              File I/O
+    # -----------------------------------------------------------------------#
     def write_tsv(self, subdirectory=None, keys=None):
         """
         Pure virtual method for writing tsv files.
@@ -722,138 +962,5 @@ class StoreManager(object):
         """
         fname = key.strip("/")  # remove leading slash
         fname = fname.replace("/", "_") + ".tsv"
-        self.store[key].to_csv(os.path.join(self.tsv_dir, fname), sep='\t',
-                               na_rep="NA")
-
-    def get_table(self, key):
-        """
-        Checks to see if a particular data frame in the HDF5 store already
-        exists and returns it.
-
-        Parameters
-        ----------
-        key : str
-            Key for the requested data frame
-
-        Returns
-        -------
-        bool 
-            True if the key exists in the HDF5 store, else False.
-        """
-        if not self.check_store(key):
-            raise ValueError("Store {} does not exist [{}]".format(
-                key, self.name
-            ))
-        else:
-            return self.store[key]
-
-    def check_store(self, key):
-        """
-        Checks to see if a particular data frame in the HDF5 store already
-        exists.
-        
-        Parameters
-        ----------
-        key : str
-            Key for the requested data frame
-
-        Returns
-        -------
-        bool 
-            True if the key exists in the HDF5 store, else False.
-        """
-        if key in list(self.store.keys()):
-            logging.info("Found existing '{}'".format(key),
-                         extra={'oname': self.name})
-            return True
-        else:
-            return False
-
-    def map_table(self, source, destination, source_query=None,
-                  row_callback=None, row_callback_args=None,
-                  destination_data_columns=None):
-        """
-        Converts source table into destination table.
-        This method really needs a better name.
-        
-        Parameters
-        ----------
-        source : str
-            The key to access the table to map
-        destination : str:
-            The key to put the newly mapped table
-        source_query : str
-            A query string used as a predicate during mapping
-        row_callback : Callable
-            Callback function applied to each row.
-        row_callback_args : Iterable
-            Arguments required by *row_callback*
-        destination_data_columns : Iterable
-            Iterable of column names
-            
-        Returns
-        -------
-        None
-        """
-        if destination in list(self.store.keys()):
-            # remove the current destination table because we are using append
-            # append takes the "min_itemsize" argument, and put doesn't
-            logging.info("Overwriting existing '{}'".format(destination),
-                         extra={'oname': self.name})
-            self.store.remove(destination)
-
-        # turn the single table name into a list to use select_as_multiple
-        if isinstance(source, str):
-            source = [source]
-
-        # assumes the source tables all have the same index
-        # find the min_itemsize
-        max_index_length = self.store.select_column(source[0], 'index').map(
-            len).max()
-        for df in self.store.select_as_multiple(source, source_query,
-                                                chunksize=self.chunksize,
-                                                selector=source[0]):
-            if row_callback is not None:
-                df = df.apply(row_callback, args=row_callback_args,
-                              axis="columns")
-            if destination not in self.store:
-                if destination_data_columns is None:
-                    # if not specified, index all columns
-                    destination_data_columns = list(df.columns)
-                self.store.append(destination, df,
-                                  min_itemsize={'index': max_index_length},
-                                  data_columns=destination_data_columns)
-            else:
-                self.store.append(destination, df)
-
-    def combined_index(self, tables):
-        """
-        Return an index containing all elements in *tables*
-        
-        Parameters
-        ----------
-        tables : Iterable
-            Iterable object containing :py:class:`pd.HDFStore` objects.
-        
-        Returns
-        -------
-        None
-        """
-        shared = pd.Index()
-        for t in tables:
-            shared = shared.union(pd.Index(self.store.select_column(t, 'index')))
-        return shared
-
-    def get_root(self):
-        """
-        Returns the root owner of this object, other self if this object
-        has no parents.
-        
-        Returns
-        -------
-        :py:class:`StoreManager`
-        """
-        if self.parent is not None:
-            return self.parent.get_root()
-        else:
-            return self
+        self.store[key].to_csv(
+            os.path.join(str(self.tsv_dir), fname), sep='\t', na_rep="NA")

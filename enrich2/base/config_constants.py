@@ -16,6 +16,14 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 configuration constants module
+======================================
+
+This module contains all the constants used as keys in configuration files.
+"""
+
+
 NAME = 'name'
 CONDITIONS = 'conditions'
 LIBRARIES = 'libraries'

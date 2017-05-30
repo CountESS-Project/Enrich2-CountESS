@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -17,23 +17,11 @@
 
 # -*- coding: utf-8 -*-
 
+
 """
 This module contains classes representing the data model of an Enrich2
 configuration file. Each class represents a `yaml`/`json` dictionary
 and contains validation methods to format input from a GUI configurator.
-
-Example
--------
-
-
-Notes
------
-
-
-Attributes
-----------
-
-
 """
 
 
@@ -47,6 +35,29 @@ from ..base.config_constants import *
 from .config_check import *
 from ..plugins import load_scorer_class_and_options
 from ..plugins.options import Options
+
+
+__all__ = [
+    "Configuration",
+    "ScorerConfiguration",
+    "FASTQConfiguration",
+    "FiltersConfiguration",
+    "BarcodeConfiguration",
+    "IdentifiersConfiguration",
+    "VariantsConfiguration",
+    "WildTypeConfiguration",
+    "BaseLibraryConfiguration",
+    "BaseVariantSeqLibConfiguration",
+    "BarcodeSeqLibConfiguration",
+    "BcidSeqLibConfiguration",
+    "BcvSeqLibConfiguration",
+    "IdOnlySeqLibConfiguration",
+    "BasicSeqLibConfiguration",
+    "ExperimentConfiguration",
+    "ConditonConfiguration",
+    "SelectionConfiguration",
+    "StoreConfiguration"
+]
 
 
 class Configuration(ABC):
@@ -80,7 +91,38 @@ class Configuration(ABC):
 #
 # -------------------------------------------------------------------------- #
 class ScorerConfiguration(Configuration):
-
+    """
+    Scorer Configuration class parses the `dict` from a configuration file
+    under the key 'scorer', loading the scoring class, scoring attributes
+    and script path.
+    
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+        
+    Attributes
+    ----------
+    scorer_class : :py:class:`~enrich2.plugins.scoring.BaseScorerPlugin`
+        The class parsed from a plugin script.
+    scorer_class_attrs : `dict`
+        The `dict` parsed from a configuration file.
+    scorer_path : `str`
+        The string path pointing to a plugin to parse/import.
+    
+    Methods
+    -------
+    validate
+        Validate the instance instantiated from a `dict`.
+    get_options
+        Returns a `dict` containing option ``varname`` as the key and
+        its ``value`` as the value.
+        
+    See Also
+    --------
+    :py:class:`~enrich2.plugins.options.Options`
+    
+    """
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for fastq configuration.")
@@ -106,6 +148,9 @@ class ScorerConfiguration(Configuration):
         self.validate()
 
     def validate(self):
+        """
+        Validate the attributes loaded from a confiugration file.
+        """
         if self.scorer_class is None:
             raise TypeError("Scoring class cannot be NoneType.")
 
@@ -138,19 +183,67 @@ class ScorerConfiguration(Configuration):
         return self
 
     def get_options(self, keep_defaults=True):
-        attrs = {}
+        """
+        Turns the :py:class:`~enrich2.plugins.options.Options` parsed from 
+        a plugin script into a `dict.
+        
+        Parameters
+        ----------
+        keep_defaults : `bool`
+            Values in the dictionary are a tuple, with the second element
+            indicating if the value is the same as the default for the option.
+
+        Returns
+        -------
+        `dict`
+        
+        """
         if keep_defaults:
-            for varname, opt in self.__options.items():
-                value = opt.get_value()
-                default = opt.get_default_value()
-                attrs[varname] = (value, value == default)
-            return attrs
+            return self.__options.to_dict_with_default_indicator()
         else:
             return self.__options.to_dict()
 
 
 class FASTQConfiguration(Configuration):
+    """
+    FASTQ Configuration class parses the `dict` from a configuration file
+    under the key 'fastq', loading the required parameters for read parsing.
 
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    
+    Attributes
+    ----------
+    reads : `str`
+        The filepath pointing to the reads file to load during analysis.
+    reverse : `bool`
+        Indicates if the reads come from the reverse strand.
+    trim_start : `int`
+        Integer position to start the read trim, 1-based.
+    trim_length : `int`
+        Integer representing the number of characters to keep starting
+        from `trim_start`
+    filters_cfg : :py:class:`~FiltersConfiguration`
+        Filters configuration object loaded from the configuration `dict`.
+    
+    Methods
+    -------
+    validate
+        Validate the instance instantiated from a `dict` using the methods
+        below.
+    validate_reverse
+    validate_trim_start
+    validate_trim_length
+    validate_reads
+
+    See Also
+    --------
+    :py:class:`~FiltersConfiguration`
+
+
+    """
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for fastq configuration.")
@@ -169,12 +262,18 @@ class FASTQConfiguration(Configuration):
         self.validate()
 
     def validate_reverse(self):
+        """
+        Check if reverse if a boolean
+        """
         if not isinstance(self.reverse, bool):
             raise TypeError("Expected bool for reverse but found {}.".format(
                 type(self.reverse)
             ))
 
     def validate_trim_start(self):
+        """
+        Validate the `trim_start` value
+        """
         if not isinstance(self.trim_start, int):
             raise TypeError("FASTQ `start` must be an integer."     
                             " Found type {}.".format(type(self.trim_start)))
@@ -182,6 +281,9 @@ class FASTQConfiguration(Configuration):
             raise ValueError("FASTQ `start` must not be negative.")
 
     def validate_trim_length(self):
+        """
+        Validate the `trim_length` value
+        """
         if not isinstance(self.trim_length, int):
             raise TypeError("FASTQ `length` must be an integer."     
                             " Found type {}.".format(type(self.trim_length)))
@@ -189,6 +291,9 @@ class FASTQConfiguration(Configuration):
             raise ValueError("FASTQ `length` must not be negative.")
 
     def validate_reads(self):
+        """
+        Ensure reads file exists and has an appropriate extension.
+        """
         if not isinstance(self.reads, str):
             raise TypeError("Expected str for reads but found {}.".format(
                 type(self.reads)
@@ -205,6 +310,9 @@ class FASTQConfiguration(Configuration):
                              "fastq.")
 
     def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
         self.validate_reverse()
         self.validate_trim_start()
         self.validate_trim_length()
@@ -214,7 +322,42 @@ class FASTQConfiguration(Configuration):
 
 
 class FiltersConfiguration(Configuration):
+    """
+    FASTQ Configuration class parses the `dict` from a configuration file
+    under the key 'fastq', loading the required parameters for read parsing.
 
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+        
+    Attributes
+    ----------
+    chaste : `bool`
+        Filter out reads which are not chaste.
+    max_n : `int`
+        Keep reads with number of Ns less than this.
+    avg_base_quality : `int`
+        Keep reads with average base quality less greater than this value.
+    min_base_quality : `int`
+        Keep reads with any bases greater than this value.
+
+    Methods
+    -------
+    validate
+        Validate the instance instantiated from a `dict` using the methods
+        below.
+    validate_max_n
+    validate_chaste
+    validate_avg_base_quality
+    validate_min_base_quality
+    to_dict
+
+    See Also
+    --------
+    :py:class:`~FiltersConfiguration`
+
+    """
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for filters configuration.")
@@ -226,18 +369,27 @@ class FiltersConfiguration(Configuration):
         self.validate()
 
     def validate_max_n(self):
+        """
+        Ensure that `max_n` is an `int` and not negative.
+        """
         if not isinstance(self.max_n, int):
             raise TypeError("FASTQ filter `max n` must be an integer."
                             " Found type {}.".format(type(self.max_n)))
         if self.max_n < 0:
             raise ValueError("FASTQ filter `max n` must not be negative.")
 
-    def validate_chate(self):
+    def validate_chaste(self):
+        """
+        Ensure that `chaste` is a `bool`.
+        """
         if not isinstance(self.chaste, bool):
             raise TypeError("FASTQ filter `chastity` must be a boolean."
                             " Found type {}.".format(type(self.max_n)))
 
     def validate_avg_base_quality(self):
+        """
+        Ensure that `avg_base_quality` is an `int` and not negative.
+        """
         if not isinstance(self.avg_base_quality, int):
             raise TypeError("FASTQ filter `avg quality` must be an integer."
                             " Found type {}.".format(type(self.max_n)))
@@ -246,6 +398,9 @@ class FiltersConfiguration(Configuration):
                              "`avg quality` must not be negative.")
 
     def validate_min_base_quality(self):
+        """
+        Ensure that `min_base_quality` is an `int` and not negative.
+        """
         if not isinstance(self.min_base_quality, int):
             raise TypeError("FASTQ filter `min quality` must be an integer."
                             " Found type {}.".format(type(self.max_n)))
@@ -254,13 +409,23 @@ class FiltersConfiguration(Configuration):
                              "`min quality` must not be negative.")
 
     def validate(self):
-        self.validate_chate()
+        """
+        Validate all attributes. Overrides parent method.
+        """
+        self.validate_chaste()
         self.validate_max_n()
         self.validate_avg_base_quality()
         self.validate_min_base_quality()
         return self
 
     def to_dict(self):
+        """
+        Serialize current attributes into a `dict`
+        
+        Returns
+        -------
+        `dict`
+        """
         return {
             FILTERS_CHASTITY: self.chaste,
             FILTERS_MAX_N: self.max_n,
@@ -270,7 +435,31 @@ class FiltersConfiguration(Configuration):
 
 
 class BarcodeConfiguration(Configuration):
-
+    """
+    Class to represent the barcode configuration found in ``enrich2``
+    configuration files.
+    
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    require_map : `bool`, Default `False`
+        Requires that the configuration `cfg` must contain a 'map file' key.
+    
+    Attributes
+    ----------
+    min_count : `int`
+        The minimum count required to keep a barcode.
+    map_file : `str`
+        The file pointing a barcode map file.
+    
+    Methods
+    -------
+    validate
+    validate_map_file
+    validate_min_count
+    
+    """
     def __init__(self, cfg, require_map=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for barcodes configuration.")
@@ -287,6 +476,9 @@ class BarcodeConfiguration(Configuration):
         self.validate()
 
     def validate_map_file(self):
+        """
+        Ensure that `map_file` exists and has an appropriate extension.
+        """
         if self.map_file and not isinstance(self.map_file, str):
             raise TypeError("Expected str for map file but found {}.".format(
                 type(self.map_file)
@@ -302,6 +494,9 @@ class BarcodeConfiguration(Configuration):
                                  "need extension to be either bz2, gz or txt.")
 
     def validate_min_count(self):
+        """
+        Ensure that `min_count` is an `int` and not negative.
+        """
         if not isinstance(self.min_count, int):
             raise TypeError("Barcode `min count` must be an integer."
                             " Found type {}".format(type(self.min_count)))
@@ -309,13 +504,35 @@ class BarcodeConfiguration(Configuration):
             raise ValueError("Barcode `min count` must not be negative.")
 
     def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
         self.validate_min_count()
         self.validate_map_file()
         return self
 
 
 class IdentifiersConfiguration(Configuration):
+    """
+    Class to represent the identifiers configuration found in ``enrich2``
+    configuration files.
+    
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    
+    Attributes
+    ----------
+    min_count : `int`
+        The minimum count required to keep a barcode.
 
+    Methods
+    -------
+    validate
+    validate_min_count
+
+    """
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for identifiers configuration.")
@@ -323,6 +540,9 @@ class IdentifiersConfiguration(Configuration):
         self.validate()
 
     def validate_min_count(self):
+        """
+        Ensure that `min_count` is an `int` and not negative.
+        """
         if not isinstance(self.min_count, int):
             raise TypeError("Identifers `min count` must be an integer."
                             " Found type {}".format(type(self.min_count)))
@@ -330,11 +550,42 @@ class IdentifiersConfiguration(Configuration):
             raise ValueError("Identifers `min count` must not be negative.")
 
     def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
         self.validate_min_count()
         return self
 
 
 class VariantsConfiguration(Configuration):
+    """
+    Class to represent the identifiers configuration found in ``enrich2``
+    configuration files.
+    
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    
+    Attributes
+    ----------
+    use_aligner : `bool`
+        Use the Enrich2 aligner to align reads to a wildtype reference.
+    max_mutations : `int`
+        Variants with more mutations that this value will be removed.
+    min_count : `int`
+        The minimum count required to keep a variant.
+    wildtype_cfg : :py:class:`~WildTypeConfiguration`
+        Configuration object representing the wildtype.
+    
+    Methods
+    -------
+    validate
+    validate_use_aligner
+    validate_max_mutations
+    validate_min_count
+
+    """
 
     DEFAULT_MAX_MUTATIONS = 10
 
@@ -352,15 +603,26 @@ class VariantsConfiguration(Configuration):
         self.max_mutations = cfg.get(VARIANTS_MAX_MUTATIONS,
                                      self.DEFAULT_MAX_MUTATIONS)
         self.min_count = cfg.get(VARIANTS_MIN_COUNT, 0)
-        self.wildtype_cfg = WildTypeConfiguration(wildtype_cfg)
+        self.wildtype_cfg = WildTypeConfiguration(wildtype_cfg).validate()
         self.validate()
 
     def validate_use_aligner(self):
+        """
+        Ensure that `use_aligner` is a `bool` and the wildtype configuration
+        contains a valid sequence.
+        """
         if not isinstance(self.use_aligner, bool):
             raise TypeError("Variants `use aligner` must be a boolean."
                             " Found type {}.".format(type(self.use_aligner)))
+        if self.use_aligner and not self.wildtype_cfg.sequence:
+            raise ValueError("Variants `use aligner` requires a wildtype"
+                             "sequence to be present.")
 
     def validate_max_mutations(self):
+        """
+        Ensure that `max_mutations` is an `int`, not negative and not greater 
+        than 10.
+        """
         if not isinstance(self.max_mutations, int):
             raise TypeError("Variants `max mutations` must be an integer."
                             " Found type {}".format(type(self.min_count)))
@@ -372,6 +634,9 @@ class VariantsConfiguration(Configuration):
                              "than {}.".format(self.DEFAULT_MAX_MUTATIONS))
 
     def validate_min_count(self):
+        """
+        Ensure that `min_count` is an `int` and not negative.
+        """
         if not isinstance(self.min_count, int):
             raise TypeError("Variants `min count` must be an integer."
                             " Found type {}".format(type(self.min_count)))
@@ -379,6 +644,9 @@ class VariantsConfiguration(Configuration):
             raise ValueError("Variants `min count` must not be negative.")
 
     def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
         self.wildtype_cfg.validate()
         self.validate_max_mutations()
         self.validate_min_count()
@@ -387,7 +655,34 @@ class VariantsConfiguration(Configuration):
 
 
 class WildTypeConfiguration(Configuration):
+    """
+    Class to represent the wildtype configuration found in ``Enrich2``
+    configuration files.
+    
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+        
+    Attributes
+    ----------
+    coding : `bool`, default False
+        Indicates whether `sequence` is a coding sequence.
+    reference_offset : `int`, default 0
+        Variant positions will be reported relative to the this value. If
+        `coding`, then this value must be a multiple of 3 otherwise it will be
+        ignored.
+    sequence : `int`
+        The wildtype reference sequence, with ATCG characters only.
 
+    Methods
+    -------
+    validate
+    validate_coding
+    validate_reference_offset
+    validate_sequence
+
+    """
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for wildtype configuration.")
@@ -401,13 +696,29 @@ class WildTypeConfiguration(Configuration):
         self.sequence = cfg.get(SEQUENCE, "")
         self.validate()
 
+    def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
+        self.validate_coding()
+        self.validate_sequence()
+        self.validate_reference_offset()
+        return self
+
     def validate_coding(self):
+        """
+        Ensure that `coding` is a `bool`.
+        """
         if not isinstance(self.coding, bool):
             raise TypeError("Wildtype `coding` must be a boolean."
                             " Found type "
                             "{}.".format(type(self.coding).__name__))
 
     def validate_reference_offset(self):
+        """
+        Ensure that reference offset is a valid integer input. Sets to 0
+        if `coding` and not a multiple of 3.
+        """
         if not isinstance(self.reference_offset, int):
             raise TypeError("Wildtype `reference offset` "
                             "must be an integer. Found type "
@@ -424,10 +735,12 @@ class WildTypeConfiguration(Configuration):
                 extra={'oname': self.__class__.__name__}
             )
             self.reference_offset = 0
-            # raise ValueError("If `protein coding` is selected, "
-            #                  "`reference offset` must be a multiple of 3.")
 
     def validate_sequence(self):
+        """
+        Ensure the sequence passed in the configuration is a valid DNA 
+        sequence and a multiple of 3 if `coding` is `True`.
+        """
         if not isinstance(self.sequence, str):
             raise TypeError("Variants `sequence` must be a string. "
                             "Found type "
@@ -463,12 +776,6 @@ class WildTypeConfiguration(Configuration):
                 raise ValueError("If `protein coding` is selected "
                                  "`sequence` must be a multiple of 3.")
 
-    def validate(self):
-        self.validate_coding()
-        self.validate_sequence()
-        self.validate_reference_offset()
-        return self
-
 
 # -------------------------------------------------------------------------- #
 #
@@ -476,7 +783,43 @@ class WildTypeConfiguration(Configuration):
 #
 # -------------------------------------------------------------------------- #
 class BaseLibraryConfiguration(Configuration):
+    """
+    Base class representing the general attributes and methods common to 
+    all SeqLib configuration classes.
+    
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    init_fastq : `bool`, Default `False`
+        Set to `True` if `cfg` contains a fastq configuration `dict` that 
+        should also be parsed and validated. Not all sequence libraries
+        are to be parsed from reads.
+    
+    Attributes
+    ----------
+    fastq_cfg : :py:class:`~FASTQConfiguration`
+        Configuration object for the fastq options in a library configuration.
+    store_cfg : :py:class:`~StoreConfiguration`
+        The base store configuration representing all attributes common to a 
+        :py:class:`~enrich2.base.storemanager.StoreManager` object.
+    counts_file : `str`
+        Filepath pointing to a counts file.
+    seqlib_type : `str`
+        The type of sequence library inferred from the configuration `dict`.
+    timepoint : `int`
+        The timepoint of the library.
+    report_filtered_reads : `bool`
+        Depreciated. 
+    
+    Methods
+    -------
+    validate
+    validate_timepoint
+    validate_report_filtered_reads
+    validate_counts_file
 
+    """
     def __init__(self, cfg, init_fastq=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for base library configuration.")
@@ -515,12 +858,26 @@ class BaseLibraryConfiguration(Configuration):
             raise ValueError("Cannot define both a counts file and reads file "
                              "at the same time. It's one or the other, buddy.")
         if fastq_cfg is None and self.counts_file is None:
-            raise ValueError("Must have either a fastq definition or counts file.")
+            raise ValueError(
+                "Must have either a fastq definition or counts file.")
 
         self.store_cfg = StoreConfiguration(cfg, has_scorer=False).validate()
         self.validate()
 
+    def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
+        self.validate_report_filtered_reads()
+        self.validate_timepoint()
+        self.validate_counts_file()
+        return self
+
     def validate_timepoint(self):
+        """
+        Ensure that the timpoint of this library is an integer and not less
+        than 0.
+        """
         if not isinstance(self.timepoint, int):
             raise TypeError("Library `timepoint` must be an integer."
                             " Found type {}.".format(type(self.timepoint)))
@@ -528,6 +885,9 @@ class BaseLibraryConfiguration(Configuration):
             raise ValueError("Library `timepoint` must not be negative.")
 
     def validate_report_filtered_reads(self):
+        """
+        Check `report_filtered_reads` is a boolean.
+        """
         if not isinstance(self.report_filtered_reads, bool):
             raise TypeError("Expected bool for `report filtered reads`"
                             " but found {}.".format(
@@ -535,6 +895,11 @@ class BaseLibraryConfiguration(Configuration):
             ))
 
     def validate_counts_file(self):
+        """
+        Validate a counts file if it exists. Will throw an error if both a
+        valid `fastq_cfg` and `counts_file` is present, or if an invalid 
+        `counts_file` is found.
+        """
         if self.fastq_cfg is None and not self.counts_file:
             raise ValueError("Must provide a counts file if not using fastq.")
 
@@ -552,18 +917,36 @@ class BaseLibraryConfiguration(Configuration):
                 raise IOError("Unsupported format for `counts file`. Files"
                                  "need extension to be either bz2, gz or txt.")
 
-    def validate(self):
-        self.validate_report_filtered_reads()
-        self.validate_timepoint()
-        self.validate_counts_file()
-        return self
-
 
 class BaseVariantSeqLibConfiguration(BaseLibraryConfiguration):
+    """
+    Base Class representing the general attributes and methods common to 
+    all Variant SeqLib configuration classes. Inherits from 
+    :py:class:`~BaseLibraryConfiguration`.
 
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    init_fastq : `bool`, Default `False`
+        Set to `True` if `cfg` contains a fastq configuration `dict` that 
+        should also be parsed and validated. Not all sequence libraries
+        are to be parsed from reads.
+
+    Attributes
+    ----------
+    variants_cfg : :py:class:`~VariantsConfiguration`
+        Configuration object for the fastq options in a library configuration.
+   
+    See Also
+    --------
+    :py:class:`~BaseLibraryConfiguration`
+    
+    """
     def __init__(self, cfg, init_fastq=False):
         if not isinstance(cfg, dict):
-            raise TypeError("dict required for BaseVariantSeqLibConfiguration.")
+            raise TypeError(
+                "dict required for BaseVariantSeqLibConfiguration.")
         BaseLibraryConfiguration.__init__(self, cfg, init_fastq)
 
         if VARIANTS not in cfg:
@@ -579,14 +962,42 @@ class BaseVariantSeqLibConfiguration(BaseLibraryConfiguration):
 
 
 class BarcodeSeqLibConfiguration(BaseLibraryConfiguration):
+    """
+    Class representing the configuration of 
+    :py:class:`~enrich2.libraries.barcode.BarcodeSeqLib`
+    
+    Inherits from :py:class:`~BaseLibraryConfiguration`.
 
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    init_fastq : `bool`, default `True`
+        Set to `True` if `cfg` contains a fastq configuration `dict` that 
+        should also be parsed and validated. Not all sequence libraries
+        are to be parsed from reads.
+    reqiure_map : `bool`, default `False`
+        Specifies that the :py:class:`BarcodeConfiguration` should initialise
+        and validate a `map_file`.
+
+    Attributes
+    ----------
+    barcodes_cfg : :py:class:`~BarcodeConfiguration`
+        Configuration object for the variants options in a 
+        library configuration.
+
+    See Also
+    --------
+    :py:class:`~BaseLibraryConfiguration`
+
+    """
     def __init__(self, cfg, init_fastq=True, reqiure_map=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for BarcodeSeqLibConfiguration.")
         BaseLibraryConfiguration.__init__(self, cfg, init_fastq)
 
         if BARCODES not in cfg:
-            raise KeyError("Key {} missing for BcidSeqLib "
+            raise KeyError("Key {} missing for BarcodeSeqLib "
                            "configuration.".format(BARCODES))
         barcodes_cfg = cfg.get(BARCODES)
 
@@ -596,7 +1007,32 @@ class BarcodeSeqLibConfiguration(BaseLibraryConfiguration):
 
 
 class BcidSeqLibConfiguration(BarcodeSeqLibConfiguration):
+    """
+    Class representing the configuration of a
+    :py:class:`~enrich2.libraries.barcodeid.BcidSeqLib` object.
 
+    Inherits from :py:class:`~BarcodeSeqLibConfiguration`.
+
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    init_fastq : `bool`, default `True`
+        Set to `True` if `cfg` contains a fastq configuration `dict` that 
+        should also be parsed and validated. Not all sequence libraries
+        are to be parsed from reads.
+
+    Attributes
+    ----------
+    identifers_cfg : :py:class:`~IdentifiersConfiguration`
+        Configuration object for the identifiers options in a 
+        library configuration.
+
+    See Also
+    --------
+    :py:class:`~BarcodeSeqLibConfiguration`
+
+    """
     def __init__(self, cfg, init_fastq=True):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for BcidSeqLibConfiguration.")
@@ -617,7 +1053,28 @@ class BcidSeqLibConfiguration(BarcodeSeqLibConfiguration):
 
 class BcvSeqLibConfiguration(BaseVariantSeqLibConfiguration,
                              BarcodeSeqLibConfiguration):
+    """
+    Class representing the configuration of a
+    :py:class:`~enrich2.libraries.barcodevariant.BcvSeqLib` object.
 
+    Inherits from :py:class:`~BarcodeSeqLibConfiguration`.
+    Inherits from :py:class:`~BaseVariantSeqLibConfiguration`.
+
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    init_fastq : `bool`, default `True`
+        Set to `True` if `cfg` contains a fastq configuration `dict` that 
+        should also be parsed and validated. Not all sequence libraries
+        are to be parsed from reads.
+
+    See Also
+    --------
+    :py:class:`~BarcodeSeqLibConfiguration`.
+    :py:class:`~BaseVariantSeqLibConfiguration`.
+
+    """
     def __init__(self, cfg, init_fastq=True):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for BcvSeqLibConfiguration.")
@@ -631,7 +1088,28 @@ class BcvSeqLibConfiguration(BaseVariantSeqLibConfiguration,
 
 
 class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
+    """
+    Class representing the configuration of a
+    :py:class:`~enrich2.libraries.idonly.IdOnlySeqLib` object.
 
+    Inherits from :py:class:`~BaseLibraryConfiguration`.
+
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+
+    Attributes
+    ----------
+    identifiers_cfg : :py:class:`~IdentifiersConfiguration`
+        Configuration object for the identifiers options in a 
+        library configuration.
+
+    See Also
+    --------
+    :py:class:`~BaseLibraryConfiguration`
+
+    """
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for IdOnlySeqLib configuration.")
@@ -645,7 +1123,22 @@ class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
 
 
 class BasicSeqLibConfiguration(BaseVariantSeqLibConfiguration):
+    """
+    Class representing the configuration of a
+    :py:class:`~enrich2.libraries.basic.BasicSeqLib` object.
 
+    Inherits from :py:class:`~BaseVariantSeqLibConfiguration`.
+
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+
+    See Also
+    --------
+    :py:class:`~BaseVariantSeqLibConfiguration`
+
+    """
     def __init__(self, cfg, init_fastq=True):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for BasicSeqLibConfiguration.")
@@ -661,7 +1154,31 @@ class BasicSeqLibConfiguration(BaseVariantSeqLibConfiguration):
 #
 # -------------------------------------------------------------------------- #
 class ExperimentConfiguration(Configuration):
+    """
+    Class representing the configuration of an
+    :py:class:`~enrich2.experiment.experiment.Experiment` object.
 
+    Inherits from :py:class:`~Configuration`.
+
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    init_from_gui : `bool`, Default `False`
+    
+    Attributes
+    ----------
+    store_cfg : :py:class:`~StoreConfiguration`
+        Configuration object for the inherited base
+        :py:class:`~enrich2.base.storemanager.StoreManager` class.
+    condition_cfgs : `list`
+        List of :py:class:`~ConditionConfiguration` objects
+
+    See Also
+    --------
+    :py:class:`~Configuration`
+
+    """
     def __init__(self, cfg, init_from_gui=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for experiment configuration.")
@@ -689,6 +1206,9 @@ class ExperimentConfiguration(Configuration):
         self.validate()
 
     def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
         if len(self.condition_cfgs) == 0:
             raise ValueError("At least 1 experimental condition must be "
                              "present in an experiment.")
@@ -716,7 +1236,35 @@ class ExperimentConfiguration(Configuration):
 
 
 class ConditonConfiguration(Configuration):
+    """
+    Class representing the configuration of an
+    :py:class:`~enrich2.experiment.experiment.Condition` object.
 
+    Inherits from :py:class:`~Configuration`.
+
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    init_from_gui : `bool`, Default `False`
+        If `True`, relaxes some of the validation checks to allow the object
+        to be built up from scratch.
+
+    Attributes
+    ----------
+    store_cfg : :py:class:`~StoreConfiguration`
+        Configuration object for the inherited base
+        :py:class:`~enrich2.base.storemanager.StoreManager` class.
+    selection_cfgs : `list`
+        List of :py:class:`~ConditionConfiguration` objects
+    init_from_gui : `bool`
+        `bool` indicator to relax validation constraints.
+
+    See Also
+    --------
+    :py:class:`~Configuration`
+
+    """
     def __init__(self, cfg, init_from_gui=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for condition configuration.")
@@ -725,7 +1273,6 @@ class ConditonConfiguration(Configuration):
             raise KeyError("Configuration is missing required config value "
                            "`{}` [{}]".format(SELECTIONS,
                                               self.__class__.__name__))
-
         self.selection_cfgs = []
         self.init_from_gui = init_from_gui
         self.store_cfg = StoreConfiguration(cfg, has_scorer=False)
@@ -740,6 +1287,9 @@ class ConditonConfiguration(Configuration):
         self.validate()
 
     def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
         if not self.init_from_gui:
             if len(self.selection_cfgs) == 0:
                 raise ValueError("At least 1 selection must be "
@@ -751,7 +1301,39 @@ class ConditonConfiguration(Configuration):
 
 
 class SelectionConfiguration(Configuration):
+    """
+    Class representing the configuration of an
+    :py:class:`~enrich2.selection.selection.Selection` object.
 
+    Inherits from :py:class:`~Configuration`.
+
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    has_scorer : `bool`, Default `True`
+        Indicates if the configuration should also look for a plugin.
+    init_from_gui : `bool`, Default `False`
+        If `True`, relaxes some of the validation checks to allow the object
+        to be built up from scratch.
+
+    Attributes
+    ----------
+    store_cfg : :py:class:`~StoreConfiguration`
+        Configuration object for the inherited base
+        :py:class:`~enrich2.base.storemanager.StoreManager` class.
+    lib_cfgs : `list`
+        List of :py:class:`~BaseLibraryConfiguration` objects
+    init_from_gui : `bool`
+        `bool` indicator to relax validation constraints.
+    timepoints : `list`
+        List of library timepoitns.
+
+    See Also
+    --------
+    :py:class:`~Configuration`
+
+    """
     _lib_constructors = {
         "BarcodeSeqLib": BarcodeSeqLibConfiguration,
         "BcidSeqLib": BcidSeqLibConfiguration,
@@ -787,6 +1369,9 @@ class SelectionConfiguration(Configuration):
         self.validate()
 
     def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
         if not self.init_from_gui:
             if len(self.lib_cfgs) == 0:
                 raise ValueError("At least 1 library must be "
@@ -823,7 +1408,41 @@ class SelectionConfiguration(Configuration):
 
 
 class StoreConfiguration(Configuration):
+    """
+    Class representing the configuration of an
+    :py:class:`~enrich2.base.storemanager.StoreManager` object.
 
+    Inherits from :py:class:`~Configuration`.
+
+    Parameters
+    ----------
+    cfg : `dict`
+        The dictionary parsed from a configuration file.
+    has_scorer : `bool`, Default `True`
+        Indicates if the configuration should also look for a plugin.
+        
+    Attributes
+    ----------
+    scorer_cfg : :py:class:`~ScorerConfiguration`
+        Configuration object a scorer loaded from a plugin.
+    name : `str`
+        Name of the object.
+    output_dir : `str`
+        Filepath to the output directory.
+    store_path : `str`
+        Filepath to the store to load.
+    has_scorer : `bool`
+        Indicates if the store has a scorer.
+    has_store_path : `bool`
+        Indicates if the store manages a preexisting store
+    has_output_dir : `bool`
+        Indicates if the store has an output directory.
+
+    See Also
+    --------
+    :py:class:`~Configuration`
+
+    """
     def __init__(self, cfg, has_scorer=True):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for store configuration.")
@@ -872,6 +1491,9 @@ class StoreConfiguration(Configuration):
         self.validate()
 
     def validate(self):
+        """
+        Validate all attributes. Overrides parent method.
+        """
         if self.has_scorer and self.scorer_cfg is not None:
             self.scorer_cfg.validate()
 

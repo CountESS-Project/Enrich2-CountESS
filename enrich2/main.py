@@ -25,7 +25,7 @@ import sys
 from tkinter import Toplevel
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
-from .base.storemanager import SCORING_METHODS, LOGR_METHODS
+from .base.constants import SCORING_METHODS, LOGR_METHODS
 from .experiment.experiment import Experiment
 from .experiment.condition import Condition
 from .selection.selection import Selection
@@ -39,8 +39,8 @@ from .libraries.idonly import IdOnlySeqLib
 from .gui.logging_frame import WindowLoggingHandler
 
 
-__author__ = "Alan F Rubin"
-__copyright__ = "Copyright 2016-2017, Alan F Rubin"
+__author__ = "Alan F Rubin, Daniel C Esposito"
+__copyright__ = "Copyright 2016-2017, Alan F Rubin, Daniel C Esposito"
 __license__ = "GPLv3"
 __version__ = "2.0.0"
 __maintainer__ = "Alan F Rubin"

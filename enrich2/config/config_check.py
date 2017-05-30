@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -17,17 +17,30 @@
 
 
 """
-Functions for identifying the type of
-:py:class:`~enrich2.storemanager.StoreManager` derived object associated with a
-given configuration object (decoded from a JSON file as described `here
+Enrich2 config_check module
+===========================
+
+Functions for identifying the type of 
+:py:class:`~enrich2.base.storemanager.StoreManager` derived object associated 
+with a given configuration object (decoded from a JSON file as described `here
 <https://docs.python.org/2/library/json.html>`_).
 
 """
+
 
 from ..base.config_constants import CONDITIONS, SELECTIONS, LIBRARIES
 from ..base.config_constants import FASTQ, IDENTIFIERS, BARCODES, VARIANTS
 from ..base.config_constants import BARCODE_MAP_FILE, OVERLAP
 
+
+__all__ = [
+    'is_experiment',
+    'is_condition',
+    'is_selection',
+    'is_seqlib',
+    'seqlib_type',
+    'element_type'
+]
 
 
 def is_experiment(cfg):

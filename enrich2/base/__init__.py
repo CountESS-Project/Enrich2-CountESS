@@ -13,4 +13,21 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Enrich2 base module
+===================
+
+This module contains core classes, constants and utility methods used by
+other Enrich2 classes and methods. 
+"""
+
+
+__all__ = [
+    "config_constants",
+    "constants",
+    "dataframe",
+    "storemanager",
+    "utils"
+]

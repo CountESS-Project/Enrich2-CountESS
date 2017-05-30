@@ -15,18 +15,40 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
+
+"""
+Enrich2 dataframe module
+========================
+
+This module contains various utility methods to operate on dataframes
+instantiated in Enrich2 such as filtering dataframe indexes in
+various ways.
+"""
+
+
 import collections
 import logging
 
 import numpy as np
 import pandas as pd
 
-from ..base.storemanager import ELEMENT_LABELS
+from ..base.constants import ELEMENT_LABELS
 from ..base.constants import AA_CODES, AA_LIST, NT_LIST
 from ..base.constants import WILD_TYPE_VARIANT
 from ..libraries.barcodemap import re_barcode, re_identifier
 from ..libraries.variant import mutation_count, re_protein, re_coding, \
     re_noncoding
+
+
+__all__ = [
+    "SingleMut",
+    "validate_index",
+    "single_mutation_index",
+    "filter_coding_index",
+    "single_mutations_to_tuples",
+    "fill_position_gaps",
+    "singleton_dataframe"
+]
 
 
 SingleMut = collections.namedtuple("SingleMut", ['pre', 'post', 'pos', 'key'])
