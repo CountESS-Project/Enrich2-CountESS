@@ -16,15 +16,22 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import logging
+"""
+Enrich2 selection module
+========================
 
+This module contains the class used by ``Enrich2`` to represent a selection
+of sequencing libraries, which manages libraries.
+"""
+
+
+import logging
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
 
 from ..base.constants import WILD_TYPE_VARIANT
 from ..base.storemanager import StoreManager
-
 from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
 from ..base.config_constants import LIBRARIES
 
@@ -42,11 +49,101 @@ globals()['BcidSeqLib'] = BcidSeqLib
 globals()['IdOnlySeqLib'] = IdOnlySeqLib
 
 
+__all__ = [
+    "Selection"
+]
+
+
 class Selection(StoreManager):
     """
     Class for a single selection replicate, consisting of multiple 
-    timepoints. This class coordinates :py:class:`~seqlib.seqlib.SeqLib` 
-    objects.
+    timepoints. This class coordinates 
+    :py:class:`~enrich2.libraries.seqlib.SeqLib` objects.
+    
+    Attributes
+    ----------
+    libraries : `dict`
+        Dictionary of libraries where the keys are the keys are the 
+        library timepoints.
+    barcode_maps : `dict`
+        Dictionary of :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
+        where the keys are the keys are the library timepoints.
+    _wt : :py:class:`~enrich2.sequence.wildtype.WildTypeSequence`
+        Wild-type sequence managed by children.
+    
+    Methods
+    -------
+    _children 
+        Returns all libraries managed by this instance.
+    remove_child_id
+        Removes the child with the specified ``treeview_id`` 
+    timepoints
+        Returns all timepoints in this instance.
+    wt
+        Property returning the wildtype sequence object.
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    validate
+        Validates the attributes of this instance.
+    add_child
+        Adds a child to this instance's children.
+    is_barcodevariant
+        Returns a boolean indicating if all children are barcodevariant libs
+    is_barcodeid
+        Returns a boolean indicating if all children are barcodeid libs
+    is_coding
+        Returns a boolean indicating if all children have coding sequences.
+    has_wt_sequence
+        Returns a boolean indicating if all children have a wt sequence.
+    merge_counts_unfiltered
+        Counts :py:class:`~enrich2.libraries.seqlib.SeqLib` objects and 
+        tabulates counts for each timepoint.
+    filter_counts
+        Filter unfiltered raw counts by dropping missing counts.
+    combine_barcode_maps
+        Combine all barcode maps for selections into a single dataframe.
+    timepoint_indices_intersect
+        Check to see if timepoints share all variants in common for all labels.
+    timepoint_indices_intersect_for_label
+        For a single label, check to see if timepoints share all variants.
+    timepoints_contain_variants
+        For each label, check to see if timepoints share all variants in
+        common.
+    timepoints_contain_variants_for_label
+        For a single label, check to see if timepoints share all variants in
+        common.
+    table_not_empty_for_key
+        Checks to see if a table exists in a :py:class:`pd.HDFStore` 
+        store and is populated.
+    score_index_has_been_modified
+        Check to see if the index of a dataframe has been modified when
+        going from counts to scores dataframes.
+    table_exists_for_key
+        Checks to see if a table exists in a :py:class:`pd.HDFStore`
+    ensure_main_count_tables_exist_and_populated
+        Before the main computations are performed, checks to see if the
+        required count tables in main exist and are populated.
+    calculate
+        Calculate counts and enrichment scores for all labels in this instance.
+    write_tsv
+        Write each table from the store to its own tab-separated file.
+    synonymous_variants
+        Populate and return a dictionary mapping synonymous variants to the 
+        list of associated variants in ``/main/variants/counts``.
+    barcodemap_mapping
+        Return a `dict` representation of the ``'/main/barcodemap'`` table.
+    calc_outliers
+        Computes outlier statistics for elements within each label.
+    
+    See Also
+    --------
+    :py:class:`~enrich2.experiment.experiment.Experiment`
+    :py:class:`~enrich2.experiment.condition.Condition`
+    :py:class:`~enrich2.base.storemanager.StoreManager`
     """
     
     store_suffix = "sel"
@@ -60,8 +157,8 @@ class Selection(StoreManager):
 
     def _children(self):
         """
-        Return the :py:class:`~seqlib.seqlib.SeqLib` objects as a list, 
-        sorted by timepoint and then by name.
+        Return the :py:class:`~enrich2.libraries.seqlib.SeqLib` objects 
+        as a list, sorted by timepoint and then by name.
         """
         libs = list()
         for tp in self.timepoints:
@@ -70,8 +167,8 @@ class Selection(StoreManager):
 
     def remove_child_id(self, tree_id):
         """
-        Remove the reference to a :py:class:`~seqlib.seqlib.SeqLib` with 
-        Treeview id *tree_id*. Deletes empty time points.
+        Remove the reference to a :py:class:`~enrich2.libraries.seqlib.SeqLib` 
+        with Treeview id *tree_id*. Deletes empty time points.
         """
         empty = None
         for tp in self.libraries:
@@ -103,8 +200,8 @@ class Selection(StoreManager):
 
     def configure(self, cfg, configure_children=True, init_from_gui=False):
         """
-        Set up the :py:class:`~selection.Selection` using the *cfg* object, 
-        usually from a ``.json`` configuration file.
+        Set up the :py:class:`~enrich2.selection.selection.Selection` 
+        using the *cfg* object, usually from a ``.json`` configuration file.
 
         If *configure_children* is false, do not configure the children in 
         *cfg*.
@@ -212,8 +309,8 @@ class Selection(StoreManager):
 
     def is_barcodevariant(self):
         """
-        Return ``True`` if all :py:class:`~seqlib.seqlib.SeqLib` in the 
-        :py:class:`~selection.Selection` are 
+        Return ``True`` if all :py:class:`~enrich2.libraries.seqlib.SeqLib` 
+        in the :py:class:`~enrich2.selection.selection.Selection` are 
         :py:class:`~barcodevariant.BcvSeqLib` objects with 
         the same barcode map, else ``False``.
         """
@@ -222,8 +319,8 @@ class Selection(StoreManager):
 
     def is_barcodeid(self):
         """
-        Return ``True`` if all :py:class:`~seqlib.SeqLib` in the 
-        :py:class:`~selection.Selection` are 
+        Return ``True`` if all :py:class:`~enrich2.libraries.seqlib.SeqLib` 
+        in the :py:class:`~enrich2.selection.selection.Selection` are 
         :py:class:`~barcodeid.BcidSeqLib` objects with 
         the same barcode map, else ``False``.
         """
@@ -232,24 +329,25 @@ class Selection(StoreManager):
 
     def is_coding(self):
         """
-        Return ``True`` if the all :py:class:`~seqlib.seqlib.SeqLib` in the 
-        :py:class:`~selection.Selection` count protein-coding variants, else 
-        ``False``.
+        Return ``True`` if the all :py:class:`~enrich2.libraries.seqlib.SeqLib` 
+        in the :py:class:`~enrich2.selection.selection.Selection` 
+        count protein-coding variants, else ``False``.
         """
         return all(x.is_coding() for x in self.children)
 
     def has_wt_sequence(self):
         """
-        Return ``True`` if the all :py:class:`~seqlib.seqlib.SeqLib` in the 
-        :py:class:`~selection.Selection` have a wild type sequence, else 
-        ``False``.
+        Return ``True`` if the all :py:class:`~enrich2.libraries.seqlib.SeqLib` 
+        in the :py:class:`~enrich2.selection.selection.Selection` have a 
+        wild type sequence, else ``False``.
         """
         return all(x.has_wt_sequence() for x in self.children)
 
     def merge_counts_unfiltered(self, label):
         """
-        Counts :py:class:`~seqlib.seqlib.SeqLib` objects and tabulates counts 
-        for each timepoint. :py:class:`~seqlib.seqlib.SeqLib` objects from 
+        Counts :py:class:`~enrich2.libraries.seqlib.SeqLib` objects and 
+        tabulates counts for each timepoint. 
+        :py:class:`~enrich2.libraries.seqlib.SeqLib` objects from 
         the same timepoint are combined by summing the counts.
 
         Stores the unfiltered counts under ``/main/label/counts_unfiltered``.
@@ -368,6 +466,18 @@ class Selection(StoreManager):
         )
 
     def combine_barcode_maps(self):
+        """
+        Combine all barcode maps for 
+        :py:class:`~enrich2.libraries.seqlib.SeqLib` implementations
+        into a single data frame and store it in ``'/main/barcodemap'``.
+
+        If multiple variants or IDs map to the same barcode, only the first one
+        will be present in the barcode map table.
+
+        The ``'/main/barcodemap'`` table is not created if no
+        :py:class:`~enrich2.libraries.seqlib.SeqLib` has barcode map 
+        information.
+        """
         if self.check_store("/main/barcodemap"):
             return
 
@@ -392,11 +502,6 @@ class Selection(StoreManager):
         """
         Check to see if timepoints share all variants in common for all labels.
         Raises ValueError if not.
-
-        Returns
-        -------
-        None
-
         """
         for label in self.labels:
             self.timepoint_indices_intersect_for_label(label)
@@ -405,11 +510,6 @@ class Selection(StoreManager):
         """
         For a single label, check to see if timepoints share all variants
         in common. Raises ValueError if not.
-
-        Returns
-        -------
-        None
-
         """
         from functools import reduce
         table_key = "/main/{}/counts".format(label)
@@ -428,11 +528,6 @@ class Selection(StoreManager):
         """
         For each label, check to see if timepoints share all variants in
         common. Raises ValueError if not.
-
-        Returns
-        -------
-        None
-
         """
         for label in self.labels:
             self.timepoints_contain_variants_for_label(label)
@@ -441,11 +536,6 @@ class Selection(StoreManager):
         """
         For a single label, check to see if timepoints share all variants in
         common. Raises ValueError if not.
-
-        Returns
-        -------
-        None
-
         """
         table_key = "/main/{}/counts".format(label)
         libs = [lib for tp in self.timepoints for lib in self.libraries[tp]]
@@ -461,11 +551,13 @@ class Selection(StoreManager):
 
         Parameters
         ----------
-        key : `str`, string key used to index a hdf5 store.
+        key : `str`
+            string key used to index a :py:class:`pd.HDFStore` store.
 
         Returns
         -------
-        rtype: `bool`, True if table exists but is empty.
+        `bool`
+            ``True`` if table exists but is empty.
 
         """
         if not self.table_exists_for_key(key):
@@ -481,11 +573,13 @@ class Selection(StoreManager):
         
         Parameters
         ----------
-        label : `str`, label pointing to /main/{}/scores.
+        label : `str`
+            label pointing to /main/{}/scores.
 
         Returns
         -------
-        rtype: `bool`, True if index of scores matches counts for label.
+        `bool`
+            ``True`` if index of scores matches counts for label.
         """
         scores_key = '/main/{}/scores'.format(label)
         counts_key = '/main/{}/counts'.format(label)
@@ -504,11 +598,13 @@ class Selection(StoreManager):
 
         Parameters
         ----------
-        key : `str`, string key used to index a hdf5 store.
+        key : `str` 
+            String key used to index a :py:class:`pd.HDFStore` store.
 
         Returns
         -------
-        rtype: `bool`, True if table exists but is empty.
+        `bool`
+            ``True`` if table exists but is empty.
 
         """
         exists = self.check_store(key)
@@ -533,7 +629,7 @@ class Selection(StoreManager):
     def calculate(self):
         """
         Wrapper method to calculate counts and enrichment scores 
-        for all data in the :py:class:`~selection.Selection`.
+        for all data in the :py:class:`~enrich2.selection.selection.Selection`.
         """
         scorer_class_name = self.get_root().scorer_class.name
 
@@ -619,6 +715,14 @@ class Selection(StoreManager):
         return mapping
 
     def barcodemap_mapping(self):
+        """
+        Return a `dict` representation of the ``'/main/barcodemap'`` table.
+        
+        Returns
+        -------
+        `dict`
+            Mapping of barcode keys to barcode map values.
+        """
         mapping = dict()
         for bc, v in self.store['/main/barcodemap'].iterrows():
             v = v['value']
@@ -634,15 +738,15 @@ class Selection(StoreManager):
         different scores from the element. Results are stored
         in ``'/main/<label>/outliers'``.
 
-        Args:
-            label (str): label for the component
-            (``'variants'`` or ``'barcodes'``)
-
-            minimum_components (int): minimum number of componenents required
-            for any statistics to be calculated
-
-            log_chunksize (int): will output a log message every *n* rows
-
+        Parameters
+        ----------
+        label : `str`
+            label for the component (``'variants'`` or ``'barcodes'``)
+        minimum_components : `int`
+            minimum number of componenents required for any statistics 
+            to be calculated
+        log_chunksize : `int` 
+            will output a log message every *n* rows
         """
         if self.check_store("/main/{}/outliers".format(label)):
             return

@@ -20,7 +20,7 @@
 Enrich2 plugin module
 =====================
 
-:py:module:`enrich2.plugins` is a module providing classes and methods
+:py:module:`~enrich2.plugins` is a module providing classes and methods
 required to import modules, subclass a scoring plugin, define scripting options
 and option configuration files.
 """
@@ -127,9 +127,9 @@ class ModuleLoader(object):
 def load_scorer_class_and_options(path):
     """
     A utility function to import an ``Enrich2`` plugin 
-    :py:class:`enrich2.plugins.scoring.BaseScorerPlugin` class along with
-    its associated :py:class:`enrich2.plugins.options.Options` and 
-    :py:class:`enrich2.plugins.options.OptionsFile`
+    :py:class:`~enrich2.plugins.scoring.BaseScorerPlugin` class along with
+    its associated :py:class:`~enrich2.plugins.options.Options` and 
+    :py:class:`~enrich2.plugins.options.OptionsFile`
     
     Parameters
     ----------
@@ -182,7 +182,7 @@ def load_scorer_class_and_options(path):
 def implements_methods(class_):
     """
     Utility function that checks a class to see if it is a correctly 
-    implemented :py:class:`enrich2.plugins.scoring.BaseScorerPlugin` subclass.
+    implemented :py:class:`~enrich2.plugins.scoring.BaseScorerPlugin` subclass.
     
     Parameters
     ----------
