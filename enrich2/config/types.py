@@ -15,10 +15,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-# -*- coding: utf-8 -*-
-
 
 """
+Enrich2 config types module
+===========================
+
 This module contains classes representing the data model of an Enrich2
 configuration file. Each class represents a `yaml`/`json` dictionary
 and contains validation methods to format input from a GUI configurator.

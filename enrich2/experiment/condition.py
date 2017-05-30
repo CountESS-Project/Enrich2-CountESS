@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,14 +16,52 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from enrich2.base.storemanager import StoreManager
-from enrich2.selection.selection import Selection
+"""
+Enrich2 experiment experiment module
+====================================
+
+This module contains the class used by ``Enrich2`` to represent a condition. 
+This class coordinates experimental selections.
+"""
+
+
+from ..base.storemanager import StoreManager
+from ..selection.selection import Selection
+
+
+__all__ = [
+    "Condition"
+]
 
 
 class Condition(StoreManager):
     """
     Dummy class for experimental conditions within an 
-    :py:class:`~experiment.Experiment`. Required for proper GUI behavior.
+    :py:class:`~enrich2.experiment.experiment.Experiment`. 
+    
+    Required for proper GUI behavior.
+    
+    Attributes
+    ----------
+    selections : `list`
+        List of :py:class:`enrich2.selection.selection.Selection` objects.
+        
+    Methods
+    -------
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    validate
+        Validates the attributes of this instance.
+    _children 
+        Concrete method returning sorted selections.
+    remove_child_id
+        Removes the child with the specified ``treeview_id`` 
+    add_child
+        Adds a child to this instance's children.
     """
 
     has_store = False  # don't create an HDF5 for Conditions
@@ -34,12 +72,27 @@ class Condition(StoreManager):
         self.selections = list()
 
     def configure(self, cfg, configure_children=True, init_from_gui=False):
+        """
+        Set up the :py:class:`~enrich2.experiment.condition.Condition` 
+        using the *cfg* object, usually from a ``.json`` configuration file.
+
+        Parameters
+        ----------
+        cfg : `dict` or :py:class:`~enrich2.config.types.ExperimentConfiguration`
+            The object used to configure this instance.
+        configure_children : `bool`
+            Traverse children and configure each one.
+        init_from_gui : `bool` 
+            Allow this instance to be configured from a GUI.
+
+        """
         from ..config.types import ConditonConfiguration
 
         if isinstance(cfg, dict):
             cfg = ConditonConfiguration(cfg, init_from_gui)
         elif not isinstance(cfg, ConditonConfiguration):
-            raise TypeError("`cfg` was neither a ConditonConfiguration or dict.")
+            raise TypeError(
+                "`cfg` was neither a ConditonConfiguration or dict.")
 
         StoreManager.configure(self, cfg.store_cfg)
         if configure_children:
@@ -70,14 +123,19 @@ class Condition(StoreManager):
     def _children(self):
         """
         Method bound to the ``children`` property. Returns a list of all 
-        :py:class:`~selection.Selection` objects belonging to this object, 
-        sorted by name.
+        :py:class:`~enrich2.selection.selection.Selection` objects belonging 
+        to this object, sorted by name.
+        
+        Returns
+        -------
+        `list`
+            List of sorted selection objects, sorted by name.
         """
         return sorted(self.selections, key=lambda x: x.name)
 
     def add_child(self, child):
         """
-        Add a :py:class:`~selection.Selection`.
+        Add a :py:class:`~enrich2.selection.selection.Selection`
         """
         if child.name in self.child_names():
             raise ValueError("Non-unique selection "
@@ -87,7 +145,8 @@ class Condition(StoreManager):
 
     def remove_child_id(self, tree_id):
         """
-        Remove the reference to a :py:class:`~selection.Selection` with 
+        Remove the reference to a 
+        :py:class:`~enrich2.selection.selection.Selection` with 
         Treeview id *tree_id*.
         """
         self.selections = [

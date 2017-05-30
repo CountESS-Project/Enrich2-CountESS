@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,11 +13,20 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Enrich2 experiment experiment module
+====================================
+
+This module contains the class used by ``Enrich2`` to represent an 
+experiment. This class coordinates experimental conditions, and typically
+sits at the top level of the tree structure.
+"""
 
 
 import logging
-
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
@@ -25,20 +34,80 @@ import scipy.stats as stats
 from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
 from ..base.config_constants import CONDITIONS
 
-from enrich2.base.constants import WILD_TYPE_VARIANT
-from enrich2.base.storemanager import StoreManager
-from enrich2.statistics.random_effects import rml_estimator, nan_filter_generator
+from ..base.constants import WILD_TYPE_VARIANT
+from ..base.storemanager import StoreManager
+from ..statistics.random_effects import rml_estimator, nan_filter_generator
 from .condition import Condition
+
+
+__all__ = [
+    "Experiment"
+]
 
 
 class Experiment(StoreManager):
     """
-    Class for a coordinating multiple :py:class:`~.selection.Selection`
-    objects. Creating an
-    :py:class:`~experiment.Experiment` requires a valid *config* object,
-    usually from a ``.json`` configuration file.
+    Class for a coordinating multiple 
+    :py:class:`~enrich2.selection.selection.Selection` objects. Creating an
+    :py:class:`~enrich2.experiment.experiment.Experiment` requires a valid 
+    *config* object, usually from a ``.json`` configuration file.
+    
+    Attributes
+    ----------
+    conditions : `list`
+        A list of :py:class:`~enrich2.experiment.condition.Condition` objects
+    _wt : :py:class:`~enrich2.sequence.wildtype.WildTypeSequence`
+    
+    Methods
+    -------
+    wt
+        Property returning the wildtype sequence object.
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    validate
+        Validates the attributes of this instance.
+    _children 
+        Concrete method returning sorted conditions.
+    remove_child_id
+        Removes the child with the specified ``treeview_id`` 
+    add_child
+        Adds a child to this instance's children.
+    selection_list
+        Return a list of selections managed by this instance.
+    is_coding
+        Returns a boolean indicating if all children have coding sequences.
+    has_wt_sequence
+        Returns a boolean indicating if all children have a wt sequence.
+    calculate
+        Calculates combined scores with statistics from selections 
+        and conditions.
+    combine_barcode_maps
+        Combine all barcode maps for selections into a single dataframe.
+    calc_counts
+        Create a data frame of all counts in this Experiment.
+    calc_shared_full
+        Create a data frame containing all scores across all selections.
+    calc_shared
+        Get the subset of scores that are shared across all Selections.
+    calc_scores
+        Combine the scores and standard errors within each condition.
+    calc_pvalues_wt
+        Calculate uncorrected pvalue for each variant compared to wild type.
+    calc_pvalues_pairwise
+        Calculate pvalues for each variant in each pair of Conditions.
+    write_tsv
+        Write each table from the store to its own tab-separated file.
+    
+    See Also
+    --------
+    :py:class:`~enrich2.experiment.condition.Condition`
+    :py:class:`~enrich2.selection.selection.Selection`
+    
     """
-
     store_suffix = "exp"
     treeview_class_name = "Experiment"
 
@@ -49,6 +118,15 @@ class Experiment(StoreManager):
 
     @property
     def wt(self):
+        """
+        Property managing the wild type sequences of the 
+        :py:class:`~enrich2.selection.selection.Selection` objects being
+        managed.
+        
+        Returns
+        -------
+        :py:class:`~enrich2.sequence.wildtype.WildTypeSequence`
+        """
         if self.has_wt_sequence():
             if self._wt is None:
                 self._wt = self.selection_list()[0].wt.duplicate(self.name)
@@ -62,8 +140,18 @@ class Experiment(StoreManager):
 
     def configure(self, cfg, configure_children=True, init_from_gui=False):
         """
-        Set up the :py:class:`~experiment.Experiment` using the *cfg* object,
-        usually from a ``.json`` configuration file.
+        Set up the :py:class:`~enrich2.experiment.experiment.Experiment` 
+        using the *cfg* object, usually from a ``.json`` configuration file.
+        
+        Parameters
+        ----------
+        cfg : `dict` or :py:class:`~enrich2.config.types.ExperimentConfiguration`
+            The object used to configure this instance.
+        configure_children : `bool`
+            Traverse children and configure each one.
+        init_from_gui : `bool` 
+            Allow this instance to be configured from a GUI.
+            
         """
         from ..config.types import ExperimentConfiguration
         if isinstance(cfg, dict):
@@ -86,6 +174,11 @@ class Experiment(StoreManager):
         """
         Format this object (and its children) as a config object suitable for
         dumping to a config file.
+        
+        Returns
+        -------
+        `dict`
+            Dictionary of configuration options.
         """
         cfg = StoreManager.serialize(self)
         cfg[CONDITIONS] = [child.serialize() for child in self.children]
@@ -99,14 +192,19 @@ class Experiment(StoreManager):
     def _children(self):
         """
         Method bound to the ``children`` property. Returns a list of all
-        :py:class:`~condition.Condition` objects belonging to this object,
-        sorted by name.
+        :py:class:`~enrich2.experiment.condition.Condition` objects 
+        belonging to this object, sorted by name.
+        
+        Returns
+        -------
+        `list`
+            List of sorted conditions.
         """
         return sorted(self.conditions, key=lambda x: x.name)
 
     def add_child(self, child):
         """
-        Add a selection.
+        Add a condition to children conditions.
         """
         if child.name in self.child_names():
             raise ValueError("Non-unique condition name '{}' [{}]"
@@ -116,15 +214,22 @@ class Experiment(StoreManager):
 
     def remove_child_id(self, tree_id):
         """
-        Remove the reference to a :py:class:`~condition.Condition` with
-        Treeview id *tree_id*.
+        Remove the reference to a 
+        :py:class:`~enrich2.experiment.condition.Condition` 
+        with Treeview id *tree_id*.
         """
         self.conditions = [x for x in self.conditions if
                            x.treeview_id != tree_id]
 
     def selection_list(self):
         """
-        Return the :py:class:`~selection.Selection` objects as a list.
+        Return the :py:class:``~enrich2.selection.selection.Selection` 
+        objects as a list.
+        
+        Returns
+        -------
+        `list`
+            List of selection objects.
         """
         selections = list()
         for cnd in self.children:
@@ -149,23 +254,40 @@ class Experiment(StoreManager):
 
     def is_coding(self):
         """
-        Return ``True`` if the all :py:class:`~selection.Selection` in the 
-        :py:class:`~experiment.Experiment` count protein-coding variants, else 
+        Return ``True`` if the all 
+        :py:class:`~enrich2.selection.selection.Selection` in the 
+        :py:class:`~enrich2.experiment.experiment.Experiment` 
+        count protein-coding variants, else 
         ``False``.
+        
+        Returns
+        -------
+        `bool`
+            `True` if all selections are coding.
         """
         return all(x.is_coding() for x in self.selection_list())
 
     def has_wt_sequence(self):
         """
-        Return ``True`` if the all :py:class:`~selection.Selection` in the 
-        :py:class:`~experiment.Experiment` have a wild type sequence, else 
+        Return ``True`` if the all 
+        :py:class:`~enrich2.selection.selection.Selection` in the 
+        :py:class:`~enrich2.experiment.experiment.Experiment` 
+        have a wild type sequence, else 
         ``False``.
+                
+        Returns
+        -------
+        `bool`
+            `True` if all selections have a wildtype sequence.
         """
         return all(x.has_wt_sequence() for x in self.selection_list())
 
     def calculate(self):
         """
-        Calculate scores for all :py:class:`~selection.Selection` objects.
+        Calculate scores for all 
+        :py:class:`~enrich2.selection.selection.Selection` objects, then
+        combine scores across selections within a condition to generate 
+        score statistics.
         """
         if len(self.labels) == 0:
             raise ValueError("No data present across all conditions [{}]"
@@ -184,14 +306,16 @@ class Experiment(StoreManager):
 
     def combine_barcode_maps(self):
         """
-        Combine all barcode maps for :py:class:`~selection.Selection` objects
+        Combine all barcode maps for 
+        :py:class:`~enrich2.selection.selection.Selection` objects
         into a single data frame and store it in ``'/main/barcodemap'``.
 
         If multiple variants or IDs map to the same barcode, only the first one
         will be present in the barcode map table.
 
         The ``'/main/barcodemap'`` table is not created if no
-        :py:class:`~selection.Selection` has barcode map information.
+        :py:class:`~enrich2.selection.selection.Selection` 
+        has barcode map information.
         """
         if self.check_store("/main/barcodemap"):
             return
@@ -217,6 +341,15 @@ class Experiment(StoreManager):
         Create a data frame of all counts in this Experiment. This data frame
         is not used for any calculations, but is provided to facilitate
         exploration of the data set.
+        
+        Parameters
+        ----------
+        label : `str` {'barcodes', 'variants', 'identifiers', 'synonymous'}
+            A valid table label.
+            
+        See Also
+        --------
+        :py:module:`~enrich2.base.constants`
         """
         if self.check_store("/main/{}/counts".format(label)):
             return
@@ -274,6 +407,15 @@ class Experiment(StoreManager):
         """
         Use joins to create a data frame containing all scores across all
         Selections in the Experiment.
+        
+        Parameters
+        ----------
+        label : `str` {'barcodes', 'variants', 'identifiers', 'synonymous'}
+            A valid table label.
+            
+        See Also
+        --------
+        :py:module:`~enrich2.base.constants`
         """
         if self.check_store("/main/{}/scores_shared_full".format(label)):
             return
@@ -332,6 +474,16 @@ class Experiment(StoreManager):
         """
         Get the subset of scores that are shared across all Selections in each
         Condition.
+        
+        Parameters
+        ----------
+        label : `str` {'barcodes', 'variants', 'identifiers', 'synonymous'}
+            A valid table label.
+            
+        See Also
+        --------
+        :py:module:`~enrich2.base.constants`
+        
         """
         if self.check_store("/main/{}/scores_shared".format(label)):
             return
@@ -348,6 +500,16 @@ class Experiment(StoreManager):
     def calc_scores(self, label):
         """
         Combine the scores and standard errors within each condition.
+        
+        Parameters
+        ----------
+        label : `str` {'barcodes', 'variants', 'identifiers', 'synonymous'}
+            A valid table label.
+            
+        See Also
+        --------
+        :py:module:`~enrich2.base.constants`
+        
         """
         if self.check_store("/main/{}/scores".format(label)):
             return
@@ -429,6 +591,16 @@ class Experiment(StoreManager):
     def calc_pvalues_wt(self, label):
         """
         Calculate uncorrected pvalue for each variant compared to wild type.
+        
+        Parameters
+        ----------
+        label : `str` {'barcodes', 'variants', 'identifiers', 'synonymous'}
+            A valid table label.
+            
+        See Also
+        --------
+        :py:module:`~enrich2.base.constants`
+        
         """
         if self.check_store("/main/{}/scores_pvalues_wt".format(label)):
             return
@@ -466,6 +638,16 @@ class Experiment(StoreManager):
     def calc_pvalues_pairwise(self, label):
         """
         Calculate pvalues for each variant in each pair of Conditions.
+        
+        Parameters
+        ----------
+        label : `str` {'barcodes', 'variants', 'identifiers', 'synonymous'}
+            A valid table label.
+            
+        See Also
+        --------
+        :py:module:`~enrich2.base.constants`
+        
         """
         if self.check_store("/main/{}/scores_pvalues".format(label)):
             return
