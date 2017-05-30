@@ -14,3 +14,17 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+
+
+__all__ = [
+    'base',
+    'config',
+    'experiment',
+    'gui',
+    'libraries',
+    'plugins',
+    'selection',
+    'sequence',
+    'statistics'
+    'tests',
+]
