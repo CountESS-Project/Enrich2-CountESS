@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,6 +16,15 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 sequence fqread module
+==============================
+This module contains the ``FQRead`` class for representing a read in FASTQ
+format. Additionally, this module contains utility functions for parsing and 
+handling FASTQ files.
+"""
+
+
 from sys import stderr
 import os.path
 import re
@@ -23,6 +32,20 @@ import itertools
 import bz2
 import gzip
 from array import array
+
+
+__all__ = [
+    "header_pattern",
+    "BUFFER_SIZE",
+    "dna_trans",
+    "FQRead",
+    "split_fastq_path",
+    "create_compressed_outfile",
+    "read_fastq",
+    "read_fastq_multi",
+    "fastq_filter_chastity"
+]
+
 
 # The following regex is referenced by line number in the class documentation.
 # Matches FASTQ headers based on the following pattern (modify as needed):
@@ -37,9 +60,11 @@ header_pattern = re.compile("@(?P<MachineName>.+)"
                             "/(?P<ReadNumber>\d)")
 
 
-BUFFER_SIZE = 100000 # empirically optimized for reading FASTQ files
+# empirically optimized for reading FASTQ files
+BUFFER_SIZE = 100000
 
 
+# Helper translator for dna complimenting
 dna_trans = str.maketrans("actgACTG", "tgacTGAC")
 
 
@@ -53,7 +78,6 @@ class FQRead(object):
     """
     # use slots for memory efficiency
     __slots__ = ('header', 'sequence', 'header2', 'quality', 'qbase')
-
 
     def __init__(self, header, sequence, header2, quality, qbase=33):
         lst = [header, sequence, header2, quality]
@@ -75,7 +99,6 @@ class FQRead(object):
                         array('b', quality.encode('ascii')).tolist()]
         self.qbase = qbase
 
-
     def __str__(self):
         """
         Reformat as a four-line FASTQ_ record. This method converts the 
@@ -85,13 +108,11 @@ class FQRead(object):
         quality = quality.decode('ascii')
         return '\n'.join([self.header, self.sequence, self.header2, quality])
 
-
     def __len__(self):
         """
         Object length is the length of the sequence.
         """
         return len(self.sequence)
-
 
     def trim(self, start=1, end=None):
         """
@@ -101,14 +122,12 @@ class FQRead(object):
         self.sequence = self.sequence[start - 1:end]
         self.quality = self.quality[start - 1:end]
 
-
     def trim_length(self, length, start=1):
         """
         Trims this :py:class:`~fqread.FQRead` to contain *length* bases, 
         beginning with *start*. Bases are numbered starting at 1.
         """
         self.trim(start=start, end=start + length - 1)
-
 
     def revcomp(self):
         """
@@ -117,7 +136,6 @@ class FQRead(object):
         """
         self.sequence = self.sequence.translate(dna_trans)[::-1]
         self.quality = self.quality[::-1]
-
 
     def header_information(self, pattern=header_pattern):
         """header_information(pattern=header_pattern)
@@ -142,20 +160,17 @@ class FQRead(object):
                     header_dict[key] = int(header_dict[key])
             return header_dict
 
-
     def min_quality(self):
         """
         Return the minimum Phred-like quality score.
         """
         return min(self.quality)
 
-
     def mean_quality(self):
         """
         Return the average Phred-like quality score.
         """
         return float(sum(self.quality)) / len(self)
-
 
     def is_chaste(self, raises=True):
         """
@@ -325,7 +340,6 @@ def read_fastq_multi(fnames, filter_function=None, buffer_size=BUFFER_SIZE,
             yield records
         else:                                           # fail filtering
             continue
-
 
 
 def fastq_filter_chastity(fq):
