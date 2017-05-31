@@ -36,9 +36,8 @@ from ..base.constants import ELEMENT_LABELS
 from ..base.constants import AA_CODES, AA_LIST, NT_LIST
 from ..base.constants import WILD_TYPE_VARIANT
 from ..libraries.barcodemap import re_barcode, re_identifier
-from ..libraries.variant import mutation_count, re_protein, re_coding, \
-    re_noncoding
-
+from ..libraries.variant import mutation_count
+from enrich2.base.constants import re_protein, re_coding, re_noncoding
 
 __all__ = [
     "SingleMut",

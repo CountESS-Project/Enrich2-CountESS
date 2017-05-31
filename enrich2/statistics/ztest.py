@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -15,18 +15,29 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-"""z-score helper functions.
+"""
+Enrich2 statistics ztest module
+===============================
+z-score helper functions.
 
 This module contains functions for calculating z-scores and corresponding
 p-values for pairs of scores.
 """
 
+
 import numpy as np
 import scipy.stats as stats
 
 
+__all__ = [
+    "ztest_pair",
+    "ztest_single"
+]
+
+
 def ztest_pair(df1, df2):
-    """z-test for elements in two data frames.
+    """
+    z-test for elements in two data frames.
 
     Takes two data frames with ``'score'`` and ``'SE'`` columns and returns
     a new data frame containing the scores and standard errors and result for
@@ -34,15 +45,14 @@ def ztest_pair(df1, df2):
 
     Parameters
     ----------
-    df1 : pandas.DataFrame
+    df1 : :py:class:`pandas.DataFrame`
         The first data frame. Must contain ``'score'`` and ``'SE'`` columns.
-
-    df2 : pandas.DataFrame
+    df2 : :py:class:`pandas.DataFrame`
         The second data frame. Must contain ``'score'`` and ``'SE'`` columns.
 
     Returns
     -------
-    pandas.DataFrame
+    :py:class:`pandas.DataFrame`
         Result data frame containing scores (``'score1'`` and ``'score2'``),
         standard errors (``'SE1'``, ``'SE2'``), z-scores (``'z'``), and
         p-values (``'pvalue_raw'``) for each element found in both data frames.
@@ -63,7 +73,8 @@ def ztest_pair(df1, df2):
 
 
 def ztest_single(df, score, se):
-    """z-test for comparing elements in a data frame to a single score and SE.
+    """
+    z-test for comparing elements in a data frame to a single score and SE.
 
     Takes a data frames with ``'score'`` and ``'SE'`` columns and a score and
     standard error to compare them to and returns a new data frame containing
@@ -71,18 +82,16 @@ def ztest_single(df, score, se):
 
     Parameters
     ----------
-    df : pandas.DataFrame
+    df : :py:class:`pandas.DataFrame`
         The data frame. Must contain ``'score'`` and ``'SE'`` columns.
-
-    score : float
+    score : `float`
         Score used for comparison to elements in the data frame.
-
-    se : float
+    se : `float`
         Standard error used for comparison to elements in the data frame.
 
     Returns
     -------
-    pandas.DataFrame
+    :py:class:`pandas.DataFrame`
         Result data frame containing score (``'score'``), standard error
         (``'SE'``), z-score (``'z'``), and p-value (``'pvalue_raw'``) for each
         element in the input data frame.

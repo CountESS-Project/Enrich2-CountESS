@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,19 +16,75 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 libraries barcode module
+================================
+
+Contains the concrete class ``BarcodeSeqLib`` which represents a sequencing
+library which only contains barcoded sequences.
+"""
+
+
 import logging
 import sys
 
-from ..sequence.fqread import read_fastq, split_fastq_path
+from ..sequence.fqread import read_fastq
 from .seqlib import SeqLib
+
+
+__all__ = [
+    "BarcodeSeqLib"
+]
 
 
 class BarcodeSeqLib(SeqLib):
     """
     Class for count data from barcoded sequencing libraries. Designed for
     barcode-only scoring or as a parent class for
-    :py:class:`~seqlib.barcodevariant.BcvSeqLib` and
-    :py:class:`~seqlib.barcodeid.BcidSeqLib`.
+    :py:class:`~enrich2.libraries.barcodevariant.BcvSeqLib` and
+    :py:class:`~enrich2.libraries.barcodeid.BcidSeqLib`.
+    
+    Class Attributes
+    ----------------
+    treeview_class_name :  `str`
+        String used to render object in the GUI.
+    
+    Attributes
+    ----------
+    reads : `str`
+        File path of reads file to parse.
+    revcomp_reads : `bool`
+        ``True`` to reverse complement reads.
+    trim_start : `int`
+        Position to start the read trim from.
+    trim_length : `int`
+        Number of bases to keep starting from `trim_start`
+    barcode_min_count : `int`
+        Minimum count a barcode must have to pass the filtering phase.
+    
+    Methods
+    -------
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    configure_fastq
+        Configures the fastq options following the `configure` method
+    serialize_fastq
+        Returns a `dict` with all configurable fastq options and their
+        settings for this instance.
+    calculate
+        Counts variants from counts file or FASTQ.
+    counts_from_reads
+        Reads the forward or reverse FASTQ_ file (reverse reads are
+        reverse-complemented), performs quality-based filtering, and counts
+        the barcodes.
+        
+    Inherits
+    --------
+    :py:class:`~enrich2.libraries.seqlib.SeqLib`
     """
 
     treeview_class_name = "Barcode SeqLib"
@@ -48,6 +104,11 @@ class BarcodeSeqLib(SeqLib):
         """
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
+
+        Parameters
+        ----------
+        cfg : `dict` or :py:class:`~enrich2.config.types.BcidSeqLibConfiguration`
+            The object to configure this instance with.
         """
         from ..config.types import BarcodeSeqLibConfiguration
 
@@ -70,6 +131,12 @@ class BarcodeSeqLib(SeqLib):
         """
         Format this object (and its children) as a config object suitable for
         dumping to a config file.
+
+        Returns
+        -------
+        `dict`
+            Attributes of this instance and that of inherited classes
+            in a dictionary.
         """
         cfg = SeqLib.serialize(self)
         cfg['barcodes'] = dict()
@@ -81,6 +148,11 @@ class BarcodeSeqLib(SeqLib):
     def configure_fastq(self, cfg):
         """
         Set up the object's FASTQ_ file handling and filtering options.
+
+        Parameters
+        ----------
+        cfg : :py:class:`~enrich2.config.types.FASTQConfiguration`
+            Configures the fastq options of this instance.
         """
         self.reads = cfg.reads
         self.revcomp_reads = cfg.reverse
@@ -91,6 +163,11 @@ class BarcodeSeqLib(SeqLib):
     def serialize_fastq(self):
         """
         Serialize this object's FASTQ_ file handling and filtering options.
+
+        Returns
+        -------
+        `dict`
+            Return a `dict` of filtering options that have non-default values.
         """
         fastq = {
             'reads': self.reads,
@@ -163,4 +240,3 @@ class BarcodeSeqLib(SeqLib):
                 query="count >= self.barcode_min_count"
             )
             self.save_filter_stats()
-        return

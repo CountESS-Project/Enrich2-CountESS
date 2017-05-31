@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,4 +13,19 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Enrich2 statistics module
+=========================
+
+Module contains functions for the random effects model used for calculating
+score statistics, and for performing z-tests between dataframes.
+"""
+
+
+__all__ = [
+    "random_effects",
+    "ztest"
+]

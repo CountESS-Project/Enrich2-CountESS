@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,22 +13,53 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Enrich2 statistics random_effects module
+========================================
+
+Module contains functions for the random effects model used for calculating
+score statistics. See notes for references.
+"""
+
 
 import numpy as np
 
 
+__all__ = [
+    "rml_estimator",
+    "nan_filter_generator",
+]
+
 def __old_rml_estimator(y, sigma2i, iterations=50):
-    """Implementation of the robust maximum likelihood estimator.
+    """
+    Implementation of the robust maximum likelihood estimator.
 
-        ::
+    Parameters
+    ----------
+    y : :py:class:`~numpy.ndarray`, (n_replicates, n_variants)
+        The variant scores matrix
+    sigma2i : :py:class:`~numpy.ndarray`, (n_replicates, n_variants)
+        The score variance matrix
+    iterations : `int`
+        Number of iterations to perform.
+    
+    Returns
+    -------
+    `tuple`
+        Tuple of :py:class:`~numpy.ndarray` objects, corresponding to
+        ``betaML``, ``sigma2ML``, ``eps``.
 
-            @book{demidenko2013mixed,
-              title={Mixed models: theory and applications with R},
-              author={Demidenko, Eugene},
-              year={2013},
-              publisher={John Wiley \& Sons}
-            }
+    Notes
+    -----
+    @book{demidenko2013mixed,
+      title={Mixed models: theory and applications with R},
+      author={Demidenko, Eugene},
+      year={2013},
+      publisher={John Wiley \& Sons}
+    }
 
     """
     w = 1 / sigma2i
@@ -76,17 +107,34 @@ def nan_filter_generator(data):
         yield data_k, rep_num
 
 
-
 def rml_estimator(y, sigma2i, iterations=50):
     """
     Implementation of the robust maximum likelihood estimator.
-        ::
-            @book{demidenko2013mixed,
-              title={Mixed models: theory and applications with R},
-              author={Demidenko, Eugene},
-              year={2013},
-              publisher={John Wiley \& Sons}
-            }
+
+    Parameters
+    ----------
+    y : :py:class:`~numpy.ndarray`, (n_replicates, n_variants)
+        The variant scores matrix
+    sigma2i : :py:class:`~numpy.ndarray`, (n_replicates, n_variants)
+        The score variance matrix
+    iterations : `int`
+        Number of iterations to perform.
+    
+    Returns
+    -------
+    `tuple`
+        Tuple of :py:class:`~numpy.ndarray` objects, corresponding to
+        ``betaML``, ``sigma2ML``, ``eps``.
+
+    Notes
+    -----
+    @book{demidenko2013mixed,
+      title={Mixed models: theory and applications with R},
+      author={Demidenko, Eugene},
+      year={2013},
+      publisher={John Wiley \& Sons}
+    }
+    
     """
     # Initialize each array to be have len number of variants
     max_replicates = y.shape[0]

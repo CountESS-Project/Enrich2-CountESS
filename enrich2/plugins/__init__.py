@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
+#  Copyright 2016-2017 Alan F Rubin,
 #
 #  This file is part of Enrich2.
 #

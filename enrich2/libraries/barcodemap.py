@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,10 +16,27 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 libraries barcode module
+================================
+
+Contains the BarcodeMap class which subclasses `dict` to provide a basic
+way to map barcodes to variants.
+"""
+
+
 import re
 import bz2
 import gzip
 import os.path
+
+
+__all__ = [
+    "re_barcode",
+    "re_variant_dna",
+    "re_identifier",
+    "BarcodeMap"
+]
 
 
 re_barcode = re.compile("^[ACGT]+$")
@@ -45,9 +62,20 @@ class BarcodeMap(dict):
     variant DNA sequences, or ``False`` if the barcodes are assigned to
     arbitrary identifiers. If this is ``True``, additional error checking
     is performed on the variant DNA sequences.
-
+    
+    Attributes
+    ----------
+    name : `str`
+        Name of the object, which includes the base of `filename`.
+    filename : `str`
+        File path pointing to the map file to load.
+    is_variant : `bool`, Default ``False``
+        Boolean that is ``True`` if the barcodes are assigned to
+        variant DNA sequences, or ``False`` if the barcodes are assigned to
+        arbitrary identifiers
     """
     def __init__(self, mapfile, is_variant=False):
+        super(BarcodeMap, self).__init__()
         self.name = "barcodemap_{}".format(os.path.basename(mapfile))
         self.filename = mapfile
         self.is_variant = is_variant

@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,6 +16,15 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 libraries barcodevariant module
+=======================================
+
+Contains the concrete class ``BcvSeqLib`` which represents a sequencing
+library containing variants which are also barcode sequences.
+"""
+
+
 import logging
 import pandas as pd
 
@@ -24,17 +33,48 @@ from .barcode import BarcodeSeqLib
 from .variant import VariantSeqLib
 
 
+__all__ = [
+    "BcvSeqLib"
+]
+
+
 class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
     """
     Class for counting variant data from barcoded sequencing libraries. 
-    Creating a :py:class:`BcvSeqLib` requires a valid *config* 
-    object with an ``'barcodes'`` entry and information about the wild type 
-    sequence.
+    Creating a :py:class:`~enrich2.libraries.barcodevariant.BcvSeqLib` requires
+    a valid *config* object with an ``'barcodes'`` entry and information 
+    about the wild type sequence.
 
     The ``barcode_map`` keyword argument can be used to pass an existing 
-    :py:class:`~seqlib.barcodemap.BarcodeMap`. Ensuring this is the 
-    right :py:class:`~seqlib.barcodemap.BarcodeMap` is the responsibility 
-    of the caller.
+    :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`. Ensuring this is the 
+    right BarcodeMap is the responsibility of the caller.
+    
+    Class Attributes
+    ----------------
+    treeview_class_name :  `str`
+        String used to render object in the GUI.
+    
+    Attributes
+    ----------
+    barcode_map : :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
+        Barcode map associated with the library.
+    
+    Methods
+    -------
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    calculate
+        Counts the barcodes and combines them into variant counts using a
+        :py:class:`~enrich2.libraries.barcodemap.BarcodeMap` object.
+    
+    Inherits
+    --------
+    :py:class:`~enrich2.libraries.variant.VariantSeqLib`
+    :py:class:`~enrich2.libraries.barcode.BarcodeSeqLib`
     """
 
     treeview_class_name = "Barcoded Variant SeqLib"
@@ -46,8 +86,15 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
 
     def configure(self, cfg, barcode_map=None):
         """
-        Set up the object using the config object *cfg*, usually derived from 
+        Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
+
+        Parameters
+        ----------
+        cfg : `dict` or :py:class:`~enrich2.config.types.BcvSeqLibConfiguration`
+            The object to configure this instance with.
+        barcode_map : :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
+            An existing barcode map associated with the library.
         """
         from ..config.types import BcvSeqLibConfiguration
 
@@ -73,8 +120,14 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
 
     def serialize(self):
         """
-        Format this object (and its children) as a config object suitable
-        for dumping to a config file.
+        Format this object (and its children) as a config object suitable for
+        dumping to a config file.
+
+        Returns
+        -------
+        `dict`
+            Attributes of this instance and that of inherited classes
+            in a dictionary.
         """
         cfg = VariantSeqLib.serialize(self)
         cfg.update(BarcodeSeqLib.serialize(self))
@@ -85,11 +138,11 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
 
         return cfg
 
-
     def calculate(self):
         """
         Counts the barcodes using :py:meth:`BarcodeSeqLib.count`
-        and combines them into variant counts using the :py:class:`BarcodeMap`.
+        and combines them into variant counts using the 
+        :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
         """
         if not self.check_store("/main/variants/counts"):
             BarcodeSeqLib.calculate(self) # count the barcodes

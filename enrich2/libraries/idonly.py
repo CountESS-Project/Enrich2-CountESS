@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,13 +16,52 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 libraries idonly module
+===============================
+
+Contains the concrete class ``IdOnlySeqLib`` which represents a sequencing
+library derived from a counts file.
+"""
+
+
 from .seqlib import SeqLib
+
+
+__all__ = [
+    "IdOnlySeqLib"
+]
 
 
 class IdOnlySeqLib(SeqLib):
     """
     Class for counting data with non-variant identifiers and no associated
     FASTQ_ data.
+    
+    Class Attributes
+    ----------------
+    treeview_class_name :  `str`
+        String used to render object in the GUI.
+    
+    Attributes
+    ----------
+    identifier_min_count : `int`
+        Minimum count an Id must have to pass the filtering phase.
+    
+    Methods
+    -------
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    calculate
+        Get the identifier counts from the counts file.
+    
+    Inherits
+    --------
+    :py:class:`~enrich2.libraries.seqlib.SeqLib`
     """
 
     treeview_class_name = "ID-only SeqLib"
@@ -36,6 +75,11 @@ class IdOnlySeqLib(SeqLib):
         """
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
+
+        Parameters
+        ----------
+        cfg : `dict` or :py:class:`~enrich2.config.types.IdOnlySeqLibConfiguration`
+            The object to configure this instance with.
         """
         from ..config.types import IdOnlySeqLibConfiguration
 
@@ -52,6 +96,12 @@ class IdOnlySeqLib(SeqLib):
         """
         Format this object (and its children) as a config object suitable for
         dumping to a config file.
+
+        Returns
+        -------
+        `dict`
+            Attributes of this instance and that of inherited classes
+            in a dictionary.
         """
         cfg = SeqLib.serialize(self)
 

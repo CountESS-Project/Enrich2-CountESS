@@ -24,6 +24,7 @@ This module contains all the constants used in the Enrich2 source code.
 """
 
 
+import re
 import collections
 
 
@@ -161,7 +162,34 @@ LOGR_METHODS = collections.OrderedDict([
                             ])
 
 
-
 #: List specifying valid labels in their sorted order
 #: Sorted order is the order in which they should be calculated in
 ELEMENT_LABELS = ['barcodes', 'identifiers', 'variants', 'synonymous']
+
+
+#: Default number of maximum mutation.
+#: Must be set to avoid data frame performance errors.
+DEFAULT_MAX_MUTATIONS = 10
+
+
+#: Matches a single amino acid substitution in HGVS_ format.
+re_protein = re.compile(
+    "(?P<match>p\.(?P<pre>[A-Z][a-z][a-z])(?P<pos>-?\d+)"
+    "(?P<post>[A-Z][a-z][a-z]))")
+
+
+#: Matches a single nucleotide substitution (coding or noncoding)
+#: in HGVS_ format.
+re_nucleotide = re.compile(
+    "(?P<match>[nc]\.(?P<pos>-?\d+)(?P<pre>[ACGT])>(?P<post>[ACGT]))")
+
+
+#: Matches a single coding nucleotide substitution in HGVS_ format.
+re_coding = re.compile(
+    "(?P<match>c\.(?P<pos>-?\d+)(?P<pre>[ACGT])>(?P<post>[ACGT]) "
+    "\(p\.(?:=|[A-Z][a-z][a-z]-?\d+[A-Z][a-z][a-z])\))")
+
+
+#: Matches a single noncoding nucleotide substitution in HGVS_ format.
+re_noncoding = re.compile(
+    "(?P<match>n\.(?P<pos>-?\d+)(?P<pre>[ACGT])>(?P<post>[ACGT]))")

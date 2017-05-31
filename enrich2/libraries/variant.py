@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,42 +16,48 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 libraries variant module
+================================
+
+Contains the abstract class ``VariantSeqLib`` common to all sequencing library
+classes used in ``Enrich2`` that deal with coding/noncoding variants.
+"""
+
+
 import logging
 import re
 
-from ..sequence.aligner import Aligner
-from ..base.constants import CODON_TABLE, AA_CODES
-from ..base.constants import WILD_TYPE_VARIANT, SYNONYMOUS_VARIANT
-from ..sequence.wildtype import WildTypeSequence
-from ..config.config_check import seqlib_type
-
+from ..base.constants import re_coding, re_noncoding, re_protein
 from .seqlib import SeqLib
+from ..base.constants import AA_CODES, CODON_TABLE, DEFAULT_MAX_MUTATIONS
+from ..base.constants import SYNONYMOUS_VARIANT, WILD_TYPE_VARIANT
+from ..sequence.aligner import Aligner
+from ..sequence.wildtype import WildTypeSequence
 
-#: Default number of maximum mutation.
-#: Must be set to avoid data frame performance errors.
-DEFAULT_MAX_MUTATIONS = 10
 
-#: Matches a single amino acid substitution in HGVS_ format.
-re_protein = re.compile(
-    "(?P<match>p\.(?P<pre>[A-Z][a-z][a-z])(?P<pos>-?\d+)"
-    "(?P<post>[A-Z][a-z][a-z]))")
-
-#: Matches a single nucleotide substitution (coding or noncoding)
-#: in HGVS_ format.
-re_nucleotide = re.compile(
-    "(?P<match>[nc]\.(?P<pos>-?\d+)(?P<pre>[ACGT])>(?P<post>[ACGT]))")
-
-#: Matches a single coding nucleotide substitution in HGVS_ format.
-re_coding = re.compile(
-    "(?P<match>c\.(?P<pos>-?\d+)(?P<pre>[ACGT])>(?P<post>[ACGT]) "
-    "\(p\.(?:=|[A-Z][a-z][a-z]-?\d+[A-Z][a-z][a-z])\))")
-
-#: Matches a single noncoding nucleotide substitution in HGVS_ format.
-re_noncoding = re.compile(
-    "(?P<match>n\.(?P<pos>-?\d+)(?P<pre>[ACGT])>(?P<post>[ACGT]))")
+__all__ = [
+    "valid_variant",
+    "hgvs2single",
+    "single2hgvs",
+    "get_variant_type",
+    "mutation_count",
+    "has_indel",
+    "has_unresolvable",
+    "protein_variant",
+    "VariantSeqLib"
+]
 
 
 def _validate_str(s):
+    """
+    Checks if a string is valid. Internal use only.
+    
+    Parameters
+    ----------
+    s : `str`
+        String to validate.
+    """
     if not isinstance(s, str):
         raise TypeError("Expected string, got {}".format(type(s)))
     if len(s) == 0:
@@ -62,6 +68,13 @@ def _validate_str(s):
 def valid_variant(s, is_coding=True):
     """
     Returns True if s is a valid coding or noncoding variant, else False.
+    
+    Parameters
+    ----------
+    s : `str`
+        Variant string to validate.
+    is_coding : `bool`
+        Indicates if the variant string represents a coding variant.
     """
     _validate_str(s)
     if s == WILD_TYPE_VARIANT:
@@ -85,8 +98,16 @@ def hgvs2single(s):
     """
     Convert HGVS string from Enrich2 to <pre><pos><post>
     single-letter amino acid variant string.
-
-    Returns a list of single-letter variants.
+    
+    Parameters
+    ----------
+    s : `str`
+        String in HGVS format to convert.
+        
+    Returns
+    -------
+    `list`
+        Returns a list of single-letter variants.
     """
     _validate_str(s)
     t = re_protein.findall(s)
@@ -101,6 +122,16 @@ def single2hgvs(s):
 
     Searches the string s for all instances of the above
     pattern and returns a list of Enrich2 variants.
+    
+    Parameters
+    ----------
+    s : `str`
+        String in single-letter format to convert.
+        
+    Returns
+    -------
+    `list`
+        Returns a list of HGVS variants.
     """
     _validate_str(s)
     t = re.findall('[A-Z*]\d+[A-Z*]', s)
@@ -112,12 +143,18 @@ def get_variant_type(variant):
     """
     Use regular expressions to determine whether the variant is protein,
     coding, or noncoding.
-
-    :param str variant: variant string
-    :return: ``'protein'``, ``'coding'``, or ``'noncoding'`` depending on \
-    which regular expression matches, else ``None``. Note that both wild type \
-    and synonymous special variants will return ``None``.
-    :rtype: str
+    
+    Parameters
+    ----------
+    variant : `str`
+        variant string
+        
+    Returns
+    -------
+    `str`
+        ``'protein'``, ``'coding'``, or ``'noncoding'`` depending on which 
+        regular expression matches, else ``None``. Note that both wild type 
+        and synonymous special variants will return ``None``.
     """
     _validate_str(variant)
     v = variant.split(', ')[0]  # test first token of multi-mutant
@@ -134,10 +171,16 @@ def get_variant_type(variant):
 def mutation_count(variant):
     """
     Counts the number of mutations in the HGVS_ *variant*.
-
-    :param str variant: variant string
-    :return: number of variants (0 if wild type or synonymous)
-    :rtype: int
+    
+    Parameters
+    ----------
+    variant : `str`
+        variant string
+    
+    Returns
+    -------
+    `int`
+        Number of variants (0 if wild type or synonymous)
     """
     _validate_str(variant)
     if variant == WILD_TYPE_VARIANT:
@@ -154,10 +197,16 @@ def mutation_count(variant):
 def has_indel(variant):
     """
     Tests if the HGVS_ *variant* contains an indel mutation.
-
-    :param str variant: variant string
-    :return: ``True`` if there is an indel, else ``False``
-    :rtype: bool
+    
+    Parameters
+    ----------
+    variant : `str`
+        variant string
+    
+    Returns
+    -------
+    `bool`
+        ``True`` if there is an indel, else ``False``
     """
     _validate_str(variant)
     if variant == WILD_TYPE_VARIANT:
@@ -176,10 +225,16 @@ def has_unresolvable(variant):
     of N or X nucleotides, resulting in a non-translatable codon. They are
     also found when a frameshift causes the last part of the coding sequence
     to not have three nucleotides.
-
-    :param str variant: variant string
-    :return: ``True`` if there is an unresolvable change, else ``False``
-    :rtype: bool
+    
+    Parameters
+    ----------
+    variant : `str`
+        The variant string
+    
+    Returns
+    -------
+    `bool`
+        ``True`` if there is an unresolvable change, else ``False``
     """
     _validate_str(variant)
     if AA_CODES['?'] in variant:
@@ -194,10 +249,16 @@ def protein_variant(variant):
     coding HGVS_ variant string. If all variants are synonymous, returns the
     synonymous variant code. If the variant is wild type, returns the wild
     type variant.
-
-    :param str variant: coding variant string
-    :return: protein variant string (or synonymous or wild type)
-    :rtype: str
+    
+    Parameters
+    ----------
+    variant : `str`
+        The coding variant string
+    
+    Returns
+    -------
+    `str`
+        Protein variant string (or synonymous or wild type)    
     """
     _validate_str(variant)
     if variant == WILD_TYPE_VARIANT:
@@ -225,10 +286,55 @@ def protein_variant(variant):
 
 class VariantSeqLib(SeqLib):
     """
-    Abstract :py:class:`~seqlib.seqlib.SeqLib` class for for Enrich libraries
-    containing variants. Implements core functionality for assessing variants,
-    either coding or noncoding. Subclasess must evaluate the variant DNA
-    sequences that are being counted.
+    Abstract :py:class:`~enrich2.libraries.seqlib.SeqLib` class for for Enrich 
+    libraries containing variants. Implements core functionality for assessing 
+    variants, either coding or noncoding. Subclasess must evaluate the variant 
+    DNA sequences that are being counted.
+    
+    Attributes
+    ----------
+    wt : :py:class:`~enrich2.sequence.wildtype.WildType`
+        WildType sequence object variants are called against.
+    aligner : :py:class:`~enrich2.sequence.aligner.Aligner`
+        The aligner object used to align reads to a reference.
+    aligner_cache : `dict`
+        Cache of aligned reads.
+    variant_min_count : `int`
+        Minimum count of a variant to use during filtering.
+    max_mutations : `int`
+        Max mutations in a variant to use during filtering.
+    
+    Methods
+    -------
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    is_coding
+        Return ``True`` if the variants are protein-coding, else ``False``.
+    has_wt_sequence
+        Returns ``True``
+    align_variant
+        Align a variant sequence to the wild type sequence
+    count_variant
+        Count the number of times a specific variant occurs.
+    count_synonymous
+        Count the number of synonymous variants.
+    report_filtered_variant
+        Report a variant that was filtered to the log.
+    
+    Inherits
+    --------
+    :py:class:`~enrich2.libraries.seqlib.SeqLib`
+    
+    See Also
+    --------
+    :py:class:`~enrich2.libraries.seqlib.SeqLib`
+    :py:class:`~enrich2.libraries.basic.BasicSeqLib`
+    :py:class:`~enrich2.libraries.barcodevariant.BcvSeqLib`
+    
     """
     def __init__(self):
         SeqLib.__init__(self)
@@ -237,6 +343,7 @@ class VariantSeqLib(SeqLib):
         self.aligner_cache = None
         self.variant_min_count = 0
         self.max_mutations = None
+        
         # 'synonymous' label may be added in configure() if wt is coding
         self.add_label('variants')
 
@@ -244,6 +351,12 @@ class VariantSeqLib(SeqLib):
         """
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
+        
+        Parameters
+        ----------
+        cfg : `dict` or :py:class:`~enrich2.config.types.BaseVariantSeqLibConfiguration`
+            The object to configure this instance with.
+            
         """
         from ..config.types import BaseVariantSeqLibConfiguration
 
@@ -273,6 +386,12 @@ class VariantSeqLib(SeqLib):
         """
         Format this object (and its children) as a config object suitable for
         dumping to a config file.
+        
+        Returns
+        -------
+        `dict`
+            Attributes of this instance and that of inherited classes
+            in a dictionary.
         """
         cfg = SeqLib.serialize(self)
 
@@ -289,31 +408,53 @@ class VariantSeqLib(SeqLib):
     def is_coding(self):
         """
         Return ``True`` if the variants are protein-coding, else ``False``.
+        
+        Returns
+        -------
+        `bool`
         """
         return self.wt.is_coding()
 
     def has_wt_sequence(self):
         """
-        Returns ``True``, because :py:class:`~seqlib.seqlib.VariantSeqLib`
-        objects have a wild type sequence. Raises a ValueError if the wild type
+        Returns ``True``, because 
+        :py:class:`~enrich2.libraries.variant.VariantSeqLib` objects have a 
+        wild type sequence. Raises a ValueError if the wild type
         sequence is not set properly.
+        
+        Returns
+        -------
+        `bool`
         """
         if self.wt is not None:
             return True
         else:
-            raise ValueError("Wild type not set properly [{}]".format(self.name))
+            raise ValueError(
+                "Wild type not set properly [{}]".format(self.name))
 
     def align_variant(self, variant_dna):
         """
-        Use the local :py:class:`~seqlib.aligner.Aligner` instance to align the
-        *variant_dna* to the wild type sequence. Returns a list of HGVS_
-        variant strings.
+        Use the local :py:class:`~enrich2.sequence.aligner.Aligner` instance 
+        to align the *variant_dna* to the wild type sequence. Returns a list 
+        of HGVS_ variant strings.
 
         Aligned variants are stored in a local dictionary to avoid recomputing
         alignments. This dictionary should be cleared after all variants are
         counted, to save memory.
-
-        .. warning:: Using the :py:class:`~seqlib.aligner.Aligner` \
+        
+        Parameters
+        ----------
+        variant_dna : `str`
+            DNA sequence to align to reference.
+            
+        Returns
+        -------
+        `list`
+            Returns a list of HGVS_ variant strings.
+        
+        Warnings
+        --------
+        .. warning:: Using the :py:class:`~enrich2.sequence.aligner.Aligner` 
         dramatically increases runtime.
         """
         if variant_dna in list(self.aligner_cache.keys()):
@@ -357,6 +498,19 @@ class VariantSeqLib(SeqLib):
         format. Returns a list of HGVS_ variant strings. Returns an empty list
         if the variant is wild type. Returns None if the variant was discarded
         due to excess mismatches.
+        
+        Parameters
+        ----------
+        variant_dna : `str`
+            DNA sequence to align to reference.
+        include_indels : `bool`, Default ``True``
+            Include indels in the counts.
+            
+        Returns
+        -------
+        `list`
+            Returns an empty list if the variant is wild type. Returns None 
+            if the variant was discarded due to excess mismatches.
         """
         if not re.match("^[ACGTNXacgtnx]+$", variant_dna):
             raise ValueError("Variant DNA sequence contains unexpected "
@@ -428,11 +582,13 @@ class VariantSeqLib(SeqLib):
         under the ``synonymous`` label.
 
         This method should be called only after ``variants`` have been counted.
-
+        
+        Notes
+        -----
         .. note:: The total number of ``synonymous`` variants may be greater \
         than the total number of ``variants`` after filtering. This is \
         because ``variants`` are combined into ``synonymous`` entries at the \
-        :py:class:`~seqlib.seqlib.SeqLib` level before count-based filtering, \
+        :py:class:`~enrich2.libraries.seqlib.SeqLib` level before count-based filtering, \
         allowing filtered ``variants`` to contribute counts to their \
         ``synonymous`` entry.
         """
@@ -470,6 +626,13 @@ class VariantSeqLib(SeqLib):
         Outputs a summary of the filtered variant to *handle*. Internal filter
         names are converted to messages using the ``SeqLib.filter_messages``
         dictionary. Related to :py:meth:`SeqLib.report_filtered`.
+        
+        Parameters 
+        ----------
+        variant : :py:class:`~enrich2.sequence.fqread.FQRead`
+            The ``FQRead`` object that represents the variant.
+        count : `int`
+            Count of the variant.
         """
         logging.debug("Filtered variant (quantity={n}) (excess mutations)"
                       "\n{read!s}".format(n=count, read=variant),

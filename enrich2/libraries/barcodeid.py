@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,6 +16,15 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+"""
+Enrich2 libraries barcodeid module
+==================================
+
+Contains the concrete class ``BcidSeqLib`` which represents a barcoded 
+sequencing library with non-variant identifiers. 
+"""
+
+
 import logging
 import pandas as pd
 
@@ -23,17 +32,51 @@ from ..libraries.barcodemap import BarcodeMap
 from .barcode import BarcodeSeqLib
 
 
+__all__ = [
+    "BcidSeqLib"
+]
+
+
 class BcidSeqLib(BarcodeSeqLib):
     """
     Class for counting data from barcoded sequencing libraries with non-variant
     identifiers. 
+    
     Creating a :py:class:`BcidSeqLib` requires a valid *config* 
     object with an ``'barcodes'`` entry and information.
 
     The ``barcode_map`` keyword argument can be used to pass an existing 
-    :py:class:`~seqlib.barcodemap.BarcodeMap`. Ensuring this is the 
-    right :py:class:`~seqlib.barcodemap.BarcodeMap` is the responsibility 
-    of the caller.
+    :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`. Ensuring this is the 
+    right :py:class:`~enrich2.libraries.barcodemap.BarcodeMap` is 
+    the responsibility of the caller.
+    
+    Class Attributes
+    ----------------
+    treeview_class_name :  `str`
+        String used to render object in the GUI.
+    
+    Attributes
+    ----------
+    barcode_map : :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
+        Barcode map associated with the library.
+    identifier_min_count : `int`
+        Minimum count an Id must have to pass the filtering phase.
+    
+    Methods
+    -------
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    calculate
+        Counts barcodes and combines them into identifier counts using a
+        :py:class:`~enrich2.libraries.barcodemap.BarcodeMap` object.
+    
+    Inherits
+    --------
+    :py:class:`~enrich2.libraries.barcode.BarcodeSeqLib`
     """
 
     treeview_class_name = "Barcoded ID SeqLib"
@@ -46,8 +89,15 @@ class BcidSeqLib(BarcodeSeqLib):
 
     def configure(self, cfg, barcode_map=None):
         """
-        Set up the object using the config object *cfg*, usually derived from 
+        Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
+
+        Parameters
+        ----------
+        cfg : `dict` or :py:class:`~enrich2.config.types.BcidSeqLibConfiguration`
+            The object to configure this instance with.
+        barcode_map : :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
+            An existing barcode map associated with the library.
         """
         from ..config.types import BcidSeqLibConfiguration
 
@@ -74,35 +124,16 @@ class BcidSeqLib(BarcodeSeqLib):
                 is_variant=False
             )
 
-        # try:
-        #     if 'min count' in cfg['identifiers']:
-        #         self.identifier_min_count = int(
-        #             cfg['identifiers']['min count']
-        #         )
-        #     else:
-        #         self.identifier_min_count = 0
-        #
-        #     if barcode_map is not None:
-        #         if barcode_map.filename == cfg['barcodes']['map file']:
-        #             self.barcode_map = barcode_map
-        #         else:
-        #             raise ValueError("Attempted to assign "
-        #                              "non-matching "
-        #                              "barcode map [{}]".format(self.name))
-        #     else:
-        #         self.barcode_map = BarcodeMap(
-        #             mapfile=cfg['barcodes']['map file'],
-        #             is_variant=False
-        #         )
-        # except KeyError as key:
-        #     raise KeyError("Configuration Error: Missing "
-        #                    "required config value "
-        #                    "{key} [{name}]".format(key=key, name=self.name))
-
     def serialize(self):
         """
-        Format this object (and its children) as a config
-        object suitable for dumping to a config file.
+        Format this object (and its children) as a config object suitable for
+        dumping to a config file.
+
+        Returns
+        -------
+        `dict`
+            Attributes of this instance and that of inherited classes
+            in a dictionary.
         """
         cfg = BarcodeSeqLib.serialize(self)
 
@@ -119,7 +150,8 @@ class BcidSeqLib(BarcodeSeqLib):
     def calculate(self):
         """
         Counts the barcodes using :py:meth:`BarcodeSeqLib.count` and combines
-        them into identifier counts using the :py:class:`BarcodeMap`.
+        them into identifier counts using the 
+        :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
         """
         if not self.check_store("/main/identifiers/counts"):
             BarcodeSeqLib.calculate(self) # count the barcodes

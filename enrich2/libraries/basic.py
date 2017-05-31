@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -16,19 +16,69 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import logging
+"""
+Enrich2 libraries basic module
+==============================
+
+Contains the concrete class ``BasicSeqLib`` which represents a sequencing
+library with variants that must be aligned to wild type sequence.
+"""
+
+
 import sys
+import logging
 
-from ..sequence.fqread import read_fastq, split_fastq_path
-
+from ..sequence.fqread import read_fastq
 from .variant import VariantSeqLib
+
+
+__all__ = [
+    "BasicSeqLib"
+]
 
 
 class BasicSeqLib(VariantSeqLib):
     """
     Class for count data from sequencing libraries with a single read for
-    each variant. Creating a :py:class:`BasicSeqLib` requires a valid
-    *config* object, usually from a ``.json`` configuration file.
+    each variant. Creating a :py:class:`~enrich2.libraries.basic.BasicSeqLib` 
+    requires a valid *config* object, usually from a ``.json`` configuration 
+    file.
+    
+    Class Attributes
+    ----------------
+    treeview_class_name :  `str`
+        String used to render object in the GUI.
+    
+    Attributes
+    ----------
+    reads : `str`
+        File path of reads file to parse.
+    revcomp_reads : `bool`
+        ``True`` to reverse complement reads.
+    trim_start : `int`
+        Position to start the read trim from.
+    trim_length : `int`
+        Number of bases to keep starting from `trim_start`
+    
+    Methods
+    -------
+    configure
+        Configures the object from an dictionary loaded from a configuration 
+        file.
+    serialize
+        Returns a `dict` with all configurable attributes stored that can
+        be used to reconfigure a new instance.
+    configure_fastq
+        Configures the fastq options following the `configure` method
+    serialize_fastq
+        Returns a `dict` with all configurable fastq options and their
+        settings for this instance.
+    calculate
+        Counts variants from counts file or FASTQ.
+    
+    Inherits
+    --------
+    :py:class:`~enrich2.libraries.variant.VariantSeqLib`
     """
 
     treeview_class_name = "Basic SeqLib"
@@ -44,9 +94,13 @@ class BasicSeqLib(VariantSeqLib):
         """
         Set up the object using the config object *cfg*, usually derived from
         a ``.json`` file.
+
+        Parameters
+        ----------
+        cfg : `dict` or :py:class:`~enrich2.config.types.BasicSeqLibConfiguration`
+            The object to configure this instance with.
         """
         from ..config.types import BasicSeqLibConfiguration
-
 
         if isinstance(cfg, dict):
             init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
@@ -66,6 +120,12 @@ class BasicSeqLib(VariantSeqLib):
         """
         Format this object (and its children) as a config object suitable for
         dumping to a config file.
+
+        Returns
+        -------
+        `dict`
+            Attributes of this instance and that of inherited classes
+            in a dictionary.
         """
         cfg = VariantSeqLib.serialize(self)
         cfg['fastq'] = self.serialize_fastq()
@@ -74,6 +134,11 @@ class BasicSeqLib(VariantSeqLib):
     def configure_fastq(self, cfg):
         """
         Set up the object's FASTQ_ file handling and filtering options.
+        
+        Parameters
+        ----------
+        cfg : :py:class:`~enrich2.config.types.FASTQConfiguration`
+            Configures the fastq options of this instance.
         """
         self.reads = cfg.reads
         self.revcomp_reads = cfg.reverse
@@ -84,6 +149,11 @@ class BasicSeqLib(VariantSeqLib):
     def serialize_fastq(self):
         """
         Serialize this object's FASTQ_ file handling and filtering options.
+
+        Returns
+        -------
+        `dict`
+            Return a `dict` of filtering options that have non-default values.
         """
         fastq = dict(filters=self.serialize_filters())
         fastq['reads'] = self.reads
@@ -160,5 +230,3 @@ class BasicSeqLib(VariantSeqLib):
                 'variants', "count >= self.variant_min_count"
             )
         self.count_synonymous()
-
-
