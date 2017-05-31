@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -14,3 +14,19 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Enrich2 sequence module
+=======================
+This module contains classes and methods relating to wildtype sequence 
+representation, FASTQ reads representation, an aligner class implementing
+Needleman-Wunsch and an optimized FASTQ file reader.
+"""
+
+
+__all__ = [
+    "aligner",
+    "fqread",
+    "wildtype"
+]

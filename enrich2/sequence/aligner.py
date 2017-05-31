@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -17,6 +17,8 @@
 
 
 """
+Enrich2 aligner module
+======================
 Module for alignment of variants to the wild type sequence.
 
 This module is optional, and using it will dramatically increase runtime when
@@ -26,6 +28,12 @@ insertion and deletion variants (i.e. not coding sequences).
 
 
 import numpy as np
+
+
+__all__ = [
+    "Aligner"
+]
+
 
 #: Default similarity matrix used by the aligner.
 #: User-defined matrices must have this format.
@@ -47,13 +55,43 @@ class Aligner(object):
     This class implements `Needleman-Wunsch <http://en.wikipedia.org/wiki/
     Needleman%E2%80%93Wunsch_algorithm>`_ local alignment.
 
-    The :py:class:`~aligner.Aligner` requires a scoring matrix when
-    created. The format is a nested dictionary, with a special ``'gap'`` entry
-    for the gap penalty (this value is used for both gap opening and gap
+    The :py:class:`~enrich2.sequence.aligner.Aligner` requires a scoring matrix 
+    when created. The format is a nested dictionary, with a special ``'gap'`` 
+    entry for the gap penalty (this value is used for both gap opening and gap
     extension).
 
     The ``'X'`` nucleotide is a special case for unresolvable mismatches in
-    :py:class:`~overlap.OverlapSeqLib` variant data.
+    :py:class:`~enrich2.libraries.overlap.OverlapSeqLib` variant data.
+    
+    Parameters
+    ----------
+    similarity : `dict`
+        Similarity matrix used by the aligner, must contain a cost mapping 
+        between each of 'A', 'C', 'G', 'T', 'N', 'X'.
+            
+    Attributes
+    ----------
+    similarity : `dict`
+        Similarity matrix used by the aligner, must contain a cost mapping 
+        between each of 'A', 'C', 'G', 'T', 'N', 'X'.
+    matrix : :py:class:`~numpy.ndarray`
+        The dynamically computed cost matrix.
+    seq1 : `str`
+        Reference sequence.
+    seq2 : `str`
+        The sequence that is to be aligned.
+    calls : `int`
+        Number of times `align` has been performed.
+    
+    Methods
+    -------
+    align
+        Align two sequences using ``Needleman-Wusch``.
+    
+    Notes
+    -----
+    This class implements `Needleman-Wunsch <http://en.wikipedia.org/wiki/
+    Needleman%E2%80%93Wunsch_algorithm>`_ local alignment.
     """
     _MAT = 1    # match
     _INS = 2    # insertion (with respect to wild type)
@@ -90,6 +128,18 @@ class Aligner(object):
         of ``"match"``, ``"mismatch"``, ``"insertion"``, or ``"deletion"``.
         For indels, the ``length`` value is the number of bases inserted or
         deleted with respect to *seq1* starting at ``i``.
+        
+        Parameters
+        ----------
+        seq1 : `str`
+            Reference sequence.
+        seq2 : `str`
+            The sequence that is to be aligned.
+            
+        Returns
+        -------
+        `list`
+            list of tuples describing the differences between the sequences.
         """
         if not isinstance(seq1, str):
             raise TypeError("First sequence must be a str type")

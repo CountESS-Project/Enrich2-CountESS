@@ -547,14 +547,10 @@ class StoreManager(object):
         
         Parameters
         ----------
-        cfg : :class:`enrich2.config.types.StoreConfiguration` or dict
+        cfg : :class:`enrich2.config.types.StoreConfiguration` or `dict`
             Either a configuration object or a dictionary to initialise
             a configuration object.
-                  
-        Returns
-        -------
-        None
-        
+                         
         Raises
         ------
         raises TypeError if ``cfg`` is not a :py:class:`dict` or
@@ -600,12 +596,14 @@ class StoreManager(object):
 
     def serialize(self):
         """
-        Format this object (and its children) as a config object suitable for
+        Format this object as a config object suitable for
         dumping to a config file.
-        
+
         Returns
         -------
-        None
+        `dict`
+            Attributes of this instance and that of inherited classes
+            in a dictionary.
         """
         cfg = {'name': self.name}
         if self.store_cfg:

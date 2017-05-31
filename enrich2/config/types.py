@@ -728,14 +728,9 @@ class WildTypeConfiguration(Configuration):
             raise ValueError("Wildtype `reference offset` "
                              "must not be negative.")
 
-        multple_of_three = self.reference_offset % 3 == 0
-        if self.coding and not multple_of_three:
-            logging.warning(
-                "Reference offset is not a multiple of three when setting "
-                "`protein coding` as True. Setting to reference offset to 0.",
-                extra={'oname': self.__class__.__name__}
-            )
-            self.reference_offset = 0
+        multiple_of_three = self.reference_offset % 3 == 0
+        if self.coding and not multiple_of_three:
+            raise ValueError("WT DNA sequence contains incomplete codons")
 
     def validate_sequence(self):
         """

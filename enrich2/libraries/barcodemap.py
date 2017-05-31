@@ -17,8 +17,8 @@
 
 
 """
-Enrich2 libraries barcode module
-================================
+Enrich2 libraries barcodemap module
+===================================
 
 Contains the BarcodeMap class which subclasses `dict` to provide a basic
 way to map barcodes to variants.
