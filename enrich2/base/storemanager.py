@@ -202,6 +202,7 @@ class StoreManager(object):
         self.store_path = None
         self.store = None
         self.chunksize = 100000
+        self.metadata = None
 
         # output locations
         self._output_dir = None

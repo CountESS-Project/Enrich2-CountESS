@@ -530,19 +530,19 @@ class SeqLib(StoreManager):
                      extra={'oname': self.name})
         # this could probably be much more efficient, but the PyTables docs
         # don't explain copying subsets of files adequately
-        raw_keys = [key for key in list(store.keys()) if key.startswith("/raw/")]
+        raw_keys = [key for key in store.keys() if key.startswith("/raw/")]
         if len(raw_keys) == 0:
-            raise ValueError("No raw counts found in '{}' [{}]"
-                             "".format(fname, self.name))
+            raise ValueError(
+                "No raw counts found in '{}' [{}]".format(fname, self.name))
         else:
             for k in raw_keys:
                 # copy the data table
                 raw = store[k]
-                self.store.put(k, raw, format="table",
-                               data_columns=raw.columns)
+                self.store.put(
+                    k, raw, format="table", data_columns=raw.columns)
                 # copy the metadata
-                self.set_metadata(k, self.get_metadata(k, store=store),
-                                  update=False)
+                self.set_metadata(
+                    k, self.get_metadata(k, store=store), update=False)
                 logging.info("Copied raw data '{}'".format(k),
                              extra={'oname': self.name})
         store.close()
