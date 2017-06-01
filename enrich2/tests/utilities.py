@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin, Daniel Esposito
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,15 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Enrich2 tests utils module
+==========================
+Module consists of assorted utility functions.
+"""
+
 
 import os
 import json
@@ -33,20 +41,37 @@ DEFAULT_STORE_PARAMS = {
 }
 
 
+__all__ = [
+    "TOP_LEVEL",
+    "DEFAULT_STORE_PARAMS",
+    "create_file_path",
+    "load_config_data",
+    "load_df_from_pkl",
+    "load_df_from_txt",
+    "dispatch_loader",
+    "update_cfg_file",
+    "save_result_to_pkl",
+    "save_result_to_txt",
+    "print_test_comparison",
+    "SCORING_ATTRS",
+    "SCORING_PATHS"
+]
+
+
 def create_file_path(fname, direc='data/result/'):
     """
     Utility function to create an absolute path to data in the tests directory.
     
     Parameters
     ----------
-    fname : str
+    fname : `str`
         The name of the file.
-    direc : str
+    direc : `str`
         The directory of the file in tests directory.
 
     Returns
     -------
-    str
+    `str`
         Absolute file path.
 
     """
@@ -60,15 +85,15 @@ def load_config_data(fname, direc='data/config/'):
     
     Parameters
     ----------
-    fname : str
+    fname : `str`
         Name of file in the directory `direc`.
-    direc : str (optional)
-        Directory where the file is relative to :py:mod:`enrich2.tests`.
+    direc : `str`, optional
+        Directory where the file is relative to :py:mod:`~enrich2.tests`.
 
     Returns
     -------
-        dict
-            Dictionary containing the loaded key-value pairs.
+    `dict`
+        Dictionary containing the loaded key-value pairs.
 
     """
     path = create_file_path(fname, direc)
@@ -85,17 +110,17 @@ def load_df_from_txt(fname, direc='data/result/', sep='\t'):
     
     Parameters
     ----------
-    fname : str
+    fname : `str`
         Name of file in the directory ``direc``.
-    direc : str
-        Directory where the file is relative to :py:mod:`enrich2.tests`
-    sep : str
+    direc : `str`
+        Directory where the file is relative to :py:mod:`~enrich2.tests`
+    sep : `str`
         Delimiter to use between columns.
         
     Returns
     -------
-        pd.DataFrame
-            A Pandas DataFrame object parsed from the file.
+    :py:class:`~pandas.DataFrame`
+        A Pandas DataFrame object parsed from the file.
     """
     path = create_file_path(fname, direc)
     try:
@@ -106,19 +131,19 @@ def load_df_from_txt(fname, direc='data/result/', sep='\t'):
 
 def load_df_from_pkl(fname, direc='data/result/'):
     """
-    Utility function to load a table stored in py:module: `pickle` format.
+    Utility function to load a table stored in py:module:`pickle` format.
     
     Parameters
     ----------
-    fname : str
+    fname : `str`
         Name of file in the directory ``direc``.
-    direc : str
-        Directory where the file is relative to :py:mod:`enrich2.tests`.
+    direc : `str`
+        Directory where the file is relative to :py:mod:`~enrich2.tests`.
 
     Returns
     -------
-        pd.DataFrame
-            A Pandas DataFrame object parsed from the file.
+    :py:class:`~pandas.DataFrame`
+        A Pandas DataFrame object parsed from the file.
     """
     path = create_file_path(fname, direc)
     try:
@@ -129,19 +154,19 @@ def load_df_from_pkl(fname, direc='data/result/'):
 
 def save_result_to_txt(test_obj, direc, prefix, sep='\t'):
     """
-    Utility function to save a :py:class:`pd.HDFStore` as a series of 
-    delimited tsv. One file is created for each :py:class:`pd.DataFrame` in
+    Utility function to save a :py:class:`~pd.HDFStore` as a series of 
+    delimited tsv. One file is created for each :py:class:`~pd.DataFrame` in
     the store.
     
     Parameters
     ----------
-    test_obj : :py:class:`pd.HDFStore`
+    test_obj : :py:class:`~pd.HDFStore`
         HDFStore object to save to delimited text files.
-    direc : str
+    direc : `str`
         Directory to save the file.
-    prefix : str
+    prefix : `str`
         Prefix to add to each key in the store to use as a filename.
-    sep : str
+    sep : `str`
         Delimiter to use between columns.
 
     Returns
@@ -164,17 +189,17 @@ def save_result_to_txt(test_obj, direc, prefix, sep='\t'):
 
 def save_result_to_pkl(test_obj, direc, prefix):
     """
-    Utility function to save a :py:class:`pd.HDFStore` as a series of 
-    pickle files. One file is created for each :py:class:`pd.DataFrame` in
+    Utility function to save a :py:class:`~pd.HDFStore` as a series of 
+    pickle files. One file is created for each :py:class:`~pd.DataFrame` in
     the store. Each file has the extension 'pkl'.
 
     Parameters
     ----------
-    test_obj : pd.HDFStore
+    test_obj : :py:class:`~pandas.DataFrame`
         HDFStore object to save to pickle files.
-    direc : str
+    direc : `str`
         Directory to save the file.
-    prefix : str
+    prefix : `str`
         Prefix to add to each key in the store to use as a filename,
 
     Returns
@@ -201,16 +226,16 @@ def dispatch_loader(fname, direc, sep='\t'):
     
     Parameters
     ----------
-    fname : str {'pkl', 'tsv', 'txt'}
+    fname : `str` {'pkl', 'tsv', 'txt'}
         Filename with extension
-    direc : str
+    direc : `str`
         Directory to save the file.
-    sep : str
+    sep : `str`
         Delimiter to use between columns.
 
     Returns
     -------
-    pd.DataFrame
+    :py:class:`~pandas.DataFrame`
         DataFrame parsed from the file.
     """
     ext = fname.split('.')[-1]
@@ -228,16 +253,16 @@ def print_test_comparison(test_name, expected, result):
     
     Parameters
     ----------
-    test_name : str
+    test_name : `str`
         Name of the test.
-    expected : Any
+    expected : :py:class:`~pandas.DataFrame`
         Expected test result that can be represented as text
-    result : Any
+    result : :py:class:`~pandas.DataFrame`
         Expected test result that can be represented as text
 
     Returns
     -------
-    str
+    `str`
         String object represeting a test.
     """
     line = '\n'
@@ -261,9 +286,9 @@ def update_cfg_file(cfg, scoring, logr):
     
     Parameters
     ----------
-    cfg : dict
+    cfg : `dict`
         Dictionary that can initialize a 
-        :py:class: `enrich2.base.store.StoreManager` object.
+        :py:class:`~enrich2.base.store.StoreManager` object.
     scoring : {'WLS', 'OLS', 'counts', 'ratios', 'simple'}
         Choice of scoring option
     logr : {'complete', 'full', 'wt'}
@@ -271,7 +296,7 @@ def update_cfg_file(cfg, scoring, logr):
 
     Returns
     -------
-    dict
+    `dict`
         Modified dictionary (in-place)
 
     """

@@ -1,4 +1,4 @@
-#  Copyright 2016-2017 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,15 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Enrich2 tests methods module
+============================
+Module consists of a class that automates HDF5 testing.
+"""
+
 
 import os
 import shutil
@@ -23,7 +31,14 @@ import numpy as np
 from types import MethodType
 
 from .utilities import DEFAULT_STORE_PARAMS, save_result_to_txt
-from .utilities import dispatch_loader, save_result_to_pkl, print_test_comparison
+from .utilities import dispatch_loader, save_result_to_pkl, \
+    print_test_comparison
+
+
+__all__ = [
+    "HDF5TestComponent",
+    "TEST_METHODS"
+]
 
 
 # -------------------------------------------------------------------------- #
@@ -41,19 +56,19 @@ class HDF5TestComponent(unittest.TestCase):
 
     Parameters
     ----------
-    store_constructor: enrich2.base.StoreManager
+    store_constructor: :py:class:`~enrich2.base.StoreManager`
         Constructor for a StoreManager subclass.
-    cfg : dict
+    cfg : `dict`
         Config dictionary.
-    params : dict
+    params : `dict`
         Parameter dictionary for StoreManager.
-    file_prefix : str
+    file_prefix : `str`
         Unique part of file that will be loaded during comparison.
-    file_ext : str
+    file_ext : `str`
         Extension of the result files that will be loaded during comparison.
-    file_sep: str
+    file_sep: `str`
         Delimited to use in the case of loading from text.
-    save: bool
+    save: `bool`
         Save computation results and do not perform any tests. Will override
         any previously saved results. Should only be used when tests must
         be updated to reflect core changes to computations rendering previous
@@ -63,15 +78,15 @@ class HDF5TestComponent(unittest.TestCase):
         
     Methods
     -------
-    setUp()
-        Overrides :py:func: `unittest.TestCase.setUp`
-    tearDown()
-        Overrides :py:func: `unittest.TestCase.tearDown`
-    makeTests()
+    setUp
+        Overrides :py:func:`unittest.TestCase.setUp`
+    tearDown
+        Overrides :py:func:`unittest.TestCase.tearDown`
+    makeTests
         Initialize the test fixture with the appropriate test functions.
-    runTests()
+    runTests
         Runs the test class with dynamically loaded test functions.
-    saveTests()
+    saveTests
         Save computation results and do not perform any tests. Will override
         any previously saved results. Should only be used when tests must
         be updated to reflect core changes to computations rendering previous
@@ -98,7 +113,7 @@ class HDF5TestComponent(unittest.TestCase):
 
     def setUp(self):
         """
-        Overrides :py:func: `unittest.TestCase.setUp`
+        Overrides :py:func:`unittest.TestCase.setUp`
 
         Returns
         -------
@@ -124,7 +139,7 @@ class HDF5TestComponent(unittest.TestCase):
 
     def tearDown(self):
         """
-        Overrides :py:func: `unittest.TestCase.tearDown`
+        Overrides :py:func:`unittest.TestCase.tearDown`
 
         Returns
         -------
