@@ -75,6 +75,54 @@ class FQRead(object):
     <http://www.phrap.com/phred/#qualityscores>`_. The *qbase* parameter is 
     the ASCII value that correponds to Phred score of 0. The *sequence* and 
     *quality* strings must be the same length. 
+    
+    Parameters
+    ----------
+    header : `str`
+        The header line of a FQ read.
+    sequence : `str`
+        The line containing the actual sequence characters.
+    header2 : `str`
+        Header line relating to the quality line ``quality``
+    quality : `str`
+        The ascii quality characters of ``sequence``.
+    qbase : `int`
+        Integer ASCII value that correponds to Phred score of 0
+    
+    Attributes
+    ----------
+    header : `str`
+        The header line of a FQ read.
+    sequence : `str`
+        The line containing the actual sequence characters.
+    header2 : `str`
+        Header line relating to the quality line ``quality``
+    quality : `list`
+        List of Phred integers corresponding to each base.
+    qbase : `int`
+        Integer ASCII value that correponds to Phred score of 0
+    
+    
+    Methods
+    -------
+    trim
+        Trims a read from a specified ``start`` and ``end`` position
+    trim_length
+        Trims a read to contain a specified number bases starting from
+        a specified position.
+    revcomp
+        Performs reverse complement on the read and quality sequences
+    header_information
+        Parses the first FASTQ_ header (@ header) and returns a dictionary
+        of matches corresponding to a supplied regex pattern.
+    min_quality
+        Returns the minimum quality of the sequence bases.
+    mean_quality
+        Returns the mean quality of the sequence bases.
+    is_chaste
+        Returns ``True`` if the chastity bit is set in the header
+    
+    
     """
     # use slots for memory efficiency
     __slots__ = ('header', 'sequence', 'header2', 'quality', 'qbase')
@@ -113,19 +161,33 @@ class FQRead(object):
         Object length is the length of the sequence.
         """
         return len(self.sequence)
-
+    
     def trim(self, start=1, end=None):
         """
-        Trims this :py:class:`~fqread.FQRead` to contain bases between 
+        Trims this :py:class:`~FQRead` to contain bases between 
         *start* and *end* (inclusive). Bases are numbered starting at 1.
+        
+        Parameters
+        ----------
+        start : `int`, default: 1
+            Position to start read trimming.
+        end : `int`, default: None
+            Position to end read trimming.
         """
         self.sequence = self.sequence[start - 1:end]
         self.quality = self.quality[start - 1:end]
 
     def trim_length(self, length, start=1):
         """
-        Trims this :py:class:`~fqread.FQRead` to contain *length* bases, 
+        Trims this :py:class:`~FQRead` to contain *length* bases, 
         beginning with *start*. Bases are numbered starting at 1.
+        
+        Parameters
+        ----------
+        length : `int`
+            Number of bases to keep
+        start : `int`, default: 1
+            Position to start trimming at.
         """
         self.trim(start=start, end=start + length - 1)
 
@@ -138,8 +200,7 @@ class FQRead(object):
         self.quality = self.quality[::-1]
 
     def header_information(self, pattern=header_pattern):
-        """header_information(pattern=header_pattern)
-
+        """
         Parses the first FASTQ_ header (@ header) and returns a dictionary. 
         Dictionary keys are the named groups in the regular expression 
         *pattern*. Unnamed matches are ignored. Integer values are converted 
@@ -148,7 +209,15 @@ class FQRead(object):
         The default pattern matches a header in the format::
 
             @<MachineName>:<Lane>:<Tile>:<X>:<Y>:<Chastity>#<IndexRead>/<ReadNumber>
-
+        
+        Parameters
+        ----------
+        pattern : `__Regex`, optional
+            Regular expression pattern to parse the header with.
+            
+        Returns
+        -------
+        `dict`
         """
         match = pattern.match(self.header)
         if match is None:
@@ -163,12 +232,20 @@ class FQRead(object):
     def min_quality(self):
         """
         Return the minimum Phred-like quality score.
+        
+        Returns
+        -------
+        `int`
         """
         return min(self.quality)
 
     def mean_quality(self):
         """
         Return the average Phred-like quality score.
+        
+        Returns
+        -------
+        `int`
         """
         return float(sum(self.quality)) / len(self)
 
@@ -182,6 +259,17 @@ class FQRead(object):
         If ``raises`` is ``True``, raises an informative error if the 
         chastity information in the header is not found. Otherwise, a 
         read without chastity information is treated as unchaste.
+        
+        Parameters
+        ----------
+        raises : `bool`
+            If ``raises`` is ``True``, raises an informative error if the 
+            chastity information in the header is not found. Otherwise, a 
+            read without chastity information is treated as unchaste.
+        
+        Returns
+        -------
+        `bool`
         """
         try:
             if self.header_information()['Chastity'] == 1:
@@ -212,6 +300,17 @@ def split_fastq_path(fname):
 
     Raises an ``IOError`` if the file doesn't exist. Returns ``None`` if the 
     file extension is not recognized.
+    
+    Parameters
+    ----------
+    fname : `str`
+        Path to the fastq file.
+    
+    Returns
+    -------
+    `tuple`
+        Filename split into ``head``, ``base``, ``extension``, 
+        ``compression extension``
     """
     if os.path.isfile(fname):
         compression = None
@@ -224,7 +323,7 @@ def split_fastq_path(fname):
             compression = "gz"
             base, ext = os.path.splitext(base)
         if ext.lower() in (".fq", ".fastq"):
-            return (head, base, ext, compression)
+            return head, base, ext, compression
         else:
             print("Warning: unexpected file extension for '{fname}'".format(
                 fname=fname), file=stderr)
@@ -239,6 +338,18 @@ def create_compressed_outfile(fname, compression):
     *compression* are ``"gz"``, ``"bz2"``, or ``None``. Returns a file handle 
     of the appropriate type opened for writing. Existing files with the same 
     name are overwritten.
+    
+    Parameters
+    ----------
+    fname : `str`
+        Path to the fastq file. 
+    compression : {'bz2', 'gz', None}
+        Compression format to use.
+        
+    Returns
+    -------
+    `IO`
+       The file handle to the compressed file. 
     """
     if compression == "bz2":
         handle = bz2.open(fname + ".bz2", "wt")
@@ -255,11 +366,30 @@ def create_compressed_outfile(fname, compression):
 def read_fastq(fname, filter_function=None, buffer_size=BUFFER_SIZE, qbase=33):
     """
     Generator function for reading from FASTQ_ file *fname*. Yields an 
-    :py:class:`~fqread.FQRead` object for each FASTQ_ record in the file. The 
-    *filter_function* must operate on an :py:class:`~fqread.FQRead` object 
+    :py:class:`~FQRead` object for each FASTQ_ record in the file. The 
+    *filter_function* must operate on an :py:class:`~FQRead` object 
     and return ``True`` or ``False``. If the result is ``False``, the record 
     will be skipped silently.
 
+    Parameters
+    ----------
+    fname : `str`
+        Path to the fastq file. 
+    filter_function : `Callable`, default: None
+        A function operating on a :py:class:`~FQRead` object that returns a
+        `bool` indicting if a read should be discarded or not.
+    buffer_size : `int`, default: 100000
+        Size of the buffer that :py:func:`open.read` accepts.
+    qbase : `int`, default: 33
+        Integer ASCII value that correponds to Phred score of 0
+        
+    Returns
+    -------
+    `generator`
+        A generator of :py:class:`~FQRead` objects.
+    
+    Notes
+    -----
     .. note:: To read multiple files in parallel (such as index or \
         forward/reverse reads), use :py:func:`read_fastq_multi` instead.
     """
@@ -314,14 +444,35 @@ def read_fastq_multi(fnames, filter_function=None, buffer_size=BUFFER_SIZE,
     """
     Generator function for reading from multiple FASTQ_ files in parallel. 
     The argument *fnames* is an iterable of FASTQ_ file names. Yields a 
-    tuple of :py:class:`~fqread.FQRead` objects, one for each file in 
-    *fnames*. The *filter_function* must operate on an :py:class:`FQRead` 
+    tuple of :py:class:`~FQRead` objects, one for each file in 
+    *fnames*. The *filter_function* must operate on an :py:class:`~FQRead` 
     object and return ``True`` or ``False``. If the result is ``False`` for 
-    any :py:class:`FQRead` in the tuple, the entire tuple will be skipped.
+    any :py:class:`~FQRead` in the tuple, the entire tuple will be skipped.
 
     If *match_lengths* is ``True``, the generator will yield ``None`` if the 
     files do not contain the same number of FASTQ_ records. Otherwise, it 
     will silently ignore partial records.
+    
+    Parameters
+    ----------
+    fnames : `list`
+        List of fastq file paths to parse. 
+    filter_function : `Callable`, default: None
+        A function operating on a :py:class:`~FQRead` object that returns a
+        `bool` indicting if a read should be discarded or not.
+    buffer_size : `int`, default: 100000
+        Size of the buffer that :py:func:`open.read` accepts.
+    match_lengths : `bool`, default: True
+        If *match_lengths* is ``True``, the generator will yield ``None`` if 
+        the files do not contain the same number of FASTQ_ records. Otherwise, 
+        it will silently ignore partial records.
+    qbase : `int`, default: 33
+        Integer ASCII value that correponds to Phred score of 0
+        
+    Returns
+    -------
+    `generator`
+        A generator of tuples of :py:class:`~FQRead` objects.
     """
     fq_generators = list()
     for f in fnames:
@@ -346,6 +497,11 @@ def fastq_filter_chastity(fq):
     """
     Filtering function for :py:func:`read_fastq` and 
     :py:func:`read_fastq_multi`. Returns ``True`` if the 
-    :py:class:`~fqread.FQRead` object *fq* is chaste.
+    :py:class:`~FQRead` object *fq* is chaste.
+    
+    Parameters
+    ----------
+    fq : :py:class:`~FQRead`
+        Read object to read chastity bit from.
     """
     return fq.is_chaste()
