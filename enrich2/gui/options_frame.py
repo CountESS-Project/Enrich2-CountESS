@@ -25,10 +25,10 @@ from collections import Iterable
 import tkinter.messagebox as messagebox
 from tkinter.filedialog import askopenfilename, asksaveasfile
 
-from ..plugins.options import Options, Option
-from ..plugins.options import options_not_in_config
-from ..plugins.options import get_unused_options
-from ..plugins import load_scorer_class_and_options
+from enrich2.plugins.options import Options, Option
+from enrich2.plugins.options import options_not_in_config
+from enrich2.plugins.options import get_unused_options
+from enrich2.plugins import load_scorer_class_and_options
 from ..base.utils import nested_format
 
 
@@ -385,17 +385,11 @@ class ScorerScriptsDropDown(LabelFrame):
     
     Parameters
     ----------
-    parent : 
+    parent : `object`
         Tkinter object which is the master of this frame 
-    scripts_dir : str
+    scripts_dir : `str`
         Directory for containing Enrich2 plugins.
-    config : dict
-        Keyword arguments for :py:class: `tkinter.ttk.LabelFrame`
-        
-    Methods
-    -------
-    load_from_cfg_file :
-        
+                
     """
     def __init__(self, parent=None, scripts_dir='plugins/', **config):
         super().__init__(parent, **config)
@@ -419,9 +413,9 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        script_path : str
+        script_path : `str`
             Path pointing to the script
-        script_attrs : dict
+        script_attrs : `dict`
             Dictionary of attributes that were defined in a configuration file.
         """
         klass, options, options_file = self.parse_file(script_path)
@@ -474,7 +468,7 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        scripts_dir : str
+        scripts_dir : `str`
             Directory containing a selection of scripts
         """
         files = sorted(glob.glob("{}/*.py".format(scripts_dir)))
@@ -497,18 +491,18 @@ class ScorerScriptsDropDown(LabelFrame):
     def parse_file(self, path):
         """
         Parse a plugin file located at path into 
-        :py:class: `~..plugins.scoring.BaseScorerPlugin`,
-        :py:class: `~..plugins.options.Options` and 
-        :py:class: `~..plugins.options.OptionsFile`
+        :py:class: `~enrich2.plugins.scoring.BaseScorerPlugin`,
+        :py:class: `~enrich2.plugins.options.Options` and 
+        :py:class: `~enrich2.plugins.options.OptionsFile`
         
         Parameters
         ----------
-        path : str
+        path : `str`
             The path to the plugin file.
 
         Returns
         -------
-        tuple
+        `tuple`
             Loaded class, options and options_file
         """
         if "__init__.py" in path:
@@ -532,14 +526,14 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        klass : :py:class: `~..plugins.scoring.BaseScorerPlugin`
+        klass : :py:class: `~enrich2.plugins.scoring.BaseScorerPlugin`
             The class loaded from a plugin file
-        path : str
+        path : `str`
             The path pointing to the plugin
         
         Returns
         -------
-        int
+        `int`
             integer hash returned by :py:func: `hash`
 
         """
@@ -551,14 +545,14 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        klass : :py:class: `~..plugins.scoring.BaseScorerPlugin`
+        klass : :py:class: `~enrich2.plugins.scoring.BaseScorerPlugin`
             The class loaded from a plugin file
-        path : str
+        path : `str`
             The path pointing to the plugin
         
         Returns
         -------
-        bool
+        `bool`
             True if plugin already exists
         """
         key = self.plugin_hash(klass, path)
@@ -572,14 +566,14 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        klass : :py:class: `~..plugins.scoring.BaseScorerPlugin`
+        klass : :py:class: `~enrich2.plugins.scoring.BaseScorerPlugin`
             The class loaded from a plugin file
-        path : str
+        path : `str`
             The path pointing to the plugin
         
         Returns
         -------
-        str
+        `str`
             String name used by GUI
         """
         _, _, _, _, tkname = self.plugins[self.plugin_hash(klass, path)]
@@ -593,13 +587,13 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        klass : :py:class: `~..plugins.scoring.BaseScorerPlugin` 
+        klass : :py:class: `~enrich2.plugins.scoring.BaseScorerPlugin` 
             The class loaded from a plugin file
-        options_frame : :py:class: `OptionsFileFrame`
+        options_frame : :py:class:`OptionsFileFrame`
             OptionsFileFrame create from the class
-        options_file_frame : :py:class: `OptionsFrame`
+        options_file_frame : :py:class:`OptionsFrame`
             OptionsFrame object created from the class
-        path : str
+        path : `str`
             The path pointing to the plugin
 
         Returns
@@ -624,19 +618,19 @@ class ScorerScriptsDropDown(LabelFrame):
         """
         Creates the :py:class: `~OptionsFrame` and 
         :py:class: `~OptionsFileFrame` from 
-        :py:class: `~..plugins.options.Options` and 
-        :py:class: `~..plugins.options.OptionsFile` 
+        :py:class: `~enrich2.plugins.options.Options` and 
+        :py:class: `~enrich2.plugins.options.OptionsFile` 
         
         Parameters
         ----------
-        options : :py:class: `~..plugins.options.Options`
+        options : :py:class: `~enrich2.plugins.options.Options`
             Options object loaded from a plugin
-        options_file : :py:class: `~..plugins.options.OptionsFile`
+        options_file : :py:class: `~enrich2.plugins.options.OptionsFile`
             OptionsFile object loaded from a plugin
         
         Returns
         -------
-        tuple
+        `tuple`
             Tuple of (OptionsFrame, OptionsFileFrame)
 
         """
@@ -721,12 +715,12 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        tkname : str
+        tkname : `str`
             A string name used by :py:module: `tkinter` in the drop down menu.
 
         Returns
         -------
-        tuple
+        `tuple`
             Size 4 tuple with klass, OptionsFrame, OptionsFileFrame and path
         """
         tkname_map = {
@@ -740,7 +734,7 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Returns
         -------
-        list
+        `list`
             List of string tknames
         """
         return sorted([view for (_, _, _, _, view) in self.plugins.values()])
@@ -765,7 +759,7 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        next_view : str:
+        next_view : `str`
             A string name used by :py:module: `tkinter` in the drop down menu.
         """
         _, options_frame, options_file_frame, _ = \
@@ -792,14 +786,14 @@ class ScorerScriptsDropDown(LabelFrame):
         
         Parameters
         ----------
-        keep_defult_bool : bool
+        keep_defult_bool : `bool`
             Values in attribute dictionary will be a tuple with the second
             element indicating if the value is the same as the default value
             defined in the plugin.
 
         Returns
         -------
-        tuple
+        `tuple`
             Plugin class, dictionary of option varname-value pairs and the 
             plugin path.
         """
@@ -855,14 +849,13 @@ class ScorerScriptsDropDown(LabelFrame):
         msg += nested_format(cfg, False, tab_level=0)
         logging.info(msg, extra={'oname': self.__class__.__name__})
 
-
     def show_plugin_details(self, name):
         """
         Create a messagebox displaying the current plugin
         
         Parameters
         ----------
-        name : str:
+        name : `str`
             A string name used by :py:module: `tkinter` in the drop down menu.
         """
         klass, _, _, path = self.get_plugin_by_tkname(name)

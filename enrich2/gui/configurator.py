@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,16 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Enrich2 gui configurator module
+===============================
+This is class representing the main TK window, which is the parent window
+for all other frames.
+"""
+
 
 import json
 import platform
@@ -44,32 +53,116 @@ from .options_frame import ScorerScriptsDropDown
 from .logging_frame import show_log_window
 
 
+__all__ = [
+    "write_json",
+    "Configurator"
+]
+
+
 def write_json(d, handle):
     """
     Write the contents of dictionary *d* to an open file *handle* 
     in json format.
 
     *d* is passed to ``clear_nones`` before output.
+    
+    Parameters
+    ----------
+    d : `dict`
+        Dictionary to write to file.
+    handle : `Io`
+        Open file handle to write to.
     """
     json.dump(clear_nones(d), handle, indent=2, sort_keys=True)
 
 
 class Configurator(tk.Tk):
+    """
+    The main Tk window representing the main app.
+    
+    Attributes
+    ---------- 
+    treeview :  :py:class:`~tkinter.Treeview`
+        The treeview widget.
+    treeview_popup_target_id : `int`
+        The pop target id relating to the id of the selected element.
+    treeview_popup : :py:class:`~tkinter.Widget`
+        The treeview popup widget.
+    cfg_file_name : `str`
+        The file name of the current configuration.
+    element_dict : `dict`
+        The dictionary of elements. Keys are the element ids.
+    root_element : :py:class:`~enrich2.base.storemanager.StoreManager`
+        An instance inheriting from storemanager that acts as a root object.
+    force_recalculate :py:class:`tkinter.BooleanVar`
+        The tkinter boolean variable for this option.
+    component_outliers :py:class:`tkinter.BooleanVar`
+        The tkinter boolean variable for this option.
+    tsv_requested : :py:class:`tkinter.BooleanVar`
+        The tkinter boolean variable for this option.
+    treeview_buttons : `list`
+        The ``new``, ``edit`` and ``delete`` buttons.
+    go_button : :py:class`~tkinter.ttk.Button`
+        The button that begins the analysis
+    scorer_plugin : :py:class:`~enrich2.gui.options_frame.ScorerScriptsDropDown`
+        The ScorerScriptsDropDown instance associated with this app.
+    scorer : :py:class:`~enrich2.plugins.scoring.BaseScorerPlugin`
+        The scorer class loaded from a plugin
+    scorer_attrs : `dict`
+        The scoring attributes for the plugin.
+    scorer_path : `str`
+        The path to the currently selected scoring plugin.
+    
+    Methods
+    -------
+    create_main_frame
+    create_menubar
+    create_treeview_context_menu
+    create_new_element
+    
+    menu_open
+    menu_save
+    menu_saveas
+    menu_selectall
+    
+    refresh_treeview
+    treeview_context_menu
+    set_treeview_properties
+    populate_tree
+    go_button_press
+    new_button_press
+    edit_button_press
+    delete_button_press
+    delete_element
+    apply_seqlib_fastq
+    
+    get_element
+    get_focused_element
+    get_selected_elements
+    get_selected_scorer_class
+    get_selected_scorer_attrs
+    get_selected_scorer_path
+
+    See Also
+    --------
+    :py:class:`~tkinter.Tk`
+    
+    """
     def __init__(self):
         tk.Tk.__init__(self)
         self.title("Enrich 2")
 
-        self.treeview = None
-        self.treeview_popup_target_id = None
-
+        # Main app variables
         self.cfg_file_name = tk.StringVar()
-        
         self.element_dict = dict()
         self.root_element = None
 
+        # Treeview variables
+        self.treeview = None
+        self.treeview_popup_target_id = None
+        self.treeview_popup = None
+
         # analysis options
-        self.scoring_method = tk.StringVar()
-        self.logr_method = tk.StringVar()
         self.force_recalculate = tk.BooleanVar()
         self.component_outliers = tk.BooleanVar()
         self.tsv_requested = tk.BooleanVar()
@@ -89,22 +182,25 @@ class Configurator(tk.Tk):
         self.create_menubar()
         self.create_treeview_context_menu()
 
+    # ---------------------------------------------------------------------- #
+    #                           Creation Methods
+    # ---------------------------------------------------------------------- #
     def create_treeview_context_menu(self):
+        """
+        This creates the tree-like view rendering the experiment heirachy.
+        """
         self.treeview_popup = tk.Menu(self, tearoff=0)
-        self.treeview_popup.add_command(label="Apply FASTQ...",
-                                        command=self.apply_seqlib_fastq)
-
-    def apply_seqlib_fastq(self):
-        SeqLibApplyDialog(self, self, self.treeview_popup_target_id)
-
-    def treeview_context_menu(self, click):
-        target = self.treeview.identify_row(click.y)
-        if target != '':
-            self.treeview_popup_target_id = target
-            self.treeview_popup.post(click.x_root, click.y_root)
-        self.treeview_popup_target_id = None
+        self.treeview_popup.add_command(
+            label="Apply FASTQ...",
+            command=self.apply_seqlib_fastq
+        )
 
     def create_main_frame(self):
+        """
+        Large function creating all the basic elements of the main app frame.
+        Creates the treeview and associated buttons, the scoring plugin frame
+        and the go button.
+        """
         # Frame for the Treeview and New/Edit/Delete buttons
         main = Frame(self, padding=(3, 3, 12, 12))
         main.rowconfigure(0, weight=1)
@@ -151,16 +247,16 @@ class Configurator(tk.Tk):
         # Frame for New/Edit/Delete buttons
         button_frame = Frame(main, padding=(3, 3, 12, 12))
         button_frame.grid(row=1, column=0)
-        new_button = Button(button_frame, text="New...",
-                                        command=self.new_button_press)
+        new_button = Button(
+            button_frame, text="New...", command=self.new_button_press)
         new_button.grid(row=0, column=0)
-        edit_button = Button(button_frame, text="Edit...",
-                                         command=self.edit_button_press)
+        edit_button = Button(
+            button_frame, text="Edit...", command=self.edit_button_press)
         edit_button.grid(row=0, column=1)
-        delete_button = Button(button_frame, text="Delete",
-                                           command=self.delete_button_press)
+        delete_button = Button(
+            button_frame, text="Delete", command=self.delete_button_press)
         delete_button.grid(row=0, column=2)
-        
+
         self.treeview_buttons = [new_button, delete_button, edit_button]
 
         # ------------------------------------------------------- #
@@ -223,42 +319,6 @@ class Configurator(tk.Tk):
         go_button.grid(column=0, row=0)
         self.go_button = go_button
 
-    def get_selected_scorer_class(self):
-        return self.scorer
-
-    def get_selected_scorer_attrs(self):
-        return self.scorer_attrs
-
-    def get_selected_scorer_path(self):
-        return self.scorer_path
-
-    def go_button_press(self):
-        self.scorer, self.scorer_attrs, self.scorer_path = \
-            self.scorer_plugin.get_scorer_class_attrs_path()
-
-        if self.scorer is None or self.scorer_attrs is None:
-            tkinter.messagebox.showwarning(
-                "Incomplete Configuration", "No scoring plugin selected."
-            )
-        elif self.root_element is None:
-            tkinter.messagebox.showwarning(
-                "Incomplete Configuration", "No experimental design specified."
-            )
-        else:
-            if askyesno("Save Configuration?",
-                        "Would you like to save the confiugration "
-                        "file before proceeding?"):
-                self.menu_save()
-            thread = AnalysisThread(self)
-            showinfo(
-                "Begin Analysis?",
-                "Click OK when you are ready to start.\n\nThis could take some"
-                " time so grab a cup of tea, or a beer if that's your thing, "
-                "and enjoy the show."
-            )
-            thread.start()
-            logging.info("Analysis completed!", extra={"oname": self.name})
-
     def create_new_element(self):
         """
         Create and return a new element based on the current selection.
@@ -295,45 +355,10 @@ class Configurator(tk.Tk):
                              "type '{}'".format(type(parent_element)))
         return element
 
-    def new_button_press(self):
-        if self.treeview.focus() == "" and self.root_element is not None:
-            tkinter.messagebox.showwarning(None, "No parent element selected.")
-        else: 
-            if self.treeview.focus() == "" and self.root_element is None:
-                element = CreateRootDialog(self).element
-                if isinstance(element, SeqLib):
-                    EditDialog(self, self, element)
-                self.root_element = element
-            else:
-                element = self.create_new_element()
-                EditDialog(self, self, element)
-
-            # refresh the treeview and re-assign treeview id's
-            self.refresh_treeview()
-
-            # select the newly added element if it was successfully added
-            if element.treeview_id in list(self.element_dict.keys()):
-                self.treeview.focus(element.treeview_id)
-                self.treeview.selection_set(element.treeview_id)
-            else:
-                if element.parent is not None:
-                    self.treeview.focus(element.parent.treeview_id)
-                    self.treeview.selection_set(element.parent.treeview_id)
-                del element
-
-    def edit_button_press(self):
-        if self.treeview.focus() == "":
-            tkinter.messagebox.showwarning(None, "No element selected.")
-        else:
-            EditDialog(self, self, self.get_focused_element())
-
-    def delete_button_press(self):
-        if self.treeview.focus() == "":
-            tkinter.messagebox.showwarning(None, "No element selected.")
-        else:
-            DeleteDialog(self, self)
-
     def create_menubar(self):
+        """
+        Creates the menubar for the main app, with associated drop down menus.
+        """
         # make platform-specific keybinds
         if platform.system() == "Darwin":
             accel_string = "Command+"
@@ -401,7 +426,261 @@ class Configurator(tk.Tk):
         # add edit menu keybinds
         self.bind("<{}l>".format(accel_bind), lambda event: show_log_window())
 
+    # ---------------------------------------------------------------------- #
+    #                          Treeview Methods
+    # ---------------------------------------------------------------------- #
+    def treeview_context_menu(self, click):
+        """
+        Sets the currently selected treeview object id in the variable
+        ``treeview_popup_target_id``.
+        
+        Parameters
+        ----------
+        click : 
+            tkinter click event
+        """
+        target = self.treeview.identify_row(click.y)
+        if target != '':
+            self.treeview_popup_target_id = target
+            self.treeview_popup.post(click.x_root, click.y_root)
+        self.treeview_popup_target_id = None
+
+    def apply_seqlib_fastq(self):
+        """
+        Applies settings to the seqlib object by running the configuration
+        method.
+        """
+        SeqLibApplyDialog(self, self, self.treeview_popup_target_id)
+
+    def new_button_press(self):
+        """
+        Spawns a dialog box depending on the currently selected treeview item
+        to create a new element.
+        """
+        if self.treeview.focus() == "" and self.root_element is not None:
+            tkinter.messagebox.showwarning(None, "No parent element selected.")
+        else:
+            if self.treeview.focus() == "" and self.root_element is None:
+                element = CreateRootDialog(self).element
+                if isinstance(element, SeqLib):
+                    EditDialog(self, self, element)
+                self.root_element = element
+            else:
+                element = self.create_new_element()
+                EditDialog(self, self, element)
+
+            # refresh the treeview and re-assign treeview id's
+            self.refresh_treeview()
+
+            # select the newly added element if it was successfully added
+            if element.treeview_id in list(self.element_dict.keys()):
+                self.treeview.focus(element.treeview_id)
+                self.treeview.selection_set(element.treeview_id)
+            else:
+                if element.parent is not None:
+                    self.treeview.focus(element.parent.treeview_id)
+                    self.treeview.selection_set(element.parent.treeview_id)
+                del element
+
+    def edit_button_press(self):
+        """
+        Spawns a dialog box depending on the currently selected treeview item
+        to edit the selected element.
+        """
+        if self.treeview.focus() == "":
+            tkinter.messagebox.showwarning(None, "No element selected.")
+        else:
+            EditDialog(self, self, self.get_focused_element())
+
+    def delete_button_press(self):
+        """
+        Deletes the selected treeview element and it's children.
+        """
+        if self.treeview.focus() == "":
+            tkinter.messagebox.showwarning(None, "No element selected.")
+        else:
+            DeleteDialog(self, self)
+
+    def delete_element(self, tree_id):
+        """
+        Delete element with Treeview id *tree_id* from the tree, from the 
+        element dictionary, and from the associated data structure. Recursively 
+        deletes all children of *tree_id*.
+
+        The tree should be refreshed using :py:meth:`refresh_tree` after 
+        each deletion. This is the responsibility of the caller.
+
+        Parameters
+        ----------
+        tree_id : `int`
+            The id of the currently selected treeview element.
+
+        """
+        if tree_id in self.element_dict:
+            # recursively delete children
+            if self.element_dict[tree_id].children is not None:
+                for child in self.element_dict[tree_id].children:
+                    self.delete_element(child.treeview_id)
+
+            # check if deleting the root element
+            if self.root_element.treeview_id == tree_id:
+                # clear the root element
+                print("None {}".format(tree_id))
+                self.root_element = None
+            else:
+                try:
+                    # remove the element from its parent's list of children
+                    self.element_dict[tree_id].parent.remove_child_id(
+                        tree_id)
+                except AttributeError:
+                    raise AttributeError(
+                        "Non-root element lacks proper parent")
+
+            # delete the element from the dictionary
+            del self.element_dict[tree_id]
+
+    def refresh_treeview(self):
+        """
+        Clears the Treeview and repopulates it with the 
+        current contents of the tree.
+        """
+        # clear the entries in the Treeview
+        for x in self.treeview.get_children():
+            self.treeview.delete(x)
+
+        # clear the id-element dictionary
+        # elements may be given new id's after repopulation
+        self.element_dict.clear()
+
+        # repopulate
+        if self.root_element is not None:
+            self.populate_tree(self.root_element)
+
+    def set_treeview_properties(self, element):
+        """
+        Set the information text for the Treeview *element*.
+
+        Parameters
+        ----------
+        element : :py:class:`~enrich2.base.storemanager.StoreManager`
+            The storemanager object to configure.
+        """
+        # set class property
+        self.treeview.set(
+            element.treeview_id, "class", element.treeview_class_name)
+
+        # add the check marks for barcodes/variants
+        if "variants" in element.labels:
+            self.treeview.set(element.treeview_id, "variants", u"\u2713")
+        else:
+            self.treeview.set(element.treeview_id, "variants", "")
+        if "barcodes" in element.labels:
+            self.treeview.set(element.treeview_id, "barcodes", u"\u2713")
+        else:
+            self.treeview.set(element.treeview_id, "barcodes", "")
+
+        self.treeview.set(
+            element.treeview_id, "class", element.treeview_class_name)
+
+    def populate_tree(self, element, parent_id=""):
+        """
+        Recursively populate the Treeview.
+
+        Also populates the *id_cfgstrings*.
+
+        Parameters
+        ----------
+        element : :py:class:`~enrich2.base.storemanager.StoreManager`
+            The storemanager object to configure.
+        parent_id : `int`
+            ``treeview_id`` of element's parent.
+        """
+        # insert into the Treeview
+        element.treeview_id = self.treeview.insert(
+            parent_id, "end", text=element.name, open=True)
+        # add id-element pair to dictionary
+        self.element_dict[element.treeview_id] = element
+        # set information fields
+        self.set_treeview_properties(element)
+
+        # populate for children
+        if element.children is not None:
+            for child in element.children:
+                self.populate_tree(child, parent_id=element.treeview_id)
+
+    # ---------------------------------------------------------------------- #
+    #                          Getter Methods
+    # ---------------------------------------------------------------------- #
+    def get_selected_scorer_class(self):
+        """
+        Returns the currently selected scoring class object.
+        """
+        return self.scorer
+
+    def get_selected_scorer_attrs(self):
+        """
+        Returns the currently selected scoring class attribute `dict`.
+        """
+        return self.scorer_attrs
+
+    def get_selected_scorer_path(self):
+        """
+        Returns the currently selected scoring path.
+        """
+        return self.scorer_path
+
+    def get_element(self, treeview_id):
+        """
+        Returns the element with *treeview_id*.
+
+        Parameters
+        ----------
+        treeview_id : `int`
+            ``treeview_id`` attribute of element to get.
+
+        Returns
+        -------
+        :py:class:`~enrich2.base.storemanager.StoreManager`
+            The instance with matching ``treeview_id``
+
+        """
+        return self.element_dict[treeview_id]
+
+    def get_focused_element(self):
+        """
+        Gets the focused element in the treeview.
+
+        Returns
+        -------
+        :py:class:`~enrich2.base.storemanager.StoreManager`
+            Returns the element that is currently being focused in the 
+            Treeview. ``None`` if nothing is focused.
+        """
+        if self.treeview.focus() != "":
+            return self.get_element(self.treeview.focus())
+        else:
+            return None
+
+    def get_selected_elements(self):
+        """
+        Returns a list of currently selected elements in the treeview.
+
+        Returns
+        -------
+        `list`
+            Returns a list of elements that are currently selected in the 
+            Treeview. If no elements are selected, it returns an empty list.
+
+        """
+        return [self.get_element(x) for x in self.treeview.selection()]
+
+    # ---------------------------------------------------------------------- #
+    #                          Menubar Methods
+    # ---------------------------------------------------------------------- #
     def menu_open(self):
+        """
+        Spawns an `askopenfilename` dialog to open a configuration file.
+        """
         message_title = "Open Configuration"
         fname = tkinter.filedialog.askopenfilename()
         if len(fname) > 0:  # file was selected
@@ -455,6 +734,9 @@ class Configurator(tk.Tk):
                     self.refresh_treeview()
 
     def menu_save(self):
+        """
+        Asks the user where to save the current configuration.
+        """
         if len(self.cfg_file_name.get()) == 0:
             self.menu_saveas()
         elif self.root_element is None:
@@ -491,6 +773,9 @@ class Configurator(tk.Tk):
                         self.cfg_file_name.get()))
 
     def menu_saveas(self):
+        """
+        Asks the user where to save the current configuration.
+        """
         if self.root_element is None:
             tkinter.messagebox.showwarning(
                 "Save Configuration", "Cannot save empty configuration.")
@@ -528,116 +813,37 @@ class Configurator(tk.Tk):
         for k in self.element_dict.keys():
             self.treeview.selection_add(k)
 
-    def delete_element(self, tree_id):
+    # ---------------------------------------------------------------------- #
+    #                         Run Analysis Methods
+    # ---------------------------------------------------------------------- #
+    def go_button_press(self):
         """
-        Delete element with Treeview id *tree_id* from the tree, from the 
-        element dictionary, and from the associated data structure. Recursively 
-        deletes all children of *tree_id*.
-
-        The tree should be refreshed using :py:meth:`refresh_tree` after 
-        each deletion. This is the responsibility of the caller.
-
+        Starts the analysis if all elements have been properly configured.
+        This will run the analysis in a new thread and block out GUI editing 
+        to prevent the analysis breaking.
         """
-        #if self.treeview.exists(tree_id):
-        if tree_id in self.element_dict:
-            # recursively delete children
-            if self.element_dict[tree_id].children is not None:
-                for child in self.element_dict[tree_id].children:
-                    self.delete_element(child.treeview_id)
+        self.scorer, self.scorer_attrs, self.scorer_path = \
+            self.scorer_plugin.get_scorer_class_attrs_path()
 
-            # check if deleting the root element
-            if self.root_element.treeview_id == tree_id:
-                # clear the root element
-                print("None {}".format(tree_id))
-                self.root_element = None
-            else:
-                try:
-                    # remove the element from its parent's list of children
-                    self.element_dict[tree_id].parent.remove_child_id(tree_id)
-                except AttributeError:
-                    raise AttributeError("Non-root element lacks proper parent")
-
-            # delete the element from the dictionary
-            del self.element_dict[tree_id]
-
-    def refresh_treeview(self):
-        """
-        Clears the Treeview and repopulates it with the 
-        current contents of the tree.
-        """
-        # clear the entries in the Treeview
-        for x in self.treeview.get_children():
-            self.treeview.delete(x)
-
-        # clear the id-element dictionary
-        # elements may be given new id's after repopulation
-        self.element_dict.clear()
-
-        # repopulate
-        if self.root_element is not None:
-            self.populate_tree(self.root_element)
-
-    def set_treeview_properties(self, element):
-        """
-        Set the information text for the Treeview *element*.
-        """
-        # set class property
-        self.treeview.set(
-            element.treeview_id, "class", element.treeview_class_name)
-
-        # add the check marks for barcodes/variants
-        if "variants" in element.labels:
-            self.treeview.set(element.treeview_id, "variants", u"\u2713")
+        if self.scorer is None or self.scorer_attrs is None:
+            tkinter.messagebox.showwarning(
+                "Incomplete Configuration", "No scoring plugin selected."
+            )
+        elif self.root_element is None:
+            tkinter.messagebox.showwarning(
+                "Incomplete Configuration", "No experimental design specified."
+            )
         else:
-            self.treeview.set(element.treeview_id, "variants", "")
-        if "barcodes" in element.labels:
-            self.treeview.set(element.treeview_id, "barcodes", u"\u2713")
-        else:
-            self.treeview.set(element.treeview_id, "barcodes", "")
-
-        self.treeview.set(
-            element.treeview_id, "class", element.treeview_class_name)
-
-    def populate_tree(self, element, parent_id=""):
-        """
-        Recursively populate the Treeview.
-
-        Also populates the *id_cfgstrings*.
-        """
-        # insert into the Treeview
-        element.treeview_id = self.treeview.insert(
-            parent_id, "end", text=element.name, open=True)
-        # add id-element pair to dictionary
-        self.element_dict[element.treeview_id] = element
-        # set information fields
-        self.set_treeview_properties(element)
-
-        # populate for children
-        if element.children is not None:
-            for child in element.children:
-                self.populate_tree(child, parent_id=element.treeview_id)
-
-    def get_element(self, treeview_id):
-        """
-        Returns the element with *treeview_id*.
-        """
-        return self.element_dict[treeview_id]
-
-    def get_focused_element(self):
-        """
-        Returns the element that is currently being focused in the Treeview.
-
-        Returns ``None`` if nothing is focused.
-        """
-        if self.treeview.focus() != "":
-            return self.get_element(self.treeview.focus())
-        else:
-            return None
-
-    def get_selected_elements(self):
-        """
-        Returns a list of elements that are currently selected in the Treeview.
-
-        If no elements are selected, it returns an empty list.
-        """
-        return [self.get_element(x) for x in self.treeview.selection()]
+            if askyesno("Save Configuration?",
+                        "Would you like to save the confiugration "
+                        "file before proceeding?"):
+                self.menu_save()
+            thread = AnalysisThread(self)
+            showinfo(
+                "Begin Analysis?",
+                "Click OK when you are ready to start.\n\nThis could take some"
+                " time so grab a cup of tea, or a beer if that's your thing, "
+                "and enjoy the show."
+            )
+            thread.start()
+            logging.info("Analysis completed!", extra={"oname": self.name})

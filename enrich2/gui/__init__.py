@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,5 +13,27 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
+
+"""
+Enrich2 gui module
+==================
+This module contains the main GUI class and helper classes to build various
+aspects of the GUI.
+"""
+
+
+__all__ = [
+    "configurator",
+    "create_root_dialog",
+    "create_seqlib_dialog",
+    "delete_dialog",
+    "dialog",
+    "dialog_elements",
+    "edit_dialog",
+    "logging_frame",
+    "options_frame",
+    "runner_window",
+    "seqlib_apply_dialog"
+]
