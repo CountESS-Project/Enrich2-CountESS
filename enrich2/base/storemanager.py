@@ -31,7 +31,7 @@ import getpass
 import collections
 import pandas as pd
 
-from .utils import nested_format
+from .utils import nested_format, recursive_dict_equal
 from ..base.utils import fix_filename
 from .config_constants import SCORER, SCORER_PATH
 from ..base.constants import LOGR_METHODS, ELEMENT_LABELS
@@ -202,7 +202,6 @@ class StoreManager(object):
         self.store_path = None
         self.store = None
         self.chunksize = 100000
-        self.metadata = None
 
         # output locations
         self._output_dir = None
@@ -569,6 +568,7 @@ class StoreManager(object):
             logging.warning("Using command line supplied output "
                             "directory instead of config file output "
                             "directory", extra={'oname': self.name})
+
         elif cfg.has_output_dir and not self.output_dir_override:
             self.output_dir = cfg.output_dir
 
@@ -649,17 +649,39 @@ class StoreManager(object):
 
         """
         if self.has_store:
+            mode = 'a'
             if not self.store_cfg:
+                fname = fix_filename(self.name)
                 self.store_path = os.path.join(
-                    self.output_dir, "{}_{}.h5".format(
-                        fix_filename(self.name), self.store_suffix))
-                if os.path.exists(self.store_path):
-                    logging.info('Found existing HDF5 data store "{}"'.format(
+                    self.output_dir,
+                    "{}_{}.h5".format(fname, self.store_suffix))
+
+            logging.info(
+                "Loading from store path '{}'.".format(self.store_path),
+                extra={"oname": self.name}
+            )
+            if os.path.exists(self.store_path):
+                store = pd.HDFStore(self.store_path)
+                for key in store.keys():
+                    if not self.check_metadata(key, store):
+                        store.close()
+                        mode = 'w'
+                        break
+                if mode == 'w':
+                    logging.info(
+                        'Found existing HDF5 data store "{}", but metadata'
+                        'did not match with this instance. '
+                        'Overridding existing store.'.format(
                             self.store_path), extra={'oname': self.name})
                 else:
-                    logging.info('Creating new HDF5 data store "{}"'.format(
-                        self.store_path), extra={'oname': self.name})
-            self.store = pd.HDFStore(self.store_path)
+                    logging.info(
+                        'Found existing HDF5 data store "{}".'.format(
+                            self.store_path), extra={'oname': self.name})
+            else:
+                logging.info('Creating new HDF5 data store "{}"'.format(
+                    self.store_path), extra={'oname': self.name})
+
+            self.store = pd.HDFStore(self.store_path, mode=mode)
             if self.force_recalculate and force_delete:
                 if "/main" in self.store:
                     logging.info("Deleting existing calculated values",
@@ -696,6 +718,10 @@ class StoreManager(object):
                 child.store_close(children=True)
  
         if self.has_store and self.store.is_open:
+            # Set the metadata. Resets if it already exists, but that should
+            # be fine since if it already exists, then it should match.
+            for key in self.store.keys():
+                self.set_metadata(key, self.metadata(), update=False)
             self.store.close()
             self.store = None
 
@@ -706,12 +732,12 @@ class StoreManager(object):
 
         Parameters
         ----------
-        key : str
+        key : `str`
             Key for the requested data frame
 
         Returns
         -------
-        bool 
+        :py:class:`~pandas.HDFStore` 
             True if the key exists in the HDF5 store, else False.
         """
         if not self.check_store(key):
@@ -854,6 +880,55 @@ class StoreManager(object):
         # sort based on specified order
         self._labels = sorted(labels, key=lambda a: ELEMENT_LABELS.index(a))
 
+    def metadata(self):
+        """
+        Creates the metadata `dict` which contains the configuration
+        for this store, along with creation time and creation user.
+        
+        Returns
+        -------
+        `dict`
+            Metadata dictionary.
+        """
+        cfg = self.serialize()
+        metadata = {
+            'cfg': cfg,
+            'time': self.creationtime,
+            'user': self.username
+        }
+        return metadata
+
+    def check_metadata(self, key, store=None):
+        """
+        Check if the metadata of this instance (serialized configuration) is
+        equal to the metadata stored in the managed store.
+        
+        Parameters
+        ----------
+        key : `str`
+            The key to the current table
+        store : :py:class:`~pandas.HDFStore`
+            The store object to check
+
+        Returns
+        -------
+        `bool`
+            ``True`` according to the `dict` equality object implementation.
+
+        """
+        if store is None:
+            store = self.store
+
+        this = self.metadata()
+        other = self.get_metadata(key, store)
+        this_cfg = this.get("cfg", {})
+        other_cfg = other.get("cfg", {})
+        logging.info(
+            "\n\nExpected: {}\nFound: {}\n\n".format(this_cfg, other_cfg),
+            extra={"oname": self.name}
+        )
+        return this_cfg == other_cfg
+
     def get_metadata(self, key, store=None):
         """
         Retrieve the Enrich2 metadata dictionary from the HDF5 store.
@@ -866,15 +941,15 @@ class StoreManager(object):
         
         Parameters
         ----------
-        key : str
+        key : `str`
             The name of the group or node in the HDF5 data store.
-        store : :py:class:`pd.HDFStore`, optional, default None
+        store : :py:class:`~pd.HDFStore`, optional, default None
             Can be an external open HDFStore (used when copying metadata
             from raw counts). If it is ``None``, use this object's store.
         
         Returns
         -------
-        dict
+        `dict`
             The metadata held by the given store or None if *key* in 
             store does not exist.
         
