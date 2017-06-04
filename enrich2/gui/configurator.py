@@ -257,6 +257,7 @@ class Configurator(tk.Tk):
                 "and enjoy the show."
             )
             thread.start()
+            logging.info("Analysis completed!", extra={"oname": self.name})
 
     def create_new_element(self):
         """

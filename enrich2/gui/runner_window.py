@@ -18,10 +18,13 @@
 
 import logging
 import threading
+import multiprocessing
 
 import tkinter.simpledialog
 import tkinter.messagebox
 import tkinter.filedialog
+
+
 
 
 class AnalysisThread(threading.Thread):
@@ -31,6 +34,10 @@ class AnalysisThread(threading.Thread):
     def __init__(self, parent_window):
         threading.Thread.__init__(self)
         self.pw = parent_window
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
 
     def run(self):
         # gray out the "Run" button
@@ -84,6 +91,8 @@ class AnalysisThread(threading.Thread):
                     tkinter.messagebox.showwarning(
                         None, "Calculations completed, "
                               "but tsv output failed:\n{}".format(e))
+                    logging.exception(
+                        e, extra={'oname': self.pw.root_element.name})
 
             # show the dialog box
             tkinter.messagebox.showinfo("Analysis", "Analysis completed.")
@@ -94,7 +103,9 @@ class AnalysisThread(threading.Thread):
             self.pw.go_button.config(state='normal')
             for btn in self.pw.treeview_buttons:
                 btn.config(state='normal')
+            logging.info("Closing stores...", extra={"oname": self.name})
             self.pw.root_element.store_close(children=True)
+            logging.info("Done!", extra={"oname": self.name})
 
         for btn in self.pw.treeview_buttons:
             btn.config(state='normal')
