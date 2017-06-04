@@ -30,6 +30,7 @@ import logging
 
 from ..sequence.fqread import read_fastq
 from .variant import VariantSeqLib
+from ..base.utils import compute_md5
 
 
 __all__ = [
@@ -157,6 +158,7 @@ class BasicSeqLib(VariantSeqLib):
         """
         fastq = dict(filters=self.serialize_filters())
         fastq['reads'] = self.reads
+        fastq['read md5'] = compute_md5(self.reads)
 
         if self.revcomp_reads:
             fastq['reverse'] = True

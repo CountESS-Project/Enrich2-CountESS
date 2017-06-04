@@ -30,6 +30,7 @@ import sys
 
 from ..sequence.fqread import read_fastq
 from .seqlib import SeqLib
+from ..base.utils import compute_md5
 
 
 __all__ = [
@@ -172,7 +173,8 @@ class BarcodeSeqLib(SeqLib):
         fastq = {
             'reads': self.reads,
             'reverse': self.revcomp_reads,
-            'filters': self.serialize_filters()
+            'filters': self.serialize_filters(),
+            'reads md5': compute_md5(self.reads)
         }
         if self.trim_start is not None and self.trim_start > 1:
             fastq['start'] = self.trim_start

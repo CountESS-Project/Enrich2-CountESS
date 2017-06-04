@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 
 from ..base.storemanager import StoreManager
-from ..base.utils import fix_filename
+from ..base.utils import fix_filename, compute_md5
 from ..base.constants import ELEMENT_LABELS
 
 
@@ -244,7 +244,7 @@ class SeqLib(StoreManager):
         cfg['report filtered reads'] = self.report_filtered
         if self.counts_file is not None:
             cfg['counts file'] = self.counts_file
-
+            cfg['counts file md5'] = compute_md5(self.counts_file)
         return cfg
 
     def calculate(self):
@@ -536,15 +536,19 @@ class SeqLib(StoreManager):
                 "No raw counts found in '{}' [{}]".format(fname, self.name))
         else:
             for k in raw_keys:
-                # copy the data table
+                # Copy the data table
                 raw = store[k]
                 self.store.put(
                     k, raw, format="table", data_columns=raw.columns)
-                # copy the metadata
+
+                # Copy the metadata
                 self.set_metadata(
                     k, self.get_metadata(k, store=store), update=False)
-                logging.info("Copied raw data '{}'".format(k),
-                             extra={'oname': self.name})
+
+                logging.info(
+                    "Copied raw data '{}'".format(k),
+                    extra={'oname': self.name}
+                )
         store.close()
 
     def counts_from_file_tsv(self, fname):

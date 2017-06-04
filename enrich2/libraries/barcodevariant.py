@@ -28,6 +28,7 @@ library containing variants which are also barcode sequences.
 import logging
 import pandas as pd
 
+from ..base.utils import compute_md5
 from ..libraries.barcodemap import BarcodeMap
 from .barcode import BarcodeSeqLib
 from .variant import VariantSeqLib
@@ -135,7 +136,7 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
         # required for creating new objects in GUI
         if self.barcode_map is not None:
             cfg['barcodes']['map file'] = self.barcode_map.filename
-
+            cfg['barcodes']['map file md5'] = compute_md5(self.barcode_map.filename)
         return cfg
 
     def calculate(self):

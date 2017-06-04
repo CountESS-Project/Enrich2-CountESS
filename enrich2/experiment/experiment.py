@@ -33,6 +33,7 @@ import scipy.stats as stats
 
 from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
 from ..base.config_constants import CONDITIONS
+from ..base.utils import compute_md5
 
 from ..base.constants import WILD_TYPE_VARIANT
 from ..base.storemanager import StoreManager
@@ -185,7 +186,8 @@ class Experiment(StoreManager):
         if self.get_root().scorer_class is not None:
             cfg[SCORER] = {
                 SCORER_PATH: self.get_root().scorer_path,
-                SCORER_OPTIONS: self.get_root().scorer_class_attrs
+                SCORER_OPTIONS: self.get_root().scorer_class_attrs,
+                SCORER_PATH + " md5": compute_md5(self.get_root().scorer_path)
             }
         return cfg
 

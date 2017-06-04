@@ -503,7 +503,7 @@ class VariantSeqLib(SeqLib):
         ----------
         variant_dna : `str`
             DNA sequence to align to reference.
-        include_indels : `bool`, Default ``True``
+        include_indels : `bool`, default: ``True``
             Include indels in the counts.
             
         Returns
@@ -556,12 +556,18 @@ class VariantSeqLib(SeqLib):
                 ref_pro_pos = pos // 3 + self.wt.protein_offset + 1
                 mut = "c.{pos}{change}".format(pos=ref_dna_pos, change=change)
                 if has_indel(change):
-                    mut += " (p.{pre}{pos}fs)".format(pre=AA_CODES[self.wt.protein_seq[pos // 3]], pos=ref_pro_pos)
-                elif variant_protein[pos // 3] == self.wt.protein_seq[pos // 3]:
+                    mut += " (p.{pre}{pos}fs)".format(
+                        pre=AA_CODES[self.wt.protein_seq[pos // 3]],
+                        pos=ref_pro_pos
+                    )
+                elif variant_protein[pos//3] == self.wt.protein_seq[pos // 3]:
                     mut += " (p.=)"
                 else:
-                    mut += " (p.{pre}{pos}{post})".format(pre=AA_CODES[self.wt.protein_seq[pos // 3]], pos=ref_pro_pos,
-                             post=AA_CODES[variant_protein[pos // 3]])
+                    mut += " (p.{pre}{pos}{post})".format(
+                        pre=AA_CODES[self.wt.protein_seq[pos // 3]],
+                        pos=ref_pro_pos,
+                        post=AA_CODES[variant_protein[pos // 3]]
+                    )
                 mutation_strings.append(mut)
         else:
             for pos, change in mutations:
@@ -588,9 +594,9 @@ class VariantSeqLib(SeqLib):
         .. note:: The total number of ``synonymous`` variants may be greater \
         than the total number of ``variants`` after filtering. This is \
         because ``variants`` are combined into ``synonymous`` entries at the \
-        :py:class:`~enrich2.libraries.seqlib.SeqLib` level before count-based filtering, \
-        allowing filtered ``variants`` to contribute counts to their \
-        ``synonymous`` entry.
+        :py:class:`~enrich2.libraries.seqlib.SeqLib` level before count-based 
+        filtering, allowing filtered ``variants`` to contribute counts to 
+        their ``synonymous`` entry.
         """
         if not self.is_coding():
             logging.warning(
