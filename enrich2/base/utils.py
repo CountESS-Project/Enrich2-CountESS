@@ -27,13 +27,22 @@ Contains various utility functions used through-out enrich2
 import numpy as np
 import pandas as pd
 
+import hashlib
+import os
+import logging
+from .config_constants import BARCODE_MAP_FILE, READS, COUNTS_FILE, SCORER_PATH
+
+
 
 __all__ = [
     "nested_format",
     "count_nans",
     "generate_selector",
     "fix_filename",
-    "multi_index_tsv_to_dataframe"
+    "multi_index_tsv_to_dataframe",
+    "file_md5s_equal",
+    "recursive_dict_equal",
+    'compute_md5'
 ]
 
 
@@ -43,16 +52,16 @@ def nested_format(data, default, tab_level=1):
     
     Parameters
     ----------
-    data : object
+    data : `object`
         Data to print.
-    default: bool
+    default: `bool`
         Indicator indicating if a value is a default. 
-    tab_level : int
+    tab_level : `int`
         Number of tabs to indent with.  
 
     Returns
     -------
-    str
+    `str`
         A formatted string.
     """
     msg = ""
@@ -104,14 +113,14 @@ def count_nans(data, axis):
 
     Parameters
     ----------
-    data : :py:class:`np.ndarray`
+    data : :py:class:`~np.ndarray`
         The data to count NaNs along *axis*
-    axis : int {0, 1}
+    axis : `int` {0, 1}
         1 for row-wise sum and 0 for column-wise sum
 
     Returns
     -------
-    :py:class:`np.ndarray`
+    :py:class:`~np.ndarray`
         The number of NaN appearing in each column
     """
     return np.sum(np.isnan(data), axis=axis)
@@ -124,15 +133,15 @@ def generate_selector(data, threshold):
     
     Parameters
     ----------
-    data : :py:class:`np.ndarray`
+    data : :py:class:`~np.ndarray`
         The numpy array to turn into a boolean numpy array.
-    threshold : int or float
+    threshold : `int` or `float`
         An integer or floating point value to compare each element
         in *data* to.
         
     Returns
     -------
-    :py:class:`np.ndarray`
+    :py:class:`~np.ndarray`
         A boolean numpy array for each element greater than *threshold*
     """
     return data > threshold
@@ -144,9 +153,9 @@ def multi_index_tsv_to_dataframe(filepath, header_rows):
     
     Parameters
     ----------
-    filepath : str
+    filepath : `str`
         Path pointing to the tsv file.
-    header_rows : list
+    header_rows : `list`
         0-based indicies corresponding to the row locations to use as the 
         multi-index column names in the dataframe. Example:
         
@@ -159,7 +168,7 @@ def multi_index_tsv_to_dataframe(filepath, header_rows):
 
     Returns
     -------
-    :py:class:`pd.DataFrame`
+    :py:class:`~pd.DataFrame`
         A :py:class:`pd.MultiIndex` dataframe.
     """
     return pd.read_table(filepath, index_col=0, header=header_rows)
@@ -172,14 +181,117 @@ def fix_filename(s):
     
     Parameters
     ----------
-    s : str
+    s : `str`
         File name
     
     Returns
     -------
-    str
+    `str`
         Cleaned file name
     """
     fname = "".join(c for c in s if c.isalnum() or c in (' ._~'))
     fname = fname.replace(' ', '_')
     return fname
+
+
+
+def file_md5s_equal(f1, f2):
+    """
+    Compared the MD5 hashes of two files.
+    
+    Parameters
+    ----------
+    f1 : `str`
+        File path for the first file.
+    f2 : `str`
+        File path for the second file.
+
+    Returns
+    -------
+    `bool`
+        ``True`` if both files have the same MD5 sum. 
+    """
+    with open(f1, 'rb') as fp:
+        f1_md5 = hashlib.md5(fp.read()).hexdigest()
+    with open(f2, 'rb') as fp:
+        f2_md5 = hashlib.md5(fp.read()).hexdigest()
+    return f1_md5 == f2_md5
+
+
+def compute_md5(fname):
+    """
+    Returns the MD5 sum of a file at some path, or an empty string
+    if the file does not exist.
+    
+    Parameters
+    ----------
+    fname : `str`
+        Path to file.
+
+    Returns
+    -------
+    `str`
+        MD5 string of the hashed file.
+    """
+    md5 = ""
+    if os.path.isfile(fname):
+        fp = open(fname, 'rb')
+        md5 = hashlib.md5(fp.read()).hexdigest()
+        fp.close()
+    return md5
+
+def recursive_dict_equal(d1, d2, md5_on_file=True):
+    """
+    Compares two Enrich2 configuration files recursively. Will check
+    md5s for keys that point to files if requested, other wise a basic 
+    string comparison on filenames is performed.
+    
+    Parameters
+    ----------
+    d1 : `dict`
+        Configuraion dictionary A.
+    d2 : `dict`
+        Configuraion dictionary B.
+    md5_on_file : `bool`
+        Use MD5 sum comparison for filenames.
+
+    Returns
+    -------
+    `bool`
+        ``True`` if all elements in the configuration are equal.
+    """
+    for key, value in d1.items():
+        other_value = d2.get(key, None)
+        if other_value is None:
+            return False
+        if type(value) != type(other_value):
+            return False
+        if isinstance(value, dict):
+            return recursive_dict_equal(value, other_value)
+        if isinstance(value, list):
+            if len(value) != len(other_value):
+                return False
+            else:
+                for ls_value, other_ls_value in zip(value, other_value):
+                    return recursive_dict_equal(ls_value, other_ls_value)
+
+        # Compare md5 of the files for relevant keys.
+        file_path_keys = set(
+            [BARCODE_MAP_FILE, COUNTS_FILE, SCORER_PATH, READS])
+        file_path_md5_keys = ["{} md5".format(k) for k in file_path_keys]
+
+        if key in file_path_md5_keys and md5_on_file:
+            same_md5 = (value == other_value)
+            if not same_md5:
+                d1_file_name = d1[key[:-5]]
+                d2_file_name = d1[key[:-5]]
+                if d1_file_name == d2_file_name:
+                    logging.warning(
+                        "File '{}' found in both configurations was "
+                        "found to have the MD5 sum {} for this configuration "
+                        "but MD5 sum {} for the previous configuration."
+                        "".format(d1_file_name, value, other_value)
+                    )
+                return same_md5
+        else:
+            return value == other_value
