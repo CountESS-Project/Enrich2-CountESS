@@ -666,10 +666,11 @@ class StoreManager(object):
                     if not self.check_metadata(key, store):
                         store.close()
                         mode = 'w'
+                        self.force_recalculate = True
                         break
                 if mode == 'w':
                     logging.info(
-                        'Found existing HDF5 data store "{}", but metadata'
+                        'Found existing HDF5 data store "{}", but metadata '
                         'did not match with this instance. '
                         'Overridding existing store.'.format(
                             self.store_path), extra={'oname': self.name})
@@ -704,12 +705,8 @@ class StoreManager(object):
 
         Parameters
         ----------
-        children : bool
+        children : `bool`
             Close the stores of all children objects
-
-        Returns
-        -------
-        None
 
         """
         # needs more error checking
@@ -922,11 +919,9 @@ class StoreManager(object):
         this = self.metadata()
         other = self.get_metadata(key, store)
         this_cfg = this.get("cfg", {})
+        if other is None:
+            return False
         other_cfg = other.get("cfg", {})
-        logging.info(
-            "\n\nExpected: {}\nFound: {}\n\n".format(this_cfg, other_cfg),
-            extra={"oname": self.name}
-        )
         return this_cfg == other_cfg
 
     def get_metadata(self, key, store=None):
