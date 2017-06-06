@@ -20,7 +20,7 @@
 Enrich2 plugin module
 =====================
 
-:py:module:`~enrich2.plugins` is a module providing classes and methods
+:py:mod:`~enrich2.plugins` is a module providing classes and methods
 required to import modules, subclass a scoring plugin, define scripting options
 and option configuration files.
 """
@@ -68,7 +68,7 @@ class ModuleLoader(object):
         Raises ``IOError`` upon failure to locate file or open a file handle.
     ImportError
         Raises an ``ImportError`` if the module could not be loaded by
-        :py:module:`importlib` or if the file is not a correct python file.
+        :py:mod:`importlib` or if the file is not a correct python file.
     AttributeError
         Raises ``AttributeError`` if a non-existent attribute is requested.
     """

@@ -92,7 +92,7 @@ class BaseScorerPlugin(ABC):
         
         See Also
         --------
-        :py:module:`enrich2.base.constants` for table keys used by ``Enrich2``
+        :py:mod:`enrich2.base.constants` for table keys used by ``Enrich2``
         """
         pass
 

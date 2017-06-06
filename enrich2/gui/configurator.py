@@ -881,7 +881,7 @@ class Configurator(tk.Tk):
         
         Parameters
         ----------
-        result : `Exception`
+        success : `Exception`
             Exception object if an error occured during analysis, otherwise
             None to indicate successful computation.
 
@@ -909,15 +909,17 @@ class Configurator(tk.Tk):
         """
         Runs the storemanager compute method.
         """
+        from copy import deepcopy
+        root_element = deepcopy(self.root_element)
         try:
-            self.root_element.validate()
-            self.root_element.store_open(children=True)
-            self.root_element.calculate()
-            if self.root_element.tsv_requested:
-                self.root_element.write_tsv()
+            root_element.validate()
+            root_element.store_open(children=True)
+            root_element.calculate()
+            if root_element.tsv_requested:
+                root_element.write_tsv()
             self.queue.put(True, block=False)
         except Exception as e:
-            logging.exception(e, extra={'oname': self.root_element.name})
+            logging.exception(e, extra={'oname': root_element.name})
             self.queue.put(False, block=False)
         finally:
             return

@@ -20,7 +20,7 @@
 Enrich2 plugin option module
 ============================
 
-:py:module:`~enrich2.options` is a module providing classes and methods
+:py:mod:`~enrich2.options` is a module providing classes and methods
 required for defining Option objects for use by plugin authors. It provides 
 additional container classes Options to define a collection of options with
 associated utility methods. The OptionsFile class defines a representation
@@ -639,7 +639,7 @@ def parse(file_path, backend=json):
     ----------
     file_path : str
         Path pointing to the configuration file to be parsed.
-    backend : Default :py:module:`json`
+    backend : Default :py:mod:`json`
         Backend to be used to parse file.
 
     Returns

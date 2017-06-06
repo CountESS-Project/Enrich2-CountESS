@@ -23,7 +23,7 @@ from ..sequence.aligner import Aligner
 class TestAlignerModule(unittest.TestCase):
 
     def setUp(self):
-        self.aligner = Aligner()
+        self.aligner = Aligner(backend='ambivert')
 
     def tearDown(self):
         pass

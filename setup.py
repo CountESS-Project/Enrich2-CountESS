@@ -24,7 +24,9 @@ requirements = [
     'pandas >= 0.18.0',
     'statsmodels >= 0.6.1',
     'matplotlib >= 1.4.3',
-    'pyyaml >= 3.12'
+    'pyyaml >= 3.12',
+    'sphinx_rtd_theme',
+    "sphinx >= 1.5.6"
 ]
 
 # dirty workaround to deal with Enthought Canopy referring to the
