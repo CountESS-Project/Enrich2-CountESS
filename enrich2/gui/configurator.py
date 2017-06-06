@@ -28,6 +28,7 @@ import json
 import platform
 import logging
 import threading
+import queue
 import tkinter as tk
 import tkinter.filedialog
 import tkinter.messagebox
@@ -164,6 +165,7 @@ class Configurator(tk.Tk):
         self.element_dict = dict()
         self.root_element = None
         self.analysis_thread = None
+        self.queue = queue.Queue()
 
         # Treeview variables
         self.treeview = None
@@ -853,47 +855,72 @@ class Configurator(tk.Tk):
                 "your thing, and enjoy the show."
             )
             if run:
+                self.configure_analysis()
+                self.set_gui_state(tk.DISABLED)
                 thread = threading.Thread(target=self.run_analysis)
                 thread.setDaemon(True)
                 self.analysis_thread = thread
-                self.configure_analysis()
-                self.set_gui_state("disabled")
                 self.analysis_thread.start()
-                self.set_gui_state("normal")
+                self.after(100, self.poll_analysis_thread)
+
+    def poll_analysis_thread(self):
+        """
+        Polls the thread to check it's state. When it is finished, all stores
+        are closed.
+        """
+        try:
+            analysis_result = self.queue.get(0)
+            self.handle_analysis_result(analysis_result)
+        except queue.Empty:
+            self.after(100, self.poll_analysis_thread)
+
+    def handle_analysis_result(self, success):
+        """
+        Shows the appropriate messagebox and logs exceptions upon analysis
+        completing.
+        
+        Parameters
+        ----------
+        result : `Exception`
+            Exception object if an error occured during analysis, otherwise
+            None to indicate successful computation.
+
+        """
+        logging.info(
+            "Closing stores...", extra={"oname": self.root_element.name})
+        self.root_element.store_close(children=True)
+        logging.info("Stores closed.", extra={"oname": self.root_element.name})
+
+        if success:
+            showinfo(
+                "Analysis completed.",
+                "Analysis has completed successfully!")
+            logging.info("Completed successfully!",
+                         extra={"oname": self.root_element.name})
+        else:
+            showwarning(
+                "Error during analysis.",
+                "An error occurred during the analysis. See log for details")
+            logging.info("Completed, but with errors!",
+                         extra={"oname": self.root_element.name})
+        self.set_gui_state(tk.NORMAL)
 
     def run_analysis(self):
         """
         Runs the storemanager compute method.
         """
-        error = False
         try:
             self.root_element.validate()
             self.root_element.store_open(children=True)
             self.root_element.calculate()
             if self.root_element.tsv_requested:
                 self.root_element.write_tsv()
+            self.queue.put(True, block=False)
         except Exception as e:
-            error = True
-            logging.info(
-                "An error occurred during the analysis.",
-                extra={'oname': self.root_element.name})
             logging.exception(e, extra={'oname': self.root_element.name})
+            self.queue.put(False, block=False)
         finally:
-            logging.info(
-                "Closing stores...", extra={"oname": self.root_element.name})
-            self.root_element.store.flush()
-            self.root_element.store_close(children=True)
-            if error:
-                showwarning(
-                    "Analysis encountered an error.",
-                    "An error occurred during the analysis, "
-                    "see log for details.")
-            else:
-                showinfo(
-                    "Analysis completed.",
-                    "Analysis has completed successfully!")
-            logging.info(
-                "Done!", extra={"oname": self.root_element.name})
+            return
 
     def set_gui_state(self, state):
         """
@@ -902,28 +929,37 @@ class Configurator(tk.Tk):
         Parameters
         ----------
         state : `str`
-            State to set, usually ``normal`` or ``disabled``
+            State to set, usually ``'normal'`` or ``'disabled'``
 
         """
         for btn in self.treeview_buttons:
             btn.config(state=state)
         self.go_button.config(state=state)
-        self.treeview.bind("<Button-2>", lambda event: event)
+        if state == 'normal':
+            self.treeview.bind("<Button-2>", self.treeview_context_menu)
+        else:
+            self.treeview.bind("<Button-2>", lambda event: event)
 
     def configure_analysis(self):
         """
         Configures the attributes of the root_element by querying the GUI
         options.
         """
-        self.root_element.force_recalculate = \
-            self.force_recalculate.get()
-        self.root_element.component_outliers = \
-            self.component_outliers.get()
-        self.root_element.tsv_requested = self.tsv_requested.get()
+        try:
+            self.root_element.force_recalculate = \
+                self.force_recalculate.get()
+            self.root_element.component_outliers = \
+                self.component_outliers.get()
+            self.root_element.tsv_requested = self.tsv_requested.get()
 
-        scorer_class = self.get_selected_scorer_class()
-        scorer_class_attrs = self.get_selected_scorer_attrs()
-        scorer_path = self.get_selected_scorer_path()
-        self.root_element.scorer_class = scorer_class
-        self.root_element.scorer_class_attrs = scorer_class_attrs
-        self.root_element.scorer_path = scorer_path
+            scorer_class = self.get_selected_scorer_class()
+            scorer_class_attrs = self.get_selected_scorer_attrs()
+            scorer_path = self.get_selected_scorer_path()
+            self.root_element.scorer_class = scorer_class
+            self.root_element.scorer_class_attrs = scorer_class_attrs
+            self.root_element.scorer_path = scorer_path
+        except Exception as e:
+            logging.info(
+                "An error occurred when trying to configure the root element.",
+                extra={'oname': self.root_element.name})
+            logging.exception(e, extra={'oname': self.root_element.name})

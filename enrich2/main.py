@@ -22,22 +22,17 @@ import json
 import logging
 import os.path
 import sys
-from tkinter import Toplevel
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
-from .base.constants import SCORING_METHODS, LOGR_METHODS
 from .experiment.experiment import Experiment
 from .experiment.condition import Condition
 from .selection.selection import Selection
 from .config import config_check
-from .gui.configurator import Configurator
 from .libraries.barcode import BarcodeSeqLib
 from .libraries.barcodeid import BcidSeqLib
 from .libraries.barcodevariant import BcvSeqLib
 from .libraries.basic import BasicSeqLib
 from .libraries.idonly import IdOnlySeqLib
-from .gui.logging_frame import WindowLoggingHandler
-
 
 __author__ = "Alan F Rubin, Daniel C Esposito"
 __copyright__ = "Copyright 2016-2017, Alan F Rubin, Daniel C Esposito"
@@ -97,18 +92,26 @@ def main_gui():
     Entry point for GUI.
 
     """
-    start_logging(None, logging.DEBUG)
+    from tkinter import Toplevel
+    from .gui.configurator import Configurator
+    from .gui.logging_frame import WindowLoggingHandler
+
+    # Start the main app
     app = Configurator()
 
     # GUI logger to the logger's handlers
     win = Toplevel(master=app)
     win.title('Enrich 2 Log')
+
+    # Basic logging configuration to STDOUT and to a separate logging window
+    start_logging(None, logging.DEBUG)
     log_window = WindowLoggingHandler(window=win)
     formatter = logging.Formatter(LOG_FORMAT)
     log_window.setFormatter(formatter)
     logging.getLogger().addHandler(log_window)
     logging.info("Starting Enrich 2...", extra={'oname': DRIVER_NAME})
 
+    # Start app
     app.mainloop()
 
 
@@ -118,13 +121,7 @@ def main_cmd():
 
     """
     # build description string based on available methods
-    desc_string = "Command-line driver for Enrich2 v{}".format(__version__) + \
-        "\n\nscoring methods:\n" + \
-        "\n".join(["  {:22}{}".format(k, v) for k, v in
-                   SCORING_METHODS.items()]) + \
-        "\n\nlog ratio methods:\n" + \
-        "\n".join(["  {:22}{}".format(k, v) for k, v in
-                   LOGR_METHODS.items()])
+    desc_string = "Command-line driver for Enrich2 v{}".format(__version__)
 
     # create parser and add description
     parser = ArgumentParser(prog="Enrich2", description=desc_string,
@@ -132,11 +129,6 @@ def main_cmd():
 
     # add command line arguments
     parser.add_argument("config", help="JSON configuration file")
-
-    # parser.add_argument("scoring_method", help="scoring method",
-    #                     choices=list(SCORING_METHODS.keys()))
-    # parser.add_argument("logr_method", help="log ratio method",
-    #                     choices=list(LOGR_METHODS.keys()))
 
     # add support for semantic version checking
     parser.add_argument("--version", action="version",
@@ -204,8 +196,6 @@ def main_cmd():
     # set analysis options
     obj.force_recalculate = args.force_recalculate
     obj.component_outliers = args.component_outliers
-    # obj.scoring_method = args.scoring_method
-    # obj.logr_method = args.logr_method
     obj.tsv_requested = args.tsv_requested
 
     if args.output_dir_override is not None:

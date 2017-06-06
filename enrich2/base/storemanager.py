@@ -210,7 +210,6 @@ class StoreManager(object):
 
         # analysis parameters
         self._scoring_method = None
-        self._logr_method = None
         self.scorer_class = None
         self.scorer_class_attrs = None
         self.scorer_path = None
@@ -333,21 +332,14 @@ class StoreManager(object):
 
         Recursively traverses up the config tree to find the root element.
         """
-        if self._scoring_method is None:
+        if self.scorer_class is None:
             if self.parent is not None:
-                return self.parent.scoring_method
+                return self.parent.scorer_class.name
             else:
                 raise ValueError("Scoring method not specified at root "
                                  "[{}]".format(self.name))
         else:
-            return self._scoring_method
-
-    @scoring_method.setter
-    def scoring_method(self, value):
-        """
-        Make sure the *value* is valid and set it.
-        """
-        self._scoring_method = value
+            return self.parent.scorer_class.name
 
     @property
     def output_dir(self):
@@ -428,34 +420,6 @@ class StoreManager(object):
                 raise OSError("Failed to create tsv directory: {}".format(e))
             self._tsv_dir = dirname
         return self._tsv_dir
-
-    @property
-    def logr_method(self):
-        """
-        This property should only be set for the root element. All other
-        elements in the analysis should have ``None``.
-
-        Recursively traverses up the config tree to find the root element.
-        """
-        if self._logr_method is None:
-            if self.parent is not None:
-                return self.parent.logr_method
-            else:
-                raise AttributeError("Log-ratio method not specified for root "
-                                     "element [{}]".format(self.name))
-        else:
-            return self._logr_method
-
-    @logr_method.setter
-    def logr_method(self, value):
-        """
-        Make sure the *value* is valid and set it.
-        """
-        if value in list(LOGR_METHODS.keys()):
-            self._logr_method = value
-        else:
-            raise ValueError("Invalid setting '{}' for log-ratio method "
-                             "[{}]".format(value, self.name))
 
     @property
     def children(self):
@@ -626,7 +590,7 @@ class StoreManager(object):
     # -----------------------------------------------------------------------#
     #                           Store I/O
     # -----------------------------------------------------------------------#
-    def store_open(self, children=False, force_delete=True):
+    def store_open(self, children=False, force_delete=False):
         """
         Open the HDF5 file associated with this object. If the
         ``force_recalculate`` option is selected and ``force_delete`` is
@@ -637,19 +601,17 @@ class StoreManager(object):
         
         Parameters
         ----------
-        children : bool
+        children : `bool`
             Open the stores of all children objects
             
-        force_delete : bool
-            Delete existing tables under ``'/main'`` upon store opening.
-            
-        Returns
-        -------
-        None
-
+        force_delete : `bool`
+            Delete existing tables under ``'/main'`` and ``'/raw'``
+            upon store opening.
         """
         if self.has_store:
-            mode = 'a'
+            if self.store is not None and self.store.is_open:
+                raise ValueError("Store is still open.")
+
             if not self.store_cfg:
                 fname = fix_filename(self.name)
                 self.store_path = os.path.join(
@@ -664,26 +626,27 @@ class StoreManager(object):
                 store = pd.HDFStore(self.store_path)
                 for key in store.keys():
                     if not self.check_metadata(key, store):
-                        store.close()
-                        mode = 'w'
-                        self.force_recalculate = True
+                        force_delete = True
+                        logging.info(
+                            'Found existing HDF5 data store "{}", but metadata'
+                            ' did not match with this instance. '
+                            'Overridding existing store.'.format(
+                                self.store_path), extra={'oname': self.name})
                         break
-                if mode == 'w':
-                    logging.info(
-                        'Found existing HDF5 data store "{}", but metadata '
-                        'did not match with this instance. '
-                        'Overridding existing store.'.format(
-                            self.store_path), extra={'oname': self.name})
                 else:
                     logging.info(
                         'Found existing HDF5 data store "{}".'.format(
                             self.store_path), extra={'oname': self.name})
+                store.flush()
+                store.close()
             else:
                 logging.info('Creating new HDF5 data store "{}"'.format(
                     self.store_path), extra={'oname': self.name})
 
-            self.store = pd.HDFStore(self.store_path, mode=mode)
-            if self.force_recalculate and force_delete:
+            # Open the store and delete tables if required.
+            self.store = pd.HDFStore(self.store_path, mode='a')
+
+            if self.force_recalculate:
                 if "/main" in self.store:
                     logging.info("Deleting existing calculated values",
                                  extra={'oname': self.name})
@@ -692,9 +655,35 @@ class StoreManager(object):
                     logging.warning("No existing calculated values in file",
                                     extra={'oname': self.name})
 
+            if force_delete:
+                tables = ', '.join(
+                    ["'{}'".format(x) for x in self.store.keys()])
+                logging.info(
+                    "Deleting all tables: {}".format(tables),
+                    extra={'oname': self.name}
+                )
+                self.clear_store(self.store)
+
         if children and self.children is not None:
             for child in self.children:
-                child.store_open(children=True)
+                child.store_open(
+                    children=True, force_delete=force_delete)
+
+    def clear_store(self, store):
+        """
+        Clear all tables in a store
+        
+        Parameters
+        ----------
+        store : :py:class:`~pd.HDFStore`, optional, default None
+            Store to be cleared
+        """
+        for key in store.keys():
+            logging.info(
+                "Deleting existing table with key '{}'.".format(key),
+                extra={'oname': self.name})
+            store.remove(key)
+        store.flush()
 
     def store_close(self, children=False):
         """
@@ -714,11 +703,12 @@ class StoreManager(object):
             for child in self.children:
                 child.store_close(children=True)
  
-        if self.has_store and self.store.is_open:
+        if self.has_store and self.store is not None and self.store.is_open:
             # Set the metadata. Resets if it already exists, but that should
             # be fine since if it already exists, then it should match.
             for key in self.store.keys():
                 self.set_metadata(key, self.metadata(), update=False)
+            self.store.flush()
             self.store.close()
             self.store = None
 
@@ -751,12 +741,12 @@ class StoreManager(object):
 
         Parameters
         ----------
-        key : str
+        key : `str`
             Key for the requested data frame
 
         Returns
         -------
-        bool 
+        `bool` 
             True if the key exists in the HDF5 store, else False.
         """
         if key in list(self.store.keys()):
@@ -775,22 +765,18 @@ class StoreManager(object):
 
         Parameters
         ----------
-        source : str
+        source : `str`
             The key to access the table to map
-        destination : str:
+        destination : `str`:
             The key to put the newly mapped table
-        source_query : str
+        source_query : `str`
             A query string used as a predicate during mapping
-        row_callback : Callable
+        row_callback : `Callable`
             Callback function applied to each row.
-        row_callback_args : Iterable
+        row_callback_args : `Iterable`
             Arguments required by *row_callback*
-        destination_data_columns : Iterable
+        destination_data_columns : `Iterable`
             Iterable of column names
-
-        Returns
-        -------
-        None
         """
         if destination in list(self.store.keys()):
             # remove the current destination table because we are using append
@@ -830,12 +816,8 @@ class StoreManager(object):
 
         Parameters
         ----------
-        tables : Iterable
-            Iterable object containing :py:class:`pd.HDFStore` objects.
-
-        Returns
-        -------
-        None
+        tables : `Iterable`
+            Iterable object containing :py:class:`~pd.HDFStore` objects.
         """
         shared = pd.Index()
         for t in tables:
@@ -852,12 +834,8 @@ class StoreManager(object):
 
         Parameters
         ----------
-        x : str
+        x : `str`
             Label to add to labels, which must be present in ELEMENT_LABELS
-
-        Returns
-        -------
-        None
 
         Raises
         ------
