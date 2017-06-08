@@ -43,18 +43,10 @@ try:
     for handler in logging.getLogger().handlers:
         handler.close()
     logging.getLogger().handlers = []
-
     logging.captureWarnings(False)
-    logging.info(
-        "Using ambivert alignment backend.",
-        extra={'oname': 'Aligner'}
-    )
     _AMBIVERT = True
 except ImportError:
-    logging.info(
-        "Using enrich2 alignment backend.",
-        extra={'oname': 'Aligner'}
-    )
+    pass
 
 
 __all__ = [
@@ -159,8 +151,16 @@ class Aligner(object):
         global _AMBIVERT
         if backend == 'ambivert' and _AMBIVERT:
             self.align = self.align_ambivert
+            logging.info(
+                "Using ambivert alignment backend.",
+                extra={'oname': 'Aligner'}
+            )
         else:
             self.align = self.align_enrich2
+            logging.info(
+                "Using enrich2 alignment backend.",
+                extra={'oname': 'Aligner'}
+            )
 
     def align_ambivert(self, seq1, seq2):
         """

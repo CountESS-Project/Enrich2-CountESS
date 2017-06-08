@@ -102,7 +102,6 @@ class FQRead(object):
     qbase : `int`
         Integer ASCII value that correponds to Phred score of 0
     
-    
     Methods
     -------
     trim

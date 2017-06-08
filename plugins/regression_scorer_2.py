@@ -38,7 +38,7 @@ options.add_option(
     varname="weighted",
     dtype=bool,
     default=True,
-    choices=None,
+    choices={},
     hidden=False
 )
 
