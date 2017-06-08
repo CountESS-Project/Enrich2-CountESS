@@ -623,7 +623,7 @@ class StoreManager(object):
                 extra={"oname": self.name}
             )
             if os.path.exists(self.store_path):
-                store = pd.HDFStore(self.store_path)
+                store = pd.HDFStore(self.store_path).open()
                 for key in store.keys():
                     if not self.check_metadata(key, store):
                         force_delete = True
