@@ -103,6 +103,22 @@ def main_gui():
     win = Toplevel(master=app)
     win.title('Enrich 2 Log')
 
+    # Import before setting up the logging so to avoid logging override.
+    try:
+        from ambivert.ambivert import gapped_alignment_to_cigar
+        from ambivert import align
+
+        # Reset the logging handlers after loading ambivert
+        for handler in logging.getLogger("ambivert").handlers:
+            handler.close()
+        logging.getLogger('ambivert').handlers = []
+        for handler in logging.getLogger().handlers:
+            handler.close()
+        logging.getLogger().handlers = []
+        logging.captureWarnings(False)
+    except ImportError:
+        pass
+
     # Basic logging configuration to STDOUT and to a separate logging window
     start_logging(None, logging.DEBUG)
     log_window = WindowLoggingHandler(window=win)
