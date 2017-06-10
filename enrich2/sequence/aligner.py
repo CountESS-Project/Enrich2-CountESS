@@ -265,8 +265,28 @@ class Aligner(object):
                           self.similarity['gap_open'], Aligner._DEL)
                 insert = (self.matrix[i, j - 1]['score'] +
                           self.similarity['gap_open'], Aligner._INS)
-                self.matrix[i, j] = max(delete, insert, match,
-                                        key=lambda x: x[0])
+
+                traces = [delete, insert, match]
+                max_score = max(delete, insert, match, key=lambda x: x[0])[0]
+                possible_traces = [t for t in traces if t[0] == max_score]
+                priority_move = sorted(possible_traces, key=lambda x: x[1])[0]
+                self.matrix[i, j] = priority_move
+
+                # def dotype(lol):
+                #     if lol == self._MAT:
+                #         return 'match'
+                #     if lol == self._INS:
+                #         return 'insertion'
+                #     if lol == self._DEL:
+                #         return 'deletion'
+                # print(i, j)
+                # print("Possible Scores: {}".format([t[0] for t in possible_traces]))
+                # print("Possible Tracebacks: {}".format([dotype(t[1]) for t in possible_traces]))
+                # print("Chosen Traceback: {}".format(dotype(priority_move[1])))
+
+                # max_score = max(delete, insert, match, key=lambda x: x[0])
+                # self.matrix[i, j] = max_score
+
         self.matrix[0, 0] = (0, Aligner._END)
 
         # calculate alignment from the traceback
@@ -282,10 +302,12 @@ class Aligner(object):
                 i -= 1
                 j -= 1
             elif self.matrix[i, j]['trace'] == Aligner._INS:
-                traceback.append((i - 1, j - 1, "insertion", 1))
+                pos_1 = 0 if (i - 1) < 0 else (i - 1)
+                traceback.append((pos_1, j - 1, "insertion", 1))
                 j -= 1
             elif self.matrix[i, j]['trace'] == Aligner._DEL:
-                traceback.append((i - 1, j - 1, "deletion", 1))
+                pos_2 = 0 if (j - 1) < 0 else (j - 1)
+                traceback.append((i - 1, pos_2, "deletion", 1))
                 i -= 1
             elif self.matrix[i, j]['trace'] == Aligner._END:
                 pass
@@ -486,28 +508,30 @@ def cigar_to_backtrace(seq1, seq2, cigar):
     """
     letters = cigar[1::2]
     numbers = [int(x) for x in cigar[0::2]]
-    backtrace = []
-    seq1_pos = 0
-    seq2_pos = 0
-    for num, char in zip(numbers, letters):
+    i = len(seq1)
+    j = len(seq2)
+    traceback = []
+    for num, char in reversed(list(zip(numbers, letters))):
         if char == 'M':
-            for i in range(num):
-                if seq1[seq1_pos + i] == seq2[seq2_pos + i]:
-                    match_str = 'match'
+            for _ in range(num):
+                if seq1[i - 1] == seq2[j - 1]:
+                    traceback.append((i - 1, j - 1, "match", None))
                 else:
-                    match_str = 'mismatch'
-                backtrace.append((seq1_pos + i, seq2_pos + i, match_str, None))
-            seq1_pos += num - 1
-            seq2_pos += num - 1
+                    traceback.append((i - 1, j - 1, "mismatch", None))
+                i -= 1
+                j -= 1
         elif char == 'I':
-            backtrace.append((seq1_pos, seq2_pos + num, 'insertion', num))
-            seq1_pos += 1
-            seq2_pos += num + 1
+            pos_1 = 0 if (i - 1) < 0 else (i - 1)
+            traceback.append((pos_1, j - num, "insertion", num))
+            j -= num
         elif char == 'D':
-            backtrace.append((seq1_pos + num, seq2_pos, 'deletion', num))
-            seq1_pos += num + 1
-            seq2_pos += 1
-    return backtrace
+            pos_2 = 0 if (j - 1) < 0 else (j - 1)
+            traceback.append((i - num, pos_2, "deletion", num))
+            i -= num
+        else:
+            raise RuntimeError("Invalid value in alignment traceback.")
+    traceback.reverse()
+    return traceback
 
 
 def make_dna_scoring_matrix(similarity, ordering='ACGTNX'):
@@ -536,3 +560,17 @@ def make_dna_scoring_matrix(similarity, ordering='ACGTNX'):
             cost = similarity[key_fr][key_to]
             similarity_matrix.append(cost)
     return (c_int * (n * n))(*similarity_matrix)
+
+
+def test(seq1, seq2):
+    from enrich2.sequence.aligner import Aligner
+    amb = Aligner(backend='ambivert')
+    aen = Aligner(backend='enrich2')
+    print('Enrich2: {}'.format(aen.align(seq1, seq2)))
+    print('AmBiVert: {}'.format(amb.align(seq1, seq2)))
+
+def build_aligners():
+    from enrich2.sequence.aligner import Aligner
+    amb = Aligner(backend='ambivert')
+    aen = Aligner(backend='enrich2')
+    return amb, aen
