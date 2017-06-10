@@ -128,14 +128,18 @@ class FQRead(object):
 
     def __init__(self, header, sequence, header2, quality, qbase=33):
         lst = [header, sequence, header2, quality]
+
+        print(header, len(header))
+        print(sequence, len(sequence))
+        print(header2, len(header2))
+        print(quality, len(quality))
+
         if not all(isinstance(x, str) for x in lst):
             raise ValueError('Bad file contents. Expeceted str got type '
                              '{}'.format(type(lst[-1])))
         if not all(len(x) for x in lst):
             raise ValueError('Missing fields in FASTQ record')
         if len(sequence) != len(quality):
-            print(sequence, len(sequence))
-            print(quality, len(quality))
             raise ValueError('Different lengths for sequence and quality')
         if header[0] != '@' or header2[0] != '+':
             raise ValueError('Improperly formatted FASTQ record')
