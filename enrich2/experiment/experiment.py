@@ -521,8 +521,8 @@ class Experiment(StoreManager):
 
         # set up new data frame
         shared_index = self.store.select(
-            "/main/{}/scores_shared".format(label),
-            "columns='index'"
+            key="/main/{}/scores_shared".format(label),
+            where="columns='index'"
         ).index
         columns = pd.MultiIndex.from_product(
             [sorted(self.child_names()),
