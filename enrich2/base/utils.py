@@ -194,7 +194,6 @@ def fix_filename(s):
     return fname
 
 
-
 def file_md5s_equal(f1, f2):
     """
     Compared the MD5 hashes of two files.
@@ -234,11 +233,14 @@ def compute_md5(fname):
         MD5 string of the hashed file.
     """
     md5 = ""
+    if fname is None:
+        return md5
     if os.path.isfile(fname):
         fp = open(fname, 'rb')
         md5 = hashlib.md5(fp.read()).hexdigest()
         fp.close()
     return md5
+
 
 def recursive_dict_equal(d1, d2, md5_on_file=True):
     """
@@ -276,8 +278,7 @@ def recursive_dict_equal(d1, d2, md5_on_file=True):
                     return recursive_dict_equal(ls_value, other_ls_value)
 
         # Compare md5 of the files for relevant keys.
-        file_path_keys = set(
-            [BARCODE_MAP_FILE, COUNTS_FILE, SCORER_PATH, READS])
+        file_path_keys = {BARCODE_MAP_FILE, COUNTS_FILE, SCORER_PATH, READS}
         file_path_md5_keys = ["{} md5".format(k) for k in file_path_keys]
 
         if key in file_path_md5_keys and md5_on_file:
