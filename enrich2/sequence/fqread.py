@@ -129,10 +129,10 @@ class FQRead(object):
     def __init__(self, header, sequence, header2, quality, qbase=33):
         lst = [header, sequence, header2, quality]
 
-        print(header, len(header))
-        print(sequence, len(sequence))
-        print(header2, len(header2))
-        print(quality, len(quality))
+        # print(header, len(header))
+        # print(sequence, len(sequence))
+        # print(header2, len(header2))
+        # print(quality, len(quality))
 
         if not all(isinstance(x, str) for x in lst):
             raise ValueError('Bad file contents. Expeceted str got type '
