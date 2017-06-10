@@ -66,9 +66,15 @@ class CreateRootDialog(CustomDialog):
         CustomDialog.__init__(self, parent_window, title, body_frame_text=text)
 
     def body(self, master):
-        row_no = self.name_tk.body(master, 0)
-        row_no += self.output_directory_tk.body(master, row_no)
+        row_no = 0
 
+        config_frame = LabelFrame(master, text="Root Configuration")
+        self.name_tk.body(config_frame, 0)
+        self.output_directory_tk.body(config_frame, 1)
+        config_frame.grid(
+            column=0, row=row_no, sticky="nsew", columnspan=DEFAULT_COLUMNS)
+
+        row_no += 1
         element_types = LabelFrame(
             master, padding=(3, 3, 12, 12), text="Root Type")
         element_types.grid(
