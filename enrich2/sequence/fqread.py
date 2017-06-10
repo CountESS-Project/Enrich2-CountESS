@@ -134,6 +134,8 @@ class FQRead(object):
         if not all(len(x) for x in lst):
             raise ValueError('Missing fields in FASTQ record')
         if len(sequence) != len(quality):
+            print(sequence, len(sequence))
+            print(quality, len(quality))
             raise ValueError('Different lengths for sequence and quality')
         if header[0] != '@' or header2[0] != '+':
             raise ValueError('Improperly formatted FASTQ record')

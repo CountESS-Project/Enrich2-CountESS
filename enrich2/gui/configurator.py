@@ -857,11 +857,13 @@ class Configurator(tk.Tk):
             if run:
                 self.configure_analysis()
                 self.set_gui_state(tk.DISABLED)
-                thread = threading.Thread(target=self.run_analysis)
-                thread.setDaemon(True)
-                self.analysis_thread = thread
-                self.analysis_thread.start()
-                self.after(100, self.poll_analysis_thread)
+                # thread = threading.Thread(target=self.run_analysis)
+                # thread.setDaemon(True)
+                # self.analysis_thread = thread
+                # self.analysis_thread.start()
+                # self.after(100, self.poll_analysis_thread)
+
+                self.run_analysis()
 
     def poll_analysis_thread(self):
         """
