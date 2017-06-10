@@ -118,10 +118,6 @@ class SeqLib(StoreManager):
     counts_from_file
         Get raw counts from a counts file instead of FASTQ_ file
     
-    Inherits
-    --------
-    :py:class:`~enrich2.base.storemanager.StoreManager`
-    
     See Also
     --------
     :py:class:`~enrich2.base.storemanager.StoreManager`

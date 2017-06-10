@@ -77,7 +77,7 @@ class BasicSeqLib(VariantSeqLib):
     calculate
         Counts variants from counts file or FASTQ.
     
-    Inherits
+    See Also
     --------
     :py:class:`~enrich2.libraries.variant.VariantSeqLib`
     """

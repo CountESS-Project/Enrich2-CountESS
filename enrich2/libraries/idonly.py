@@ -59,7 +59,7 @@ class IdOnlySeqLib(SeqLib):
     calculate
         Get the identifier counts from the counts file.
     
-    Inherits
+    See Also
     --------
     :py:class:`~enrich2.libraries.seqlib.SeqLib`
     """

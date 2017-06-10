@@ -45,7 +45,6 @@ globals()['BcidSeqLib'] = BcidSeqLib
 globals()['BcvSeqLib'] = BcvSeqLib
 globals()['BasicSeqLib'] = BasicSeqLib
 globals()['IdOnlySeqLib'] = IdOnlySeqLib
-globals()['OverlapSeqLib'] = OverlapSeqLib
 
 
 class CreateRootDialog(CustomDialog):

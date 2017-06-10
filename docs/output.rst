@@ -1,7 +1,7 @@
 .. _hdf5-files:
 
 Output HDF5 files
-=======================================
+=================
 
 Enrich2 stores data in an HDF5 file for each Experiment, Selection, and SeqLib analysis object. The name of the HDF5 file is the object's name plus the suffix "_<obj>.h5", where <obj> is the object type ("exp", "sel", or "lib").
 Each file has multiple tables that can be queried and retrieved as pandas data frames (see :ref:`example-notebooks`). 
@@ -11,7 +11,7 @@ Each Experiment, Selection, and SeqLib has its own directory inside "Results/tsv
 .. _output-table-organization:
 
 Table organization
----------------------------------------------------
+------------------
 
 HDF5 files organize tables into groups like directories in a file system. Enrich2 has two top-level groups, "/main" (used for most tables) and "/raw" (used exclusively in SeqLibs to store raw counts). The first subgroup is typically the element type (variant, barcode, etc.), followed by the kind of data (counts, scores, etc.).
 
@@ -20,10 +20,10 @@ HDF5 files organize tables into groups like directories in a file system. Enrich
 Enrich2 uses NaN (Not a Number) values to represent missing data, such as zero counts or scores that could not be calculated.
 
 List of tables by object type
--------------------------------------------------------
+-----------------------------
 
 Experiment
-+++++++++++++++++++++++
+++++++++++
 
 Most experiment tables use a pandas MultiIndex for column names. The MultiIndex levels are: condition, selection (if applicable), and data value. See the `pandas advanced indexing documentation <http://pandas.pydata.org/pandas-docs/stable/advanced.html>`_ for more information on how to work with these objects.
 
@@ -52,7 +52,7 @@ Most experiment tables use a pandas MultiIndex for column names. The MultiIndex 
     Barcode-variant or barcode-identifier map for all barcodes that appear in the Experiment. Only present for Barcoded Variant or Barcoded Identifier SeqLibs. 
 
 Selection
-+++++++++++++++++++++++
++++++++++
 
 * "/main/<element>/counts"
 
@@ -79,7 +79,7 @@ Selection
     Barcode-variant or barcode-identifier map for all barcodes that appear in the Selection. Only present for Barcoded Variant or Barcoded Identifier SeqLibs. 
 
 SeqLib
-+++++++++++++++++++++++
+++++++
 
 * "/main/<element>/counts"
 

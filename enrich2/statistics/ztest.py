@@ -57,9 +57,6 @@ def ztest_pair(df1, df2):
         standard errors (``'SE1'``, ``'SE2'``), z-scores (``'z'``), and
         p-values (``'pvalue_raw'``) for each element found in both data frames.
 
-    Raises
-    ------
-    To be added.
     """
     shared = df1.loc[:, ('score', 'SE')].merge(df2.loc[:, ('score', 'SE')],
                                                how='inner',
@@ -95,10 +92,6 @@ def ztest_single(df, score, se):
         Result data frame containing score (``'score'``), standard error
         (``'SE'``), z-score (``'z'``), and p-value (``'pvalue_raw'``) for each
         element in the input data frame.
-
-    Raises
-    ------
-    To be added.
     """
     result = df.loc[:, ('score', 'SE')]
     result['z'] = np.abs(result['score'] - score) / \

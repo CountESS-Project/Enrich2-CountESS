@@ -1,7 +1,7 @@
 .. _example-notebooks:
 
 Example notebooks
-====================================
+=================
 
 Begin exploring Enrich2 datasets with the following notebooks. They rely on the `Enrich2 example dataset <https://github.com/FowlerLab/Enrich2-Example/>`_, so please perform that analysis before running any of these notebooks locally.
 

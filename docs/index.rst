@@ -1,6 +1,6 @@
 
 Enrich2: deep mutational scanning data analysis
-============================================================================
+===============================================
 
 Enrich2 is a general software tool for processing, analyzing, and visualizing data from deep mutational scanning experiments.
 
@@ -25,7 +25,6 @@ Enrich2 was written by `Alan F Rubin <mailto:alan.rubin@wehi.edu.au>`_ |ORCID_ic
     gui
     seqlib_config
     output
-    plots
     notebooks
     api
 

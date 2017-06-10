@@ -1,12 +1,12 @@
 .. _gui-documentation:
 
 Using the GUI
-======================
+=============
 
 The graphical user interface makes it easy to specify an experimental design that Enrich2 can understand. For more information about how these are organized, see :ref:`experimental-designs`.
 
 Configuring your analysis
-------------------------------------
+-------------------------
 
 The Enrich2 installer places the graphical user interface (GUI) entry point in your path. Type ``enrich_gui`` from the command line to launch the program. 
 
@@ -57,14 +57,14 @@ Most parameters are specified in SeqLib objects, including the wild type sequenc
 Clicking "New..." with a SeqLib object selected will add a sibling SeqLib to the Selection that shares the same FASTQ_ filtering and other options.  
 
 Saving and loading
----------------------------
+------------------
 
 After you have configured the analysis, you can save a configuration file by selecting "Save" or "Save As..." from the File menu. You can also use the File menu to load an existing configuration file by selecting "Open."
 
 .. note:: If you encounter an error when loading a configuration file, try using a validator such as `JSONLint <http://jsonlint.com/>`_ to identify any issues. 
 
 Context menus
----------------------------
+-------------
 
 Right-clicking on an object will open a context menu with additional actions not covered by the New/Edit/Delete buttons.
 
@@ -78,12 +78,12 @@ Right-clicking on an object will open a context menu with additional actions not
 .. _analysis-options:
 
 Analysis options
----------------------
+----------------
 
 These choices are not saved in the configuration file and should be reviewed before running each analysis. For further information about the scoring and normalization methods below, see the `Enrich2 manuscript`_.
 
 Scoring method
-+++++++++++++++++++++++
+++++++++++++++
 
 * Weighted Least Squares
 
@@ -106,7 +106,7 @@ Scoring method
 	Provided for comparison and legacy support. This method is a re-implementation of the previously published `Enrich software <http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3232369/>`_. Standard errors are not calculated. For selections with more than two time points, the last time point is used as the selected time point. Intermediate time points not used.
 
 Normalization method
-+++++++++++++++++++++++
+++++++++++++++++++++
 
 * Wild Type
 
@@ -121,7 +121,7 @@ Normalization method
 	Normalizes counts by the library size. All elements contribute to the library size.
 
 Other options
-+++++++++++++++++++++++
++++++++++++++
 
 * Force Recalculation
 

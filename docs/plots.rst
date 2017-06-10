@@ -1,12 +1,12 @@
 .. _plots:
 
 Automatically generated plots
-=================================================
+=============================
 
 In addition to providing structured output to allow users to create their own plots, Enrich2 produces default visualizations for each analysis. Experiment, Selection, and SeqLib objects each have their own directory inside "Results/plots/". Plots are saved in PDF format, and many of the files contain multiple pages.
 
 Experiment plots
--------------------------------------------
+----------------
 
 * Sequence-function map
 
@@ -17,7 +17,7 @@ Experiment plots
     Cell color indicates the score for the single change (row) at the given position (column). Positive scores (in red) indicate better performance in the assay, and negative scores (in blue) indicate worse performance. Grey squares denote changes that were not measured. Diagonal lines in each cell represent the standard error for the score, and are scaled such that the highest standard error on the plot covers the entire diagonal. Standard errors that are less than 2% of this maximum value are not plotted. Cells containing circles have the wild type residue at that position.
 
 Selection plots
---------------------------------------------
+---------------
 
 * Sequence-function map
 
@@ -60,7 +60,7 @@ Selection plots
     Present for linear regression scoring methods with variants only. Plot of the non-normalized linear fit of the wild type. Used to assess the effect of wild type correction.
 
 SeqLib plots
-----------------------------------------------
+------------
 
 * Counts per element
 

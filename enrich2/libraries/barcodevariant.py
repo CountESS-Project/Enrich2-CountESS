@@ -72,7 +72,7 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
         Counts the barcodes and combines them into variant counts using a
         :py:class:`~enrich2.libraries.barcodemap.BarcodeMap` object.
     
-    Inherits
+    See Also
     --------
     :py:class:`~enrich2.libraries.variant.VariantSeqLib`
     :py:class:`~enrich2.libraries.barcode.BarcodeSeqLib`

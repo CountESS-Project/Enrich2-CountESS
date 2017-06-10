@@ -1,10 +1,10 @@
 Getting started
-=======================================================
+===============
 
 .. _required packages:
 
 Required packages
--------------------------------------------------------
+-----------------
 
 Enrich2 runs on Python 2.7 and has the following dependencies:
 
@@ -22,7 +22,7 @@ The configuration GUI requires `Tkinter <https://docs.python.org/2/library/tkint
 .. note:: PyTables may not be installed when using the default settings for your distribution. If you encounter errors, check that the ``tables`` module is present. 
 
 Installation and example dataset
--------------------------------------------------------
+--------------------------------
 
 #. Make sure the `required packages`_ are installed.
 
@@ -33,7 +33,7 @@ Installation and example dataset
 To download the example dataset, visit the `Enrich2-Example GitHub repository <https://github.com/FowlerLab/Enrich2-Example/>`_. Running this preconfigured analysis will create several :ref:`plots`. The :ref:`example-notebooks` demonstrate how to explore the :ref:`hdf5-files`.
 
 Enrich2 executables
--------------------------------------------------------
+-------------------
 
 The Enrich2 installer places two executable scripts into the user's path. Both executables run the same analysis, but through different interfaces.
 

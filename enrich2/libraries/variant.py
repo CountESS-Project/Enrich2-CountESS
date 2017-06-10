@@ -325,10 +325,6 @@ class VariantSeqLib(SeqLib):
     report_filtered_variant
         Report a variant that was filtered to the log.
     
-    Inherits
-    --------
-    :py:class:`~enrich2.libraries.seqlib.SeqLib`
-    
     See Also
     --------
     :py:class:`~enrich2.libraries.seqlib.SeqLib`

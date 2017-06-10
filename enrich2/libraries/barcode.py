@@ -83,7 +83,7 @@ class BarcodeSeqLib(SeqLib):
         reverse-complemented), performs quality-based filtering, and counts
         the barcodes.
         
-    Inherits
+    See Also
     --------
     :py:class:`~enrich2.libraries.seqlib.SeqLib`
     """

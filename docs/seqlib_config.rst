@@ -1,7 +1,7 @@
 .. _seqlib-configuration:
 
 SeqLib configuration details
-================================
+============================
 
 Most parameters are specified within SeqLib objects. Experiment, Condition, and Selection objects have only a name (and output directory if at the root). :ref:`analysis-options`, such as scoring method, are chosen at run time.
 
@@ -14,8 +14,6 @@ Sequencing libraries have :ref:`general-seqlib-parameters`, :ref:`sequence-file-
 +----------------------+---------+---------+------------+---------+
 | Barcoded Identifier  | X       |         | X          |         |
 +----------------------+---------+---------+------------+---------+
-| Overlap              |         | X       |            | X       |
-+----------------------+---------+---------+------------+---------+
 | Basic                |         | X       |            |         |
 +----------------------+---------+---------+------------+---------+
 | Barcodes Only        | X       |         |            |         |
@@ -26,7 +24,7 @@ See :ref:`intro-seqlibs` for descriptions of each type.
 .. _general-seqlib-parameters:
 
 General parameters
---------------------------------
+------------------
 
 * Name
 
@@ -47,7 +45,7 @@ General parameters
 .. _sequence-file-seqlib-parameters:
 
 Sequence file parameters
---------------------------------
+------------------------
 
 Enrich2 accepts sequence files in FASTQ_ format. These files may be processed while compressed with gzip or bzip2. The file must have the suffix ".fq" or ".fastq" before compression. 
 
@@ -60,7 +58,7 @@ Enrich2 accepts sequence files in FASTQ_ format. These files may be processed wh
 	Checking this box will reverse-complement reads before analysis. Not present for Overlap SeqLibs.
 
 Read filtering parameters
-++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++
 
 Filters are applied after read trimming and any read merging.
 
@@ -87,7 +85,7 @@ Filters are applied after read trimming and any read merging.
 .. _barcode-seqlib-parameters:
 
 Barcode parameters
---------------------------------
+------------------
 
 * Barcode-variant File
 
@@ -108,7 +106,7 @@ Barcode parameters
 .. _variant-seqlib-parameters:
 
 Variant parameters
---------------------------------
+------------------
 
 * Wild Type Sequence
 	
@@ -135,7 +133,7 @@ Variant parameters
 .. _identifier-seqlib-parameters:
 
 Identifier parameters
---------------------------------
+---------------------
 
 * Minimum Count
 
@@ -143,30 +141,4 @@ Identifier parameters
 
 .. _overlap-seqlib-parameters:
 
-Overlap parameters
---------------------------------
-
-Overlapping read pairs reduce the likelihood of calling sequencing errors as variants. Paired-end Illumina reads are generated such that they overlap in the target region.
-
-When Enrich2 combines forward and reverse reads into merged reads, base quality values in the overlapping region are defined as the higher quality value at each position. Mismatches are resolved by assuming the base with the higher quality value is correct. If mismatched bases have the same quality value, the position is considered unresolvable and replaced by an 'X' base.
-
-* Forward Start
-
-	Position of the first overlapping base in the forward read. Bases are numbered starting at 1. 
-
-* Reverse Start
-
-	Position of the first overlapping base in the reverse read before reverse complementing. Bases are numbered starting at 1. 
-
-* Overlap Length
-
-	Number of bases in the overlapping region.
-
-* Maximum Mismatches
-
-	Maximum number of mismatches in the overlapping region. If a merged read has more than this number of mismatches, the read pair will be discarded.
-
-* Overlap Only
-
-	Checking this box will trim the merged reads to the overlapping region.
 

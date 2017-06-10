@@ -74,7 +74,7 @@ class BcidSeqLib(BarcodeSeqLib):
         Counts barcodes and combines them into identifier counts using a
         :py:class:`~enrich2.libraries.barcodemap.BarcodeMap` object.
     
-    Inherits
+    See Also
     --------
     :py:class:`~enrich2.libraries.barcode.BarcodeSeqLib`
     """

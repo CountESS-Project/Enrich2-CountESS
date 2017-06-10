@@ -63,9 +63,6 @@ element_layouts = {
                     "BcidSeqLib":  [('main', 'counts',),
                                     ('fastq', 'trimming', 'filters',),
                                     ('barcodes', 'identifiers',)],
-                    "OverlapSeqLib":  [('main', 'counts',),
-                                       ('fastq', 'filters', 'overlap',),
-                                       ('variants',)],
                     "BasicSeqLib": [('main', 'counts',),
                                     ('fastq', 'trimming', 'filters',),
                                     ('variants',)],
@@ -226,55 +223,55 @@ class EditDialog(CustomDialog):
                 )
                 self.frame_dict['fastq'].append(SectionLabel("FASTQ Options"))
 
-            if isinstance(self.element, OverlapSeqLib):
-                self.frame_dict['fastq'].append(
-                    FileEntry(
-                        "Forward Reads", self.element_cfg['fastq'],
-                        'forward reads', extensions=_FASTQ_SUFFIXES
-                    )
-                )
-                self.frame_dict['fastq'].append(
-                    FileEntry(
-                        "Reverse Reads", self.element_cfg['fastq'],
-                        'reverse reads', extensions=_FASTQ_SUFFIXES
-                    )
-                )
-                self.frame_dict['overlap'] = list()
-                self.frame_dict['overlap'].append(
-                    IntegerEntry(
-                        "Forward Start", self.element_cfg['overlap'],
-                        'forward start', minvalue=1
-                    )
-                )
-                self.frame_dict['overlap'].append(
-                    IntegerEntry(
-                        "Reverse Start", self.element_cfg['overlap'],
-                        'reverse start', minvalue=1
-                    )
-                )
-                self.frame_dict['overlap'].append(
-                    IntegerEntry(
-                        "Overlap Length", self.element_cfg['overlap'],
-                        'length', minvalue=1
-                    )
-                )
-                self.frame_dict['overlap'].append(
-                    IntegerEntry(
-                        "Maximum Mismatches", self.element_cfg['overlap'],
-                        'max mismatches')
-                )
-                self.frame_dict['overlap'].append(
-                    Checkbox(
-                        "Overlap Only", self.element_cfg['overlap'], 'trim'
-                    )
-                )
-                self.frame_dict['filters'].append(
-                    Checkbox(
-                        "Remove Unresolvable Overlaps",
-                        self.element_cfg['fastq']['filters'],
-                        'remove unresolvable'
-                    )
-                )
+            # if isinstance(self.element, OverlapSeqLib):
+            #     self.frame_dict['fastq'].append(
+            #         FileEntry(
+            #             "Forward Reads", self.element_cfg['fastq'],
+            #             'forward reads', extensions=_FASTQ_SUFFIXES
+            #         )
+            #     )
+            #     self.frame_dict['fastq'].append(
+            #         FileEntry(
+            #             "Reverse Reads", self.element_cfg['fastq'],
+            #             'reverse reads', extensions=_FASTQ_SUFFIXES
+            #         )
+            #     )
+            #     self.frame_dict['overlap'] = list()
+            #     self.frame_dict['overlap'].append(
+            #         IntegerEntry(
+            #             "Forward Start", self.element_cfg['overlap'],
+            #             'forward start', minvalue=1
+            #         )
+            #     )
+            #     self.frame_dict['overlap'].append(
+            #         IntegerEntry(
+            #             "Reverse Start", self.element_cfg['overlap'],
+            #             'reverse start', minvalue=1
+            #         )
+            #     )
+            #     self.frame_dict['overlap'].append(
+            #         IntegerEntry(
+            #             "Overlap Length", self.element_cfg['overlap'],
+            #             'length', minvalue=1
+            #         )
+            #     )
+            #     self.frame_dict['overlap'].append(
+            #         IntegerEntry(
+            #             "Maximum Mismatches", self.element_cfg['overlap'],
+            #             'max mismatches')
+            #     )
+            #     self.frame_dict['overlap'].append(
+            #         Checkbox(
+            #             "Overlap Only", self.element_cfg['overlap'], 'trim'
+            #         )
+            #     )
+            #     self.frame_dict['filters'].append(
+            #         Checkbox(
+            #             "Remove Unresolvable Overlaps",
+            #             self.element_cfg['fastq']['filters'],
+            #             'remove unresolvable'
+            #         )
+            #     )
 
             elif 'fastq' in self.frame_dict:
                 self.frame_dict['fastq'].append(

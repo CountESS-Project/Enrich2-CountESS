@@ -1,10 +1,10 @@
 Defining experiments
-=====================================================
+====================
 
 .. _experimental-designs:
 
 Experimental designs
--------------------------------------------------------
+--------------------
 
 Enrich2 represents deep mutational scanning experimental designs as a tree of objects. The hierarchy of object types is defined below:
 
@@ -36,7 +36,7 @@ The above diagram illustrates an experimental design with two conditions, each w
 .. _intro-elements:
 
 Elements
--------------------------------------------------------
+--------
 
 Enrich2 counts elements to quantify their enrichment or depletion in a complex population. The four element types are defined below:
 
@@ -59,8 +59,7 @@ Enrich2 counts elements to quantify their enrichment or depletion in a complex p
 .. _intro-seqlibs:
 
 SeqLibs
--------------------------------------------------------
-
+-------
 Enrich2 implements five types of SeqLib, each supporting different element types and/or methods of sequencing deep mutational scanning populations.
 
 .. note:: Synonymous elements are only present if the wild type sequence is protein coding.
@@ -74,6 +73,8 @@ Enrich2 implements five types of SeqLib, each supporting different element types
 	Contains barcode and identifier elements. Each identifier in the experiment is associated with one or more DNA barcode sequences. A barcode-identifier map describes which barcodes map to each identifier. The FASTQ_ file contains only barcode sequences.
 
 * Overlap
+
+.. deprecated:: Overlap sequence libraries are no longer supported.
 
 	Contains variant and synonymous elements. DNA variants are sequenced directly using overlapping paired-end reads. Requires FASTQ_ files for both forward and reverse reads.
 
