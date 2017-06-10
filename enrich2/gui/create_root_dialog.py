@@ -62,8 +62,7 @@ class CreateRootDialog(CustomDialog):
             "Name", self.cfg_dict, 'name', optional=False
         )
         self.element = None
-        text = "Root Configuration"
-        CustomDialog.__init__(self, parent_window, title, body_frame_text=text)
+        CustomDialog.__init__(self, parent_window, title)
 
     def body(self, master):
         row_no = 0

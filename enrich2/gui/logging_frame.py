@@ -62,7 +62,7 @@ class ScrolledText(Frame):
         return self
 
     def set_text(self, text=''):
-        self.set_text_widget_state("normal")
+        # self.set_text_widget_state("normal")
         self.text.insert(END, text)
         self.text.see(END)
         # self.set_text_widget_state("disabled")

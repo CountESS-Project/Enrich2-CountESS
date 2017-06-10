@@ -35,13 +35,13 @@ from ..libraries.variant import VariantSeqLib
 from ..libraries.idonly import IdOnlySeqLib
 
 
-
-seqlib_label_text = OrderedDict([("BcvSeqLib", "Barcoded Variant"),
-                                 ("BcidSeqLib", "Barcoded Identifier"),
-                                 ("BasicSeqLib", "Basic"),
-                                 ("BarcodeSeqLib", "Barcodes Only"),
-                                 ("IdOnlySeqLib", "Identifiers Only"),
-                                 ])
+seqlib_label_text = OrderedDict([
+    ("BcvSeqLib", "Barcoded Variant"),
+    ("BcidSeqLib", "Barcoded Identifier"),
+    ("BasicSeqLib", "Basic"),
+    ("BarcodeSeqLib", "Barcodes Only"),
+    ("IdOnlySeqLib", "Identifiers Only"),
+])
 
 
 class CreateSeqLibDialog(CustomDialog):
