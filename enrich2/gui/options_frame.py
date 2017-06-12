@@ -378,6 +378,9 @@ class OptionsFileFrame(Frame):
 # -------------------------------------------------------------------------- #
 #                           Main GUI Frame
 # -------------------------------------------------------------------------- #
+plugins_folder = os.path.join(os.path.expanduser('~'), '.enrich2/')
+
+
 class ScorerScriptsDropDown(LabelFrame):
     """
     This class represents the Frame containing a currently selected plugin
@@ -391,7 +394,7 @@ class ScorerScriptsDropDown(LabelFrame):
         Directory for containing Enrich2 plugins.
                 
     """
-    def __init__(self, parent=None, scripts_dir='plugins/', **config):
+    def __init__(self, parent=None, scripts_dir=plugins_folder, **config):
         super().__init__(parent, **config)
         self.row = 0
         self.current_view = 'Regression'
