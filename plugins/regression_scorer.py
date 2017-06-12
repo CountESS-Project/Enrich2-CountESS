@@ -20,9 +20,16 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
+
 from enrich2.plugins.scoring import BaseScorerPlugin
 from enrich2.plugins.options import Options
-from enrich2.base.constants import WILD_TYPE_VARIANT
+from enrich2.base.constants import WILD_TYPE_VARIANT, GROUP_MAIN
+from enrich2.base.constants import COUNTS_TABLE, SCORES_TABLE
+from enrich2.base.constants import COUNTS_UNFILTERED_TABLE
+from enrich2.base.constants import LOG_RATIOS_TABLE, WEIGHTS_TABLE
+from enrich2.base.constants import VARIANTS, IDENTIFIERS, BARCODES, SYNONYMOUS
+
+from enrich2.base.utils import log_message
 
 options = Options()
 options.add_option(
@@ -94,15 +101,18 @@ class RegressionScorer(BaseScorerPlugin):
         """
         Calculate the log ratios that will be fit using the linear models.
         """
-        if self.store_check("/main/{}/log_ratios".format(label)):
+        if self.store_check(
+                "/{}/{}/{}".format(GROUP_MAIN, label, LOG_RATIOS_TABLE)):
             return
 
-        logging.info(
-            "Calculating log ratios ({})".format(label),
+        log_message(
+            logging_callback=logging.info,
+            msg="Calculating log ratios ({})".format(label),
             extra={'oname': self.name}
         )
+
         ratios = self.store_select(
-            "/main/{}/counts".format(label))
+            "/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE))
         index = ratios.index
         c_n = ['c_{}'.format(x) for x in self.store_timepoints()]
         ratios = np.log(ratios + 0.5)
@@ -111,17 +121,17 @@ class RegressionScorer(BaseScorerPlugin):
         # frame for easier broadcasting
         ratios = ratios[c_n].values
         if self.logr_method == "wt":
-            if "variants" in self.store_labels():
-                wt_label = "variants"
-            elif "identifiers" in self.store_labels():
-                wt_label = "identifiers"
+            if VARIANTS in self.store_labels():
+                wt_label = VARIANTS
+            elif IDENTIFIERS in self.store_labels():
+                wt_label = IDENTIFIERS
             else:
                 raise ValueError('Failed to use wild type log ratio method, '
                                  'suitable data table not '
                                  'present [{}]'.format(self.name))
 
             wt_counts = self.store_select(
-                "/main/{}/counts".format(wt_label),
+                "/{}/{}/{}".format(GROUP_MAIN, wt_label, COUNTS_TABLE),
                 "columns={} & index=='{}'".format(c_n, WILD_TYPE_VARIANT)
             )
 
@@ -133,12 +143,12 @@ class RegressionScorer(BaseScorerPlugin):
 
         elif self.logr_method == "complete":
             ratios = ratios - np.log(self.store_select(
-                "/main/{}/counts".format(label),
+                "/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE),
                 "columns={}".format(c_n)
             ).sum(axis="index").values + 0.5)
         elif self.logr_method == "full":
             ratios = ratios - np.log(self.store_select(
-                "/main/{}/counts_unfiltered".format(label),
+                "/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_UNFILTERED_TABLE),
                 "columns={}".format(c_n)
             ).sum(axis="index", skipna=True).values + 0.5)
         else:
@@ -149,7 +159,7 @@ class RegressionScorer(BaseScorerPlugin):
         columns = ['L_{}'.format(x) for x in self.store_timepoints()]
         ratios = pd.DataFrame(data=ratios, index=index, columns=columns)
         self.store_put(
-            key="/main/{}/log_ratios".format(label),
+            key="/{}/{}/{}".format(GROUP_MAIN, label, LOG_RATIOS_TABLE),
             value=ratios,
             columns=ratios.columns,
             format='table'
@@ -159,14 +169,18 @@ class RegressionScorer(BaseScorerPlugin):
         """
         Calculate the regression weights (1 / variance).
         """
-        if self.store_check("/main/{}/weights".format(label)):
+        if self.store_check(
+                "/{}/{}/{}".format(GROUP_MAIN, label, WEIGHTS_TABLE)):
             return
 
-        logging.info(
-            "Calculating regression weights ({})".format(label),
+        log_message(
+            logging_callback=logging.info,
+            msg="Calculating regression weights ({})".format(label),
             extra={'oname': self.name}
         )
-        variances = self.store_select("/main/{}/counts".format(label))
+
+        variances = self.store_select(
+            "/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE))
         c_n = ['c_{}'.format(x) for x in self.store_timepoints()]
         index = variances.index
 
@@ -179,10 +193,10 @@ class RegressionScorer(BaseScorerPlugin):
 
         # -------------------------- WT NORM ----------------------------- #
         if self.logr_method == "wt":
-            if "variants" in self.store_labels():
-                wt_label = "variants"
-            elif "identifiers" in self.store_labels():
-                wt_label = "identifiers"
+            if VARIANTS in self.store_labels():
+                wt_label = VARIANTS
+            elif IDENTIFIERS in self.store_labels():
+                wt_label = IDENTIFIERS
             else:
                 raise ValueError(
                     'Failed to use wild type log ratio method, '
@@ -190,7 +204,7 @@ class RegressionScorer(BaseScorerPlugin):
                         self.name)
                 )
             wt_counts = self.store_select(
-                key="/main/{}/counts".format(wt_label),
+                key="/{}/{}/{}".format(GROUP_MAIN, wt_label, COUNTS_TABLE),
                 where="columns={} & index='{}'".format(c_n, WILD_TYPE_VARIANT)
             )
 
@@ -205,14 +219,15 @@ class RegressionScorer(BaseScorerPlugin):
         # ---------------------- COMPLETE NORM ----------------------------- #
         elif self.logr_method == "complete":
             variances = variances + 1.0 / (self.store_select(
-                key="/main/{}/counts".format(label),
+                key="/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE),
                 where="columns={}".format(c_n)
             ).sum(axis="index").values + 0.5)
 
         # ------------------------- FULL NORM ----------------------------- #
         elif self.logr_method == "full":
             variances = variances + 1.0 / (self.store_select(
-                key="/main/{}/counts_unfiltered".format(label),
+                key="/{}/{}/{}".format(
+                    GROUP_MAIN, label, COUNTS_UNFILTERED_TABLE),
                 where="columns={}".format(c_n)
             ).sum(axis="index", skipna=True).values + 0.5)
 
@@ -230,7 +245,7 @@ class RegressionScorer(BaseScorerPlugin):
             columns=['W_{}'.format(x) for x in self.store_timepoints()]
         )
         self.store_put(
-            key="/main/{}/weights".format(label),
+            key="/{}/{}/{}".format(GROUP_MAIN, label, WEIGHTS_TABLE),
             value=variances,
             columns=variances.columns,
             format='table'
@@ -245,48 +260,57 @@ class RegressionScorer(BaseScorerPlugin):
         Regression results are stored in ``'/main/label/scores'``
 
         """
-        req_tables = ["/main/{}/log_ratios".format(label)]
+        req_tables = ["/{}/{}/{}".format(GROUP_MAIN, label, LOG_RATIOS_TABLE)]
         if self.weighted:
-            req_tables.append("/main/{}/weights".format(label))
+            req_tables.append(
+                "/{}/{}/{}".format(GROUP_MAIN, label, WEIGHTS_TABLE))
 
         for req_table in req_tables:
             if not self.store_check(req_table):
                 raise ValueError("Required table {} does not "
                                  "exist [{}].".format(req_table, self.name))
 
-        if self.store_check("/main/{}/scores".format(label)):
+        if self.store_check(
+                "/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE)):
             return
-        elif "/main/{}/scores".format(label) in list(self.store_keys()):
+        elif "/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE) in \
+                list(self.store_keys()):
             # need to remove the current keys because we are using append
-            self.store_remove("/main/{}/scores".format(label))
+            self.store_remove("/{}/{}/{}".format(
+                GROUP_MAIN, label, SCORES_TABLE))
 
         method = "WLS" if self.weighted else 'OLS'
-        logging.info(
-            "Calculating {} regression coefficients ({})".format(method, label),
-            extra={'oname' : self.name}
+        log_message(
+            logging_callback=logging.info,
+            msg="Calculating {} regression coefficients "
+                "({})".format(method, label),
+            extra={'oname': self.name}
         )
 
         longest = self.store_select(
-            key="/main/{}/log_ratios".format(label),
+            key="/{}/{}/{}".format(GROUP_MAIN, label, LOG_RATIOS_TABLE),
             where="columns='index'"
         ).index.map(len).max()
         chunk = 1
 
         # -------------------- REG COMPUTATION --------------------------- #
-        selection = ["/main/{}/log_ratios".format(label)]
+        selection = ["/{}/{}/{}".format(GROUP_MAIN, label, LOG_RATIOS_TABLE)]
         if self.weighted:
-            selection.append("/main/{}/weights".format(label))
+            selection.append(
+                "/{}/{}/{}".format(GROUP_MAIN, label, WEIGHTS_TABLE))
 
         selection = self.store_select_as_multiple(
             selection, chunksize=self.store_default_chunksize()
         )
 
         for data in selection:
-            logging.info(
-                "Calculating {} for chunk {} ({} rows)".format(
+            log_message(
+                logging_callback=logging.info,
+                msg="Calculating {} for chunk {} ({} rows)".format(
                     method, chunk, len(data.index)),
                 extra={'oname': self.name}
             )
+
             result = data.apply(
                 self.row_apply_function,
                 axis="columns",
@@ -295,19 +319,23 @@ class RegressionScorer(BaseScorerPlugin):
             # append is required because it takes the
             # "min_itemsize" argument, and put doesn't
             self.store_append(
-                key="/main/{}/scores".format(label),
+                key="/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE),
                 value=result,
-                min_itemsize={"index" : longest}
+                min_itemsize={"index": longest}
             )
             chunk += 1
 
         # ----------------------- POST ------------------------------------ #
         # need to read from the file, calculate percentiles, and rewrite it
-        logging.info(
-            "Calculating slope standard error percentiles ({})".format(label),
-            extra={'oname' : self.name}
+        log_message(
+            logging_callback=logging.info,
+            msg="Calculating slope standard error "
+                "percentiles ({})".format(label),
+            extra={'oname': self.name}
         )
-        data = self.store_get('/main/{}/scores'.format(label))
+
+        data = self.store_get(
+            "/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE))
         data['score'] = data['slope']
         data['SE'] = data['SE_slope']
         data['SE_pctile'] = [
@@ -322,7 +350,7 @@ class RegressionScorer(BaseScorerPlugin):
         ]
         data = data[reorder_selector]
         self.store_put(
-            key="/main/{}/scores".format(label),
+            key="/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE),
             value=data,
             columns=data.columns,
             format='table'

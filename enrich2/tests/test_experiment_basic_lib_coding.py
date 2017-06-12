@@ -93,7 +93,7 @@ class TestExperimentBasicLibWLSScoringWTNormC(unittest.TestCase):
         self.general_test_component = HDF5TestComponent(
             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=True)
+            save=False, params=params, verbose=False)
         self.general_test_component.setUp()
 
     def tearDown(self):
