@@ -567,7 +567,7 @@ class Experiment(StoreManager):
 
         # set up local variables
         idx = pd.IndexSlice
-
+        print('here 1')
         score_df = self.store.select("/main/{}/scores_shared".format(label))
         if self.get_root().scorer_class.name == "Ratios (Old Enrich)":
             # special case for simple ratios that have no SE
@@ -578,12 +578,14 @@ class Experiment(StoreManager):
                     data.loc[:, idx[cnd, 'score']] = y_k.mean(axis=0)
                     # data.loc[:, idx[cnd, 'nreps']] = num_reps
         else:
+            print('here 2')
             for cnd in score_df.columns.levels[0]:
                 y = np.array(score_df.loc[:, idx[cnd, :, 'score']].values).T
                 sigma2i = \
                     np.array(score_df.loc[:, idx[cnd, :, 'SE']].values ** 2).T
 
                 # single replicate of the condition
+                print('here 3')
                 if y.shape[0] == 1:
                     data.loc[:, idx[cnd, 'score']] = y.ravel()
                     data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2i).ravel()
@@ -592,6 +594,7 @@ class Experiment(StoreManager):
 
                 # multiple replicates
                 else:
+                    print('here 4')
                     betaML, sigma2ML, eps, reps = rml_estimator(y, sigma2i)
                     data.loc[:, idx[cnd, 'score']] = betaML
                     data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2ML)
@@ -599,6 +602,7 @@ class Experiment(StoreManager):
                     # data.loc[:, idx[cnd, 'nreps']] = reps
 
                 # special case for normalized wild type variant
+                print('here 5')
                 logr_method = self.get_root().scorer_class_attrs.get(
                     'logr_method', '')
                 if logr_method == "wt" and WILD_TYPE_VARIANT in \
@@ -607,6 +611,7 @@ class Experiment(StoreManager):
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'score']] = 0.
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'epsilon']] = 0.
 
+            print('here 6')
             # identify variants found in all selections in at least
             # one condition
             complete = np.full(len(data.index), False, dtype=bool)
@@ -617,6 +622,7 @@ class Experiment(StoreManager):
                 )
             data = data.loc[complete]
 
+        print('here 7')
         # store the data
         if data.empty:
             raise ValueError("All {} have a NaN score.".format(label))

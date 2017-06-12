@@ -98,6 +98,9 @@ def log_message(logging_callback, msg, **kwargs):
         Keyword arguments for logging module.
     """
     log = {CALLBACK: logging_callback, MESSAGE: msg, KWARGS: kwargs}
+    if 'extra' in kwargs:
+        if 'oname' not in kwargs:
+            kwargs['oname'] = 'OnameNotSupplied'
     queue = get_logging_queue(init=False)
     if queue is None:
         logging_callback(msg, **kwargs)

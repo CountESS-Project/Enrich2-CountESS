@@ -897,10 +897,9 @@ class Configurator(tk.Tk):
         
         Parameters
         ----------
-        success : `Exception`
+        success : `bool`
             Exception object if an error occured during analysis, otherwise
             None to indicate successful computation.
-
         """
         log_message(
             logging_callback=logging.info,
