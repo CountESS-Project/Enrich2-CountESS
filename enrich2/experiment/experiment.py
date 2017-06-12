@@ -552,44 +552,23 @@ class Experiment(StoreManager):
         )
 
         # set up new data frame
-        log_message(
-            logging_callback=logging.info,
-            msg="Line 556",
-            extra={'oname': self.name}
-        )
         shared_index = self.store.select(
             key="/main/{}/scores_shared".format(label),
             where="columns='index'"
         ).index
 
-        log_message(
-            logging_callback=logging.info,
-            msg="Line 567",
-            extra={'oname': self.name}
-        )
         columns = pd.MultiIndex.from_product(
             [sorted(self.child_names()),
              sorted(["score", "SE", "epsilon"])],
             names=["condition", "value"]
         )
 
-        log_message(
-            logging_callback=logging.info,
-            msg="Line 578",
-            extra={'oname': self.name}
-        )
         data = pd.DataFrame(np.nan, index=shared_index, columns=columns)
         del shared_index
         del columns
 
         # set up local variables
         idx = pd.IndexSlice
-
-        log_message(
-            logging_callback=logging.info,
-            msg="Line 590",
-            extra={'oname': self.name}
-        )
 
         score_df = self.store.select("/main/{}/scores_shared".format(label))
         if self.get_root().scorer_class.name == "Ratios (Old Enrich)":
@@ -601,22 +580,12 @@ class Experiment(StoreManager):
                     data.loc[:, idx[cnd, 'score']] = y_k.mean(axis=0)
                     # data.loc[:, idx[cnd, 'nreps']] = num_reps
         else:
-            log_message(
-                logging_callback=logging.info,
-                msg="Line 589",
-                extra={'oname': self.name}
-            )
             for cnd in score_df.columns.levels[0]:
                 y = np.array(score_df.loc[:, idx[cnd, :, 'score']].values).T
                 sigma2i = \
                     np.array(score_df.loc[:, idx[cnd, :, 'SE']].values ** 2).T
 
                 # single replicate of the condition
-                log_message(
-                    logging_callback=logging.info,
-                    msg="Line 598",
-                    extra={'oname': self.name}
-                )
                 if y.shape[0] == 1:
                     data.loc[:, idx[cnd, 'score']] = y.ravel()
                     data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2i).ravel()
@@ -637,11 +606,6 @@ class Experiment(StoreManager):
                     # data.loc[:, idx[cnd, 'nreps']] = reps
 
                 # special case for normalized wild type variant
-                log_message(
-                    logging_callback=logging.info,
-                    msg="Line 623",
-                    extra={'oname': self.name}
-                )
                 logr_method = self.get_root().scorer_class_attrs.get(
                     'logr_method', '')
                 if logr_method == "wt" and WILD_TYPE_VARIANT in \
@@ -650,11 +614,6 @@ class Experiment(StoreManager):
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'score']] = 0.
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'epsilon']] = 0.
 
-            log_message(
-                logging_callback=logging.info,
-                msg="Line 638",
-                extra={'oname': self.name}
-            )
             # identify variants found in all selections in at least
             # one condition
             complete = np.full(len(data.index), False, dtype=bool)
@@ -665,11 +624,6 @@ class Experiment(StoreManager):
                 )
             data = data.loc[complete]
 
-        log_message(
-            logging_callback=logging.info,
-            msg="Line 653",
-            extra={'oname': self.name}
-        )
         # store the data
         if data.empty:
             raise ValueError("All {} have a NaN score.".format(label))
