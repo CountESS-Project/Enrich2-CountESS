@@ -33,7 +33,7 @@ import scipy.stats as stats
 
 from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
 from ..base.config_constants import CONDITIONS
-from ..base.utils import compute_md5
+from ..base.utils import compute_md5, log_message
 
 from ..base.constants import WILD_TYPE_VARIANT
 from ..base.storemanager import StoreManager
@@ -247,8 +247,11 @@ class Experiment(StoreManager):
         if self.has_wt_sequence():
             for child in self.selection_list()[1:]:
                 if self.selection_list()[0].wt != child.wt:
-                    logging.warning("Inconsistent wild type sequences",
-                                    extra={'oname': self.name})
+                    log_message(
+                        logging_callback=logging.warning,
+                        msg="Inconsistent wild type sequences",
+                        extra={'oname': self.name}
+                    )
                     break
 
         for child in self.children:
@@ -358,8 +361,11 @@ class Experiment(StoreManager):
 
         # create columns multi-index
         # has to be lex-sorted for multi-slicing to work
-        logging.info("Creating column multi-index for counts ({})"
-                     "".format(label), extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Creating column multi-index for counts ({})".format(label),
+            extra={'oname': self.name}
+        )
         conditions_index = list()
         selections_index = list()
         values_index = list()
@@ -370,15 +376,17 @@ class Experiment(StoreManager):
                 selections_index.extend([sel.name] * len(sel.timepoints))
                 values_index.extend(["c_{}".format(x) for x in
                                      sorted(sel.timepoints)])
-        columns = pd.MultiIndex.from_tuples(list(zip(conditions_index,
-                                                selections_index,
-                                                values_index)),
-                                            names=["condition", "selection",
-                                                   "timepoint"])
+        columns = pd.MultiIndex.from_tuples(
+            list(zip(conditions_index, selections_index, values_index)),
+            names=["condition", "selection", "timepoint"]
+        )
 
         # create union index
-        logging.info("Creating row index for counts ({})".format(label),
-                     extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Creating row index for counts ({})".format(label),
+            extra={'oname': self.name}
+        )
         combined = None
         first = True
         for s in self.selection_list():
@@ -393,8 +401,12 @@ class Experiment(StoreManager):
                     "columns='index'").index, how="outer")
 
         # create and fill the data frames
-        logging.info("Populating Experiment data frame with counts ({})"
-                     "".format(label), extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Populating Experiment data frame with "
+                "counts ({})".format(label),
+            extra={'oname': self.name}
+        )
         data = pd.DataFrame(index=combined, columns=columns)
         for cnd in self.children:
             for sel in cnd.children:
@@ -424,8 +436,11 @@ class Experiment(StoreManager):
 
         # create columns multi-index
         # has to be lex-sorted for multi-slicing to work
-        logging.info("Creating column multi-index for scores ({})"
-                     "".format(label), extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Creating column multi-index for scores ({})".format(label),
+            extra={'oname': self.name}
+        )
         conditions_index = list()
         selections_index = list()
         values_index = list()
@@ -440,29 +455,40 @@ class Experiment(StoreManager):
                 conditions_index.extend([cnd.name] * len(values_list))
                 selections_index.extend([sel.name] * len(values_list))
                 values_index.extend(sorted(values_list))
-        columns = pd.MultiIndex.from_tuples(list(zip(conditions_index,
-                                                selections_index,
-                                                values_index)),
-                                            names=["condition", "selection",
-                                                   "value"])
+        columns = pd.MultiIndex.from_tuples(
+            list(zip(conditions_index, selections_index,  values_index)),
+            names=["condition", "selection", "value"])
+
         # create union index
-        logging.info("Creating row index for scores ({})".format(label),
-                     extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Creating row index for scores ({})".format(label),
+            extra={'oname': self.name}
+        )
         combined = None
         first = True
         for s in self.selection_list():
             if first:
-                combined = s.store.select("/main/{}/scores".format(label),
-                                          "columns='index'").index
+                combined = s.store.select(
+                    "/main/{}/scores".format(label),
+                    "columns='index'").index
                 first = False
             else:
-                combined = combined.join(s.store.select(
-                    "/main/{}/scores".format(label), "columns='index'").index,
-                    how="outer")
+                combined = combined.join(
+                    s.store.select(
+                        "/main/{}/scores".format(label),
+                        "columns='index'"
+                    ).index,
+                    how="outer"
+                )
 
         # create and fill the data frames
-        logging.info("Populating Experiment data frame with scores ({})"
-                     "".format(label), extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Populating Experiment data frame with "
+                "scores ({})".format(label),
+            extra={'oname': self.name}
+        )
         data = pd.DataFrame(index=combined, columns=columns)
         for cnd in self.children:
             for sel in cnd.children:
@@ -490,9 +516,12 @@ class Experiment(StoreManager):
         if self.check_store("/main/{}/scores_shared".format(label)):
             return
 
-        logging.info(
-            "Identifying subset shared across "
-            "all Selections ({})".format(label), extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Identifying subset shared across all "
+                "Selections ({})".format(label),
+            extra={'oname': self.name}
+        )
         data = self.store.select("/main/{}/scores_shared_full".format(label))
         self.store.put(
             "/main/{}/scores_shared".format(label),
@@ -516,8 +545,11 @@ class Experiment(StoreManager):
         if self.check_store("/main/{}/scores".format(label)):
             return
 
-        logging.info("Calculating per-condition scores ({})".format(label),
-                     extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Calculating per-condition scores ({})".format(label),
+            extra={'oname': self.name}
+        )
 
         # set up new data frame
         shared_index = self.store.select(
@@ -612,8 +644,12 @@ class Experiment(StoreManager):
         wt = self.store.select("/main/{}/scores".format(label),
                                "index=WILD_TYPE_VARIANT")
         if len(wt) == 0:    # no wild type score
-            logging.info("Failed to find wild type score, skipping wild type "
-                         "p-value calculations", extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Failed to find wild type score, skipping wild type "
+                    "p-value calculations",
+                extra={'oname': self.name}
+            )
             return
         data = self.store.select("/main/{}/scores".format(label),
                                  "index!=WILD_TYPE_VARIANT")
@@ -697,8 +733,11 @@ class Experiment(StoreManager):
         ``'/'``.
         """
         if self.tsv_requested:
-            logging.info("Generating tab-separated output files",
-                         extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Generating tab-separated output files",
+                extra={'oname': self.name}
+            )
             for k in list(self.store.keys()):
                 self.write_table_tsv(k)
         for s in self.selection_list():

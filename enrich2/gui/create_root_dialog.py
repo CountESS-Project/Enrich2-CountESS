@@ -15,11 +15,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import tkinter.filedialog
-import tkinter.messagebox
-import tkinter.simpledialog
 
-from tkinter import StringVar, LEFT, RIGHT, N, E, S, W
+from tkinter import StringVar
 from tkinter.ttk import *
 
 from .dialog import CustomDialog
@@ -35,7 +32,6 @@ from ..libraries.barcodeid import BcidSeqLib
 from ..libraries.barcodevariant import BcvSeqLib
 from ..libraries.basic import BasicSeqLib
 from ..libraries.idonly import IdOnlySeqLib
-from ..libraries.overlap import OverlapSeqLib
 
 globals()['Selection'] = Selection
 globals()['Condition'] = Condition

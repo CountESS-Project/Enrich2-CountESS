@@ -28,6 +28,7 @@ import logging
 import re
 
 from ..base.constants import CODON_TABLE
+from ..base.utils import log_message
 
 
 __all__ = [
@@ -149,9 +150,12 @@ class WildTypeSequence(object):
             if self.dna_offset % 3 == 0:
                 self.protein_offset = self.dna_offset // 3
             else:
-                logging.warning("Ignoring reference offset for protein "
-                                "changes (not a multiple of three)",
-                                extra={'oname': self.parent_name})
+                log_message(
+                    logging_callback=logging.warning,
+                    msg="Ignoring reference offset for protein "
+                        "changes (not a multiple of three)",
+                    extra={'oname': self.parent_name}
+                )
                 self.protein_offset = 0
         else:
             self.protein_seq = None

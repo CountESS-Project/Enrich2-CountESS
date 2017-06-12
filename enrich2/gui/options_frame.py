@@ -29,7 +29,7 @@ from enrich2.plugins.options import Options, Option
 from enrich2.plugins.options import options_not_in_config
 from enrich2.plugins.options import get_unused_options
 from enrich2.plugins import load_scorer_class_and_options
-from ..base.utils import nested_format
+from ..base.utils import nested_format, log_message
 
 
 LabelFrame = ttk.LabelFrame
@@ -253,14 +253,20 @@ class OptionsFileFrame(Frame):
         try:
             cfg = self.options_file.parse_to_dict(file_path)
         except BaseException as error:
-            logging.exception(error, extra={'oname': self.__class__.__name__})
+            log_message(
+                logging_callback=logging.exception,
+                msg=error, extra={'oname': self.__class__.__name__}
+            )
             messagebox.showerror('Parse Error', cfg_error_msg)
             return
 
         try:
             self.options_file.validate_cfg(cfg)
         except BaseException as error:
-            logging.exception(error, extra={'oname': self.__class__.__name__})
+            log_message(
+                logging_callback=logging.exception,
+                msg=error, extra={'oname': self.__class__.__name__}
+            )
             messagebox.showerror('Validation Error', validation_error_msg)
             return
 
@@ -363,8 +369,10 @@ class OptionsFileFrame(Frame):
                     title="Error setting option!",
                     message=bad_input_msg.format(varname, error)
                 )
-                logging.exception(error, extra={
-                    'oname': self.__class__.__name__})
+                log_message(
+                    logging_callback=logging.exception,
+                    msg=error, extra={'oname': self.__class__.__name__}
+                )
                 return False
         return True
 
@@ -423,9 +431,10 @@ class ScorerScriptsDropDown(LabelFrame):
         """
         klass, options, options_file = self.parse_file(script_path)
         if klass is None and options_file is None and options is None:
-            logging.warning(
-                "Could not load plugin {}.".format(script_path),
-                extra={"oname": self.__class__.__name__}
+            log_message(
+                logging_callback=logging.warning,
+                msg="Could not load plugin {}.".format(script_path),
+                extra={'oname': self.__class__.__name__}
             )
             return
 
@@ -452,18 +461,22 @@ class ScorerScriptsDropDown(LabelFrame):
             self.drop_menu.set_menu(tkname, *self.get_views())
             self.drop_menu_tkvar.set(tkname)
             self.update_options_view(tkname)
-            logging.info(
-                "Loaded plugin from path {}.".format(script_path),
-                extra={"oname": self.__class__.__name__})
+            log_message(
+                logging_callback=logging.info,
+                msg="Loaded plugin from path {}.".format(script_path),
+                extra={'oname': self.__class__.__name__}
+            )
         else:
             _, _, options_file_frame, _, tkname = \
                 self.plugins[self.plugin_hash(klass, script_path)]
             self.drop_menu_tkvar.set(tkname)
             self.update_options_view(tkname)
             options_file_frame.update_option_frame(scorer_cfg)
-            logging.info(
-                "Plugin from path {} updated.".format(script_path),
-                extra={"oname": self.__class__.__name__})
+            log_message(
+                logging_callback=logging.info,
+                msg="Plugin from path {} updated.".format(script_path),
+                extra={'oname': self.__class__.__name__}
+            )
 
     def _parse_directory(self, scripts_dir):
         """
@@ -515,7 +528,9 @@ class ScorerScriptsDropDown(LabelFrame):
             klass, options, options_file = result
             return klass, options, options_file
         except Exception as e:
-            logging.exception(e, extra={'oname': self.__class__.__name__})
+            log_message(
+                logging_callback=logging.exception, msg=e,
+                extra={'oname': self.__class__.__name__})
             messagebox.showerror(
                 "Error loading plugin...",
                 "There was an error loading the script:\n\n{}."
@@ -850,7 +865,10 @@ class ScorerScriptsDropDown(LabelFrame):
             return
         msg = "Scorer Parameters "
         msg += nested_format(cfg, False, tab_level=0)
-        logging.info(msg, extra={'oname': self.__class__.__name__})
+        log_message(
+            logging_callback=logging.info, msg=msg,
+            extra={'oname': self.__class__.__name__}
+        )
 
     def show_plugin_details(self, name):
         """

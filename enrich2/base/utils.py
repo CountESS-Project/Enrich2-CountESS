@@ -26,13 +26,13 @@ Contains various utility functions used through-out enrich2
 
 import numpy as np
 import pandas as pd
-
+from queue import Queue
 import hashlib
 import os
 import logging
+
 from .config_constants import BARCODE_MAP_FILE, READS, COUNTS_FILE, SCORER_PATH
-
-
+from ..base.constants import CALLBACK, MESSAGE, KWARGS
 
 __all__ = [
     "nested_format",
@@ -42,8 +42,67 @@ __all__ = [
     "multi_index_tsv_to_dataframe",
     "file_md5s_equal",
     "recursive_dict_equal",
-    'compute_md5'
+    'compute_md5',
+    'init_logging_queue',
+    'get_logging_queue',
+    'log_message'
 ]
+
+
+LOG_QUEUE = None
+
+
+def init_logging_queue():
+    """
+    Inits the logging queue if it is ``None``.
+    """
+    global LOG_QUEUE
+    if LOG_QUEUE is None:
+        LOG_QUEUE = Queue()
+        log_message(
+            logging.info,
+            'Logging Queue has been initialized.',
+            extra={'oname': 'Utilities'}
+        )
+
+
+def get_logging_queue(init=False):
+    """
+    Gets the current active queue instance.
+    
+    Parameters
+    ----------
+    init : `bool`
+        Init the queue before returning it.
+    
+    Returns
+    -------
+    :py:class:`Queue`
+    """
+    if init:
+        init_logging_queue()
+    return LOG_QUEUE
+
+
+def log_message(logging_callback, msg, **kwargs):
+    """
+    Places a logging message into the active queue.
+    
+    Parameters
+    ----------
+    logging_callback : `Callable`
+        The logging function to use from the logging module.
+    msg : `str`
+        The message to log.
+    kwargs : `dict`
+        Keyword arguments for logging module.
+    """
+    log = {CALLBACK: logging_callback, MESSAGE: msg, KWARGS: kwargs}
+    queue = get_logging_queue(init=False)
+    if queue is None:
+        logging_callback(msg, **kwargs)
+    else:
+        queue.put(log)
 
 
 def nested_format(data, default, tab_level=1):
@@ -287,11 +346,13 @@ def recursive_dict_equal(d1, d2, md5_on_file=True):
                 d1_file_name = d1[key[:-5]]
                 d2_file_name = d1[key[:-5]]
                 if d1_file_name == d2_file_name:
-                    logging.warning(
-                        "File '{}' found in both configurations was "
+                    log_message(
+                        logging_callback=logging.warning,
+                        msg="File '{}' found in both configurations was "
                         "found to have the MD5 sum {} for this configuration "
                         "but MD5 sum {} for the previous configuration."
-                        "".format(d1_file_name, value, other_value)
+                        "".format(d1_file_name, value, other_value),
+                        extra={'oname': 'Utilities'}
                     )
                 return same_md5
         else:

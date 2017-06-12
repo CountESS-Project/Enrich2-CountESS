@@ -31,7 +31,7 @@ import pandas as pd
 import scipy.stats as stats
 
 from ..base.constants import WILD_TYPE_VARIANT
-from ..base.utils import compute_md5
+from ..base.utils import compute_md5, log_message
 from ..base.storemanager import StoreManager
 from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
 from ..base.config_constants import LIBRARIES
@@ -267,9 +267,11 @@ class Selection(StoreManager):
         if self.has_wt_sequence():
             for child in self.children[1:]:
                 if self.children[0].wt != child.wt:
-                    logging.warning(
+                    log_message(
+                        logging_callback=logging.warning,
                         msg="Inconsistent wild type sequences",
-                        extra={'oname': self.name})
+                        extra={'oname': self.name}
+                    )
                     break
         
         # check that we're not doing wild type normalization
@@ -358,24 +360,30 @@ class Selection(StoreManager):
             return
 
         # calculate counts for each SeqLib
-        logging.info(
+        log_message(
+            logging_callback=logging.info,
             msg="Counting for each time point ({})".format(label),
-            extra={'oname' : self.name}
+            extra={'oname': self.name}
         )
         for lib in self.children:
             lib.calculate()
 
         # combine all libraries for a given timepoint
-        logging.info("Aggregating SeqLib data", extra={'oname' : self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Aggregating SeqLib data",
+            extra={'oname': self.name}
+        )
 
         destination = "/main/{}/counts_unfiltered".format(label)
         if destination in list(self.store.keys()):
             # need to remove the current destination table because we are
             # using append, append is required because it takes
             # the "min_itemsize" argument, and put doesn't
-            logging.info(
+            log_message(
+                logging_callback=logging.info,
                 msg="Replacing existing '{}'".format(destination),
-                extra={'oname' : self.name}
+                extra={'oname': self.name}
             )
             self.store.remove(destination)
 
@@ -389,9 +397,12 @@ class Selection(StoreManager):
                 complete_index = complete_index.union(
                     pd.Index(lib.store.select_column(lib_table, 'index'))
                 )
-        logging.info(
-            "Created shared index for count data ({} {})".format(
-                len(complete_index), label), extra={'oname' : self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Created shared index for count data ({} {})".format(
+                len(complete_index), label),
+            extra={'oname': self.name}
+        )
 
         # min_itemsize value
         max_index_length = complete_index.map(len).max()
@@ -403,9 +414,12 @@ class Selection(StoreManager):
                 index_chunk = complete_index[i:i + self.chunksize]
             else:
                 index_chunk = complete_index
-            logging.info("Merging counts for chunk {} ({} rows)".format(
-                i // self.chunksize + 1, len(index_chunk)),
-                extra={'oname' : self.name}
+
+            log_message(
+                logging_callback=logging.info,
+                msg="Merging counts for chunk {} ({} rows)".format(
+                    i // self.chunksize + 1, len(index_chunk)),
+                extra={'oname': self.name}
             )
 
             for tp in self.timepoints:
@@ -684,15 +698,15 @@ class Selection(StoreManager):
         File names are the HDF5 key with ``'_'`` substituted for ``'/'``.
         """
         if self.tsv_requested:
-            logging.info(
-                "Generating tab-separated output files",
-                extra={'oname' : self.name}
+            log_message(
+                logging_callback=logging.info,
+                msg="Generating tab-separated output files",
+                extra={'oname': self.name}
             )
             for k in self.store.keys():
                 self.write_table_tsv(k)
         for lib in self.children:
             lib.write_tsv()
-
 
     def synonymous_variants(self):
         """
@@ -769,14 +783,17 @@ class Selection(StoreManager):
             raise KeyError("Invalid label '{}' for calc_outliers [{}]".format(
                 label,  self.name))
 
-        logging.info(
-            "Identifying outliers ({}-{})".format(label, label2),
-            extra={'oname' : self.name}
+        log_message(
+            logging_callback=logging.info,
+            msg="Identifying outliers ({}-{})".format(label, label2),
+            extra={'oname': self.name}
         )
-        logging.info(
-            "Mapping {} to {}".format(label, label2),
-            extra={'oname' : self.name}
+        log_message(
+            logging_callback=logging.info,
+            msg="Mapping {} to {}".format(label, label2),
+            extra={'oname': self.name}
         )
+
         if label == "variants":
             mapping = self.synonymous_variants()
         elif label == "barcodes":
@@ -813,11 +830,14 @@ class Selection(StoreManager):
 
         for i, x in enumerate(df2.index):
             if i % log_chunksize == 0:
-                logging.info(
-                    "Calculating outlier p-values for "
-                    "chunk {} ({} rows) ({}-{})".format(
+                log_message(
+                    logging_callback=logging.info,
+                    msg="Calculating outlier p-values for "
+                        "chunk {} ({} rows) ({}-{})".format(
                         log_chunk, log_chunksize_list[log_chunk - 1],
-                        label, label2), extra={'oname' : self.name})
+                        label, label2),
+                    extra={'oname': self.name}
+                )
                 log_chunk += 1
             try:
                 components = df1.loc[mapping[x]].dropna(

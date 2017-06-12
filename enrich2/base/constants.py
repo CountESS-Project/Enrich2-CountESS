@@ -36,6 +36,12 @@ WILD_TYPE_VARIANT = "_wt"
 SYNONYMOUS_VARIANT = "_sy"
 
 
+#: Logging constants
+CALLBACK = 'callback'
+MESSAGE = 'msg'
+KWARGS = 'kwargs'
+
+
 #: HDFStore keys used by enrich2
 GROUP_RAW = "raw"
 GROUP_MAIN = "main"
@@ -52,6 +58,15 @@ SCORES_SHARED_FULL_TABLE = "scores_shared_full"
 SCORES_PVALUES_WT = "scores_pvalues_wt"
 SCORES_PVALUES = "scores_pvalues"
 OUTLIERS_TABLE = 'outliers'
+LOG_RATIOS_TABLE = 'log_ratios'
+WEIGHTS_TABLE = 'weights'
+
+
+#: Element types
+VARIANTS = 'variants'
+BARCODES = 'barcodes'
+IDENTIFIERS = 'identifiers'
+SYNONYMOUS = 'synonymous'
 
 
 #: Dataframe columns used by Enrich2

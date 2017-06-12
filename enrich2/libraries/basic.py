@@ -30,7 +30,7 @@ import logging
 
 from ..sequence.fqread import read_fastq
 from .variant import VariantSeqLib
-from ..base.utils import compute_md5
+from ..base.utils import compute_md5, log_message
 
 
 __all__ = [
@@ -180,8 +180,10 @@ class BasicSeqLib(VariantSeqLib):
         the variants.
         """
         df_dict = dict()
-
-        logging.info("Counting variants", extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Counting variants", extra={'oname': self.name}
+        )
 
         max_mut_variants = 0
         for fq in read_fastq(self.reads):
@@ -205,15 +207,17 @@ class BasicSeqLib(VariantSeqLib):
         del df_dict
 
         if self.aligner is not None:
-            logging.info(
-                "Aligned {} variants".format(self.aligner.calls),
+            log_message(
+                logging_callback=logging.info,
+                msg="Aligned {} variants".format(self.aligner.calls),
                 extra={'oname': self.name}
             )
             self.aligner_cache = None
 
-        logging.info(
+        log_message(
+            logging_callback=logging.info,
             msg="Removed {} total variants with excess "
-            "mutations".format(max_mut_variants),
+                "mutations".format(max_mut_variants),
             extra={'oname': self.name}
         )
         self.save_filter_stats()

@@ -24,6 +24,7 @@ import os.path
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
+from .base.utils import init_logging_queue, log_message
 from .experiment.experiment import Experiment
 from .experiment.condition import Condition
 from .selection.selection import Selection
@@ -97,6 +98,7 @@ def main_gui():
     from .gui.logging_frame import WindowLoggingHandler
 
     # Start the main app
+    init_logging_queue()
     app = Configurator()
 
     # GUI logger to the logger's handlers
@@ -125,7 +127,12 @@ def main_gui():
     formatter = logging.Formatter(LOG_FORMAT)
     log_window.setFormatter(formatter)
     logging.getLogger().addHandler(log_window)
-    logging.info("Starting Enrich 2...", extra={'oname': DRIVER_NAME})
+
+    log_message(
+        logging_callback=logging.info,
+        msg="Starting Enrich 2...",
+        extra={'oname': DRIVER_NAME}
+    )
 
     # Start app
     app.mainloop()
@@ -182,17 +189,26 @@ def main_cmd():
 
     # identify config file type and create the object
     if config_check.is_experiment(cfg):
-        logging.info("Detected an Experiment config file",
-                     extra={'oname': DRIVER_NAME})
+        log_message(
+            logging_callback=logging.info,
+            msg="Detected an Experiment config file",
+            extra={'oname': DRIVER_NAME}
+        )
         obj = Experiment()
     elif config_check.is_selection(cfg):
-        logging.info("Detected a Selection config file",
-                     extra={'oname': DRIVER_NAME})
+        log_message(
+            logging_callback=logging.info,
+            msg="Detected an Selection config file",
+            extra={'oname': DRIVER_NAME}
+        )
         obj = Selection()
     elif config_check.is_seqlib(cfg):
         seqlib_type = config_check.seqlib_type(cfg)
-        logging.info("Detected a %s config file", seqlib_type,
-                     extra={'oname': DRIVER_NAME})
+        log_message(
+            logging_callback=logging.info,
+            msg="Detected a {} config file".format(seqlib_type),
+            extra={'oname': DRIVER_NAME}
+        )
         if seqlib_type == "BarcodeSeqLib":
             obj = BarcodeSeqLib()
         elif seqlib_type == "BcidSeqLib":
@@ -231,8 +247,11 @@ def main_cmd():
         obj.validate()
     except Exception:
         print("Program finished running but with errors. See log for details.")
-        logging.exception("Invalid configuration",
-                          extra={'oname': DRIVER_NAME})
+        log_message(
+            logging_callback=logging.exception,
+            msg="Invalid configuration",
+            extra={'oname': DRIVER_NAME}
+        )
     else:
         # open HDF5 files for the object and all child objects
         obj.store_open(children=True)
@@ -243,7 +262,11 @@ def main_cmd():
         except Exception as e:
             print("Program finished running but with errors. "
                   "See log for details.")
-            logging.exception(e, extra={'oname': DRIVER_NAME})
+            log_message(
+                logging_callback=logging.exception,
+                msg=e,
+                extra={'oname': DRIVER_NAME}
+            )
             obj.store_close(children=True)
             sys.exit(0)
 
@@ -252,8 +275,9 @@ def main_cmd():
         except Exception:
             print("Program finished running but with errors. "
                   "See log for details.")
-            logging.exception(
-                "Calculations completed, but TSV ouput failed.",
+            log_message(
+                logging_callback=logging.exception,
+                msg="Calculations completed, but TSV ouput failed.",
                 extra={'oname': DRIVER_NAME}
             )
             obj.store_close(children=True)
@@ -262,7 +286,11 @@ def main_cmd():
         # clean up
         obj.store_close(children=True)
         print("Program finished successfully! See log for information.")
-        logging.info("Done!", extra={'oname': DRIVER_NAME})
+        log_message(
+            logging_callback=logging.exception,
+            msg="Done!",
+            extra={'oname': DRIVER_NAME}
+        )
 
 
 if __name__ == "__main__":

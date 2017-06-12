@@ -26,15 +26,17 @@ Contains the abstract data-containing class StoreManager
 
 import os
 import time
-import logging
 import getpass
 import collections
 import pandas as pd
 
-from .utils import nested_format, recursive_dict_equal
+from .utils import nested_format
 from ..base.utils import fix_filename
 from .config_constants import SCORER, SCORER_PATH
-from ..base.constants import LOGR_METHODS, ELEMENT_LABELS
+from ..base.constants import ELEMENT_LABELS
+
+import logging
+from ..base.utils import log_message
 
 
 __all__ = [
@@ -529,18 +531,24 @@ class StoreManager(object):
 
         self.name = cfg.name
         if cfg.has_output_dir and self.output_dir_override:
-            logging.warning("Using command line supplied output "
-                            "directory instead of config file output "
-                            "directory", extra={'oname': self.name})
-
+            log_message(
+                logging_callback=logging.warning,
+                msg="Using command line supplied output "
+                    "directory instead of config file output "
+                    "directory",
+                extra={'oname': self.name}
+            )
         elif cfg.has_output_dir and not self.output_dir_override:
             self.output_dir = cfg.output_dir
 
         if cfg.has_store_path:
             self.store_cfg = True
             self.store_path = cfg.store_path
-            logging.info('Using specified HDF5 data store "{}"'.format(
-                self.store_path), extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.info,
+                msg='Using specified HDF5 data store "{}"'.format(self.store_path),
+                extra={'oname': self.name}
+            )
         else:
             self.store_cfg = False
             self.store_path = None
@@ -556,8 +564,17 @@ class StoreManager(object):
                 msg += nested_format(print_cfg, False, tab_level=0)
             else:
                 msg = 'No options for scorer detected.'
-            logging.info('Scorer detected.', extra={'oname': self.name})
-            logging.info(msg, extra={'oname': self.name})
+
+            log_message(
+                logging_callback=logging.info,
+                msg='Scorer detected.',
+                extra={'oname': self.name}
+            )
+            log_message(
+                logging_callback=logging.info,
+                msg=msg,
+                extra={'oname': self.name}
+            )
 
     def serialize(self):
         """
@@ -618,48 +635,66 @@ class StoreManager(object):
                     self.output_dir,
                     "{}_{}.h5".format(fname, self.store_suffix))
 
-            logging.info(
-                "Loading from store path '{}'.".format(self.store_path),
-                extra={"oname": self.name}
+            log_message(
+                logging_callback=logging.info,
+                msg="Loading from store path '{}'.".format(self.store_path),
+                extra={'oname': self.name}
             )
             if os.path.exists(self.store_path):
                 store = pd.HDFStore(self.store_path)
                 for key in store.keys():
                     if not self.check_metadata(key, store):
                         force_delete = True
-                        logging.info(
-                            'Found existing HDF5 data store "{}", but metadata'
-                            ' did not match with this instance. '
-                            'Overridding existing store.'.format(
-                                self.store_path), extra={'oname': self.name})
+                        msg = 'Found existing HDF5 data store "{}", but ' \
+                              'metadata did not match with this ' \
+                              'instance. Overridding existing store.'.format(
+                                self.store_path)
+                        log_message(
+                            logging_callback=logging.info,
+                            msg=msg,
+                            extra={'oname': self.name}
+                        )
                         break
                 else:
-                    logging.info(
-                        'Found existing HDF5 data store "{}".'.format(
-                            self.store_path), extra={'oname': self.name})
+                    log_message(
+                        logging_callback=logging.info,
+                        msg='Found existing HDF5 data '
+                            'store "{}".'.format(self.store_path),
+                        extra={'oname': self.name}
+                    )
                 store.flush()
                 store.close()
             else:
-                logging.info('Creating new HDF5 data store "{}"'.format(
-                    self.store_path), extra={'oname': self.name})
+                log_message(
+                    logging_callback=logging.info,
+                    msg='Creating new HDF5 data store '
+                        '"{}"'.format(self.store_path),
+                    extra={'oname': self.name}
+                )
 
             # Open the store and delete tables if required.
             self.store = pd.HDFStore(self.store_path, mode='a')
 
             if self.force_recalculate:
                 if "/main" in self.store:
-                    logging.info("Deleting existing calculated values",
-                                 extra={'oname': self.name})
+                    log_message(
+                        logging_callback=logging.info,
+                        msg="Deleting existing calculated values",
+                        extra={'oname': self.name}
+                    )
                     self.store.remove("/main")
                 else:
-                    logging.warning("No existing calculated values in file",
-                                    extra={'oname': self.name})
-
+                    log_message(
+                        logging_callback=logging.warning,
+                        msg="No existing calculated values in file",
+                        extra={'oname': self.name}
+                    )
             if force_delete:
                 tables = ', '.join(
                     ["'{}'".format(x) for x in self.store.keys()])
-                logging.info(
-                    "Deleting all tables: {}".format(tables),
+                log_message(
+                    logging_callback=logging.info,
+                    msg="Deleting all tables: {}".format(tables),
                     extra={'oname': self.name}
                 )
                 self.clear_store(self.store)
@@ -679,9 +714,11 @@ class StoreManager(object):
             Store to be cleared
         """
         for key in store.keys():
-            logging.info(
-                "Deleting existing table with key '{}'.".format(key),
-                extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Deleting existing table with key '{}'.".format(key),
+                extra={'oname': self.name}
+            )
             store.remove(key)
         store.flush()
 
@@ -750,8 +787,11 @@ class StoreManager(object):
             True if the key exists in the HDF5 store, else False.
         """
         if key in list(self.store.keys()):
-            logging.info("Found existing '{}'".format(key),
-                         extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Found existing '{}'".format(key),
+                extra={'oname': self.name}
+            )
             return True
         else:
             return False
@@ -781,8 +821,11 @@ class StoreManager(object):
         if destination in list(self.store.keys()):
             # remove the current destination table because we are using append
             # append takes the "min_itemsize" argument, and put doesn't
-            logging.info("Overwriting existing '{}'".format(destination),
-                         extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Overwriting existing '{}'".format(destination),
+                extra={'oname': self.name}
+            )
             self.store.remove(destination)
 
         # turn the single table name into a list to use select_as_multiple

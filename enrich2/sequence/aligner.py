@@ -30,6 +30,8 @@ from ctypes import c_int
 import numpy as np
 import logging
 
+from ..base.utils import log_message
+
 
 _AMBIVERT = False
 try:
@@ -151,14 +153,16 @@ class Aligner(object):
         global _AMBIVERT
         if backend == 'ambivert' and _AMBIVERT:
             self.align = self.align_ambivert
-            logging.info(
-                "Using ambivert alignment backend.",
+            log_message(
+                logging_callback=logging.info,
+                msg="Using ambivert alignment backend.",
                 extra={'oname': 'Aligner'}
             )
         else:
             self.align = self.align_enrich2
-            logging.info(
-                "Using enrich2 alignment backend.",
+            log_message(
+                logging_callback=logging.info,
+                msg="Using enrich2 alignment backend.",
                 extra={'oname': 'Aligner'}
             )
 

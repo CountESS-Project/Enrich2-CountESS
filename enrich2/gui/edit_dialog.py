@@ -32,9 +32,9 @@ from ..libraries.barcodeid import BcidSeqLib
 from ..libraries.barcodevariant import BcvSeqLib
 from ..libraries.basic import BasicSeqLib
 from ..libraries.idonly import IdOnlySeqLib
-from ..libraries.overlap import OverlapSeqLib
 from ..libraries.seqlib import SeqLib
 from ..libraries.variant import VariantSeqLib
+from ..base.utils import log_message
 
 from tkinter.ttk import *
 
@@ -447,7 +447,9 @@ class EditDialog(CustomDialog):
                 self.element.configure(
                     clear_nones(current_cfg),
                     configure_children=False, init_from_gui=True)
-            logging.exception(e, extra={"oname": self.element.name})
+            log_message(
+                logging.exception, e, extra={"oname": self.element.name}
+            )
             tkinter.messagebox.showwarning(
                 title="Configuration Error!",
                 message="The following error was encountered when trying to "

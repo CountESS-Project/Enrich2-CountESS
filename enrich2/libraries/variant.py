@@ -34,6 +34,7 @@ from ..base.constants import AA_CODES, CODON_TABLE, DEFAULT_MAX_MUTATIONS
 from ..base.constants import SYNONYMOUS_VARIANT, WILD_TYPE_VARIANT
 from ..sequence.aligner import Aligner
 from ..sequence.wildtype import WildTypeSequence
+from ..base.utils import log_message
 
 
 __all__ = [
@@ -595,17 +596,21 @@ class VariantSeqLib(SeqLib):
         their ``synonymous`` entry.
         """
         if not self.is_coding():
-            logging.warning(
-                "Cannot count synonymous mutations in noncoding data",
-                extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.warning,
+                msg="Cannot count synonymous mutations in noncoding data",
+                extra={'oname': self.name}
+            )
             return
 
         if self.check_store("/main/synonymous/counts"):
             return
 
-        logging.info("Counting synonymous variants",
-                     extra={'oname': self.name})
-
+        log_message(
+            logging_callback=logging.info,
+            msg="Counting synonymous variants",
+            extra={'oname': self.name}
+        )
         df_dict = dict()
 
         for variant, count in self.store['/main/variants/counts'].iterrows():
@@ -636,6 +641,9 @@ class VariantSeqLib(SeqLib):
         count : `int`
             Count of the variant.
         """
-        logging.debug("Filtered variant (quantity={n}) (excess mutations)"
+        log_message(
+            logging_callback=logging.debug,
+            msg="Filtered variant (quantity={n}) (excess mutations)"
                       "\n{read!s}".format(n=count, read=variant),
-                      extra={'oname': self.name})
+            extra={'oname': self.name}
+        )

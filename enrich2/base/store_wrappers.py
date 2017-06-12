@@ -25,10 +25,11 @@ Contains an interface to abstractly represent store operations such as
 this interface.
 """
 
-import os
-import logging
 import pandas as pd
 from abc import ABC, abstractclassmethod
+
+import logging
+from ..base.utils import log_message
 
 
 class StoreInterface(ABC):
@@ -446,9 +447,10 @@ class HDFStore(StoreInterface):
         """
         self.ensure_open()
         if set(value.index) & set(self.get(key).index):
-            logging.warning(
-                "Appending data with overlapping index. This will "
-                "duplicate entries.",
+            log_message(
+                logging_callback=logging.warning,
+                msg="Appending data with overlapping index. This will "
+                    "duplicate entries.",
                 extra={'oname': self.__class__.__name__}
             )
         self._store.append(
@@ -476,9 +478,10 @@ class HDFStore(StoreInterface):
         self.ensure_open()
         if append:
             if set(value.index) & set(self.get(key).index):
-                logging.warning(
-                    "Appending data with overlapping index. This will "
-                    "duplicate entries.",
+                log_message(
+                    logging_callback=logging.warning,
+                    msg="Appending data with overlapping index. This will "
+                        "duplicate entries.",
                     extra={'oname': self.__class__.__name__}
                 )
         self._store.put(

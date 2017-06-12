@@ -30,7 +30,7 @@ import sys
 
 from ..sequence.fqread import read_fastq
 from .seqlib import SeqLib
-from ..base.utils import compute_md5
+from ..base.utils import compute_md5, log_message
 
 
 __all__ = [
@@ -200,7 +200,11 @@ class BarcodeSeqLib(SeqLib):
             filter_flags[key] = False
 
         # count all the barcodes
-        logging.info("Counting barcodes", extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Counting Barcodes",
+            extra={'oname': self.name}
+        )
         for fqr in read_fastq(self.reads):
             fqr.trim_length(self.trim_length, start=self.trim_start)
             if self.revcomp_reads:

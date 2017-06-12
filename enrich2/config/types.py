@@ -33,6 +33,7 @@ import logging
 from abc import ABC, abstractclassmethod
 
 from ..base.config_constants import *
+from ..base.utils import log_message
 from .config_check import *
 from ..plugins import load_scorer_class_and_options
 from ..plugins.options import Options
@@ -175,11 +176,13 @@ class ScorerConfiguration(Configuration):
         defaults = list(expected_varnames - passed_varnames)
         defaults_str = ', '.join(["'{}'".format(v) for v in defaults])
         if defaults:
-            logging.warning("The options {} were not found in the provided"
-                            " configuration file. Setting as default "
-                            "values.".format(defaults_str),
-                            extra={'oname': self.__class__.__name__})
-
+            log_message(
+                logging_callback=logging.warning,
+                msg="The options {} were not found in the provided"
+                    " configuration file. Setting as default "
+                    "values.".format(defaults_str),
+                extra={'oname': self.__class__.__name__}
+            )
         self.scorer_class_attrs = self.__options.to_dict()
         return self
 

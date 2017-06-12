@@ -29,7 +29,6 @@ from ..libraries.basic import BasicSeqLib
 from ..libraries.barcodevariant import BcvSeqLib
 from ..libraries.barcodeid import BcidSeqLib
 from ..libraries.barcode import BarcodeSeqLib
-from ..libraries.overlap import OverlapSeqLib
 from ..libraries.seqlib import SeqLib
 from ..libraries.variant import VariantSeqLib
 from ..libraries.idonly import IdOnlySeqLib

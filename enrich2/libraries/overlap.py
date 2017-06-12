@@ -22,6 +22,7 @@ import pandas as pd
 
 from ..sequence.fqread import read_fastq_multi, split_fastq_path, FQRead
 from .variant import VariantSeqLib
+from ..base.utils import log_message
 
 
 class OverlapSeqLib(VariantSeqLib):
@@ -117,7 +118,6 @@ class OverlapSeqLib(VariantSeqLib):
             except ValueError as value:
                 raise ValueError("Invalid parameter value {value} "
                                  "[{name}]".format(value=value, name=self.name))
-
     def serialize(self):
         """
         Format this object (and its children) as a 
@@ -136,7 +136,6 @@ class OverlapSeqLib(VariantSeqLib):
 
         return cfg
 
-
     def configure_fastq(self, cfg):
         """
         Set up the object's FASTQ_ file handling and filtering options.
@@ -153,19 +152,16 @@ class OverlapSeqLib(VariantSeqLib):
             raise KeyError("Missing required config value "
                            "{key} [{name}]".format(key=key, name=self.name))
 
-
     def serialize_fastq(self):
         """
         Serialize this object's FASTQ_ file handling and filtering options.
         """
         fastq = {
-            'forward reads' : self.forward,
-            'reverse reads' : self.reverse,
-            'filters' : self.serialize_filters()
+            'forward reads': self.forward,
+            'reverse reads': self.reverse,
+            'filters': self.serialize_filters()
         }
-
         return fastq
-
 
     def merge_reads(self, fwd, rev):
         """
@@ -180,8 +176,8 @@ class OverlapSeqLib(VariantSeqLib):
         """
         rev.revcomp()
 
-        #print(fwd.sequence, "-" * (self.rev_start - 1), sep="")
-        #print("-" * (self.fwd_start - 1), rev.sequence, sep="")
+        # print(fwd.sequence, "-" * (self.rev_start - 1), sep="")
+        # print("-" * (self.fwd_start - 1), rev.sequence, sep="")
         rev_extra_start = len(rev) - self.rev_start + 1
         fwd_end = self.fwd_start + self.overlap_length - 1
         merge = FQRead(header=fwd.header + '|' + rev.header, 
@@ -246,7 +242,10 @@ class OverlapSeqLib(VariantSeqLib):
                    for x in range(0, self.overlap_length)],
             columns=["resolved", "unresolved", "first"])
 
-        logging.info("Counting variants", extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Counting variants", extra={'oname': self.name}
+        )
         max_mut_variants = 0
         for fwd, rev in read_fastq_multi([self.forward, self.reverse]):
             # filter on chastity before merge
@@ -296,13 +295,19 @@ class OverlapSeqLib(VariantSeqLib):
         del df_dict
 
         if self.aligner is not None:
-            logging.info(
-                "Aligned {} variants".format(self.aligner.calls),
-                extra={'oname' : self.name}
+            log_message(
+                logging_callback=logging.info,
+                msg="Aligned {} variants".format(self.aligner.calls),
+                extra={'oname': self.name}
             )
             self.aligner_cache = None
-        logging.info("Removed {} total variants with excess mutations"
-                     "".format(max_mut_variants), extra={'oname': self.name})
+
+        log_message(
+            logging_callback=logging.info,
+            msg="Removed {} total variants with excess "
+                "mutations".format(max_mut_variants),
+            extra={'oname': self.name}
+        )
         self.save_filter_stats()
 
     def calculate(self):

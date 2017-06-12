@@ -30,6 +30,7 @@ import pandas as pd
 
 from ..libraries.barcodemap import BarcodeMap
 from .barcode import BarcodeSeqLib
+from ..base.utils import log_message
 
 
 __all__ = [
@@ -158,10 +159,12 @@ class BcidSeqLib(BarcodeSeqLib):
             df_dict = dict()
             barcode_identifiers = dict()
 
-            logging.info(
+            log_message(
+                logging_callback=logging.info,
                 msg="Converting barcodes to identifiers",
-                extra={'oname' : self.name}
+                extra={'oname': self.name}
             )
+
             # store mapped barcodes
             self.save_filtered_counts(
                 label="barcodes",

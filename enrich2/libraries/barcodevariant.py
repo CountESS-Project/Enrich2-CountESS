@@ -28,7 +28,7 @@ library containing variants which are also barcode sequences.
 import logging
 import pandas as pd
 
-from ..base.utils import compute_md5
+from ..base.utils import compute_md5, log_message
 from ..libraries.barcodemap import BarcodeMap
 from .barcode import BarcodeSeqLib
 from .variant import VariantSeqLib
@@ -150,8 +150,11 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             df_dict = dict()
             barcode_variants = dict()
 
-            logging.info(
-                "Converting barcodes to variants", extra={'oname' : self.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Converting barcodes to variants",
+                extra={'oname': self.name}
+            )
 
             # store mapped barcodes
             self.save_filtered_counts(
@@ -203,14 +206,16 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             del barcode_variants
 
             if self.aligner is not None:
-                logging.info(
-                    "Aligned {} variants".format(self.aligner.calls),
-                    extra={'oname' : self.name}
+                log_message(
+                    logging_callback=logging.info,
+                    msg="Aligned {} variants".format(self.aligner.calls),
+                    extra={'oname': self.name}
                 )
                 self.aligner_cache = None
 
             #self.report_filter_stats()
-            logging.info(
+            log_message(
+                logging_callback=logging.info,
                 msg="Removed {} unique barcodes ({} total variants) with "
                     "excess mutations".format(
                     max_mut_barcodes, max_mut_variants),

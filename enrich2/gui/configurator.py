@@ -38,6 +38,8 @@ from tkinter.ttk import Frame, Button, Checkbutton, Treeview, LabelFrame
 from tkinter.messagebox import askyesno, showinfo, showwarning
 
 from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
+from ..base.constants import CALLBACK, MESSAGE, KWARGS
+from ..base.utils import get_logging_queue, log_message
 from ..experiment.condition import Condition
 from ..selection.selection import Selection
 from .create_root_dialog import CreateRootDialog
@@ -191,6 +193,7 @@ class Configurator(tk.Tk):
         self.create_main_frame()
         self.create_menubar()
         self.create_treeview_context_menu()
+        self.after(10, self.poll_logging_queue)
 
     # ---------------------------------------------------------------------- #
     #                           Creation Methods
@@ -729,8 +732,9 @@ class Configurator(tk.Tk):
                         self.scorer_plugin.load_from_cfg_file(
                             scorer_path, scorer_attrs)
                     else:
-                        logging.warning(
-                            "No plugin could be loaded from configuration.",
+                        log_message(
+                            logging_callback=logging.warning,
+                            msg="No plugin could be loaded from configuration.",
                             extra={"oname": self.__class__.__name__}
                         )
 
@@ -857,13 +861,23 @@ class Configurator(tk.Tk):
             if run:
                 self.configure_analysis()
                 self.set_gui_state(tk.DISABLED)
-                # thread = threading.Thread(target=self.run_analysis)
-                # thread.setDaemon(True)
-                # self.analysis_thread = thread
-                # self.analysis_thread.start()
-                # self.after(100, self.poll_analysis_thread)
+                thread = threading.Thread(target=self.run_analysis)
+                thread.setDaemon(True)
+                self.analysis_thread = thread
+                self.analysis_thread.start()
+                self.after(100, self.poll_analysis_thread)
+                # self.run_analysis()
 
-                self.run_analysis()
+    def poll_logging_queue(self):
+        """
+        Polls the logging queue for messages to log.
+        """
+        try:
+            log = get_logging_queue(init=True).get(0)
+            log[CALLBACK](log[MESSAGE], **log[KWARGS])
+            self.after(10, self.poll_logging_queue)
+        except queue.Empty:
+            self.after(10, self.poll_logging_queue)
 
     def poll_analysis_thread(self):
         """
@@ -888,23 +902,36 @@ class Configurator(tk.Tk):
             None to indicate successful computation.
 
         """
-        logging.info(
-            "Closing stores...", extra={"oname": self.root_element.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Closing stores...",
+            extra={"oname": self.root_element.name}
+        )
         self.root_element.store_close(children=True)
-        logging.info("Stores closed.", extra={"oname": self.root_element.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Stores closed.",
+            extra={"oname": self.root_element.name}
+        )
 
         if success:
             showinfo(
                 "Analysis completed.",
                 "Analysis has completed successfully!")
-            logging.info("Completed successfully!",
-                         extra={"oname": self.root_element.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Completed successfully!",
+                extra={"oname": self.root_element.name}
+            )
         else:
             showwarning(
                 "Error during analysis.",
                 "An error occurred during the analysis. See log for details")
-            logging.info("Completed, but with errors!",
-                         extra={"oname": self.root_element.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Completed, but with errors!",
+                extra={"oname": self.root_element.name}
+            )
         self.set_gui_state(tk.NORMAL)
 
     def run_analysis(self):
@@ -921,7 +948,11 @@ class Configurator(tk.Tk):
                 root_element.write_tsv()
             self.queue.put(True, block=False)
         except Exception as e:
-            logging.exception(e, extra={'oname': root_element.name})
+            log_message(
+                logging_callback=logging.exception,
+                msg=e,
+                extra={"oname": self.root_element.name}
+            )
             self.queue.put(False, block=False)
         finally:
             return
@@ -963,7 +994,14 @@ class Configurator(tk.Tk):
             self.root_element.scorer_class_attrs = scorer_class_attrs
             self.root_element.scorer_path = scorer_path
         except Exception as e:
-            logging.info(
-                "An error occurred when trying to configure the root element.",
-                extra={'oname': self.root_element.name})
-            logging.exception(e, extra={'oname': self.root_element.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="An error occurred when trying to configure the "
+                    "root element.",
+                extra={"oname": self.root_element.name}
+            )
+            log_message(
+                logging_callback=logging.exception,
+                msg=e,
+                extra={"oname": self.root_element.name}
+            )

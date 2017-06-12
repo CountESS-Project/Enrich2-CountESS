@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 
 from ..base.storemanager import StoreManager
-from ..base.utils import fix_filename, compute_md5
+from ..base.utils import fix_filename, compute_md5, log_message
 from ..base.constants import ELEMENT_LABELS
 
 
@@ -268,11 +268,16 @@ class SeqLib(StoreManager):
             Dictionary of flags that applying to *fq*.
 
         """
-        logging.debug("Filtered read ({messages})\n{read!s}".format(
-                      messages=', '.join(StoreManager.filter_messages[x]
-                                         for x in filter_flags if
-                                         filter_flags[x]),
-                      name=self.name, read=fq), extra={'oname': self.name})
+        messages = ', '.join(
+            StoreManager.filter_messages[x]
+            for x in filter_flags if filter_flags[x]
+        )
+        log_message(
+            logging_callback=logging.debug,
+            msg="Filtered read ({messages})\n{read!s}".format(
+                messages=messages, name=self.name, read=fq),
+            extra={'oname': self.name}
+        )
 
     def save_counts(self, label, df_dict, raw):
         """
@@ -299,9 +304,12 @@ class SeqLib(StoreManager):
         df = pd.DataFrame.from_dict(df_dict, orient="index", dtype=np.int32)
         df.columns = ['count']
         df.sort_values('count', ascending=False, inplace=True)
-        logging.info("Counted {n} {label} ({u} unique)".format(
+        log_message(
+            logging_callback=logging.info,
+            msg="Counted {n} {label} ({u} unique)".format(
                 n=df['count'].sum(), u=len(df.index), label=label),
-                extra={'oname': self.name})
+            extra={'oname': self.name}
+        )
         if raw:
             key = "/raw/{}/counts".format(label)
         else:
@@ -327,16 +335,26 @@ class SeqLib(StoreManager):
         http://pandas.pydata.org/pandas-docs/stable/io.html#querying-a-table
         
         """
-        logging.info("Converting raw {} counts to main counts".format(label),
-                     extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Converting raw {} counts to main counts".format(label),
+            extra={'oname': self.name}
+        )
         raw_table = "/raw/{}/counts".format(label)
         main_table = "/main/{}/counts".format(label)
-        self.map_table(source=raw_table, destination=main_table,
-                       source_query=query)
-        logging.info("Counted {n} {label} ({u} unique) after query".format(
-                n=self.store[main_table]['count'].sum(),
-                u=len(self.store[main_table].index),
-                label=label), extra={'oname': self.name})
+        self.map_table(
+            source=raw_table, destination=main_table, source_query=query)
+
+        msg = "Counted {n} {label} ({u} unique) after query".format(
+            n=self.store[main_table]['count'].sum(),
+            u=len(self.store[main_table].index),
+            label=label
+        )
+        log_message(
+            logging_callback=logging.info,
+            msg=msg,
+            extra={'oname': self.name}
+        )
 
     def report_filter_stats(self):
         """
@@ -364,7 +382,11 @@ class SeqLib(StoreManager):
                     print(SeqLib.filter_messages[key], self.filter_stats[key],
                           sep="\t", file=handle)
             print("total", self.filter_stats['total'], sep="\t", file=handle)
-        logging.info("Wrote filtering statistics", extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Wrote filtering statistics",
+            extra={'oname': self.name}
+        )
 
     def save_filter_stats(self):
         """
@@ -467,9 +489,11 @@ class SeqLib(StoreManager):
             else:
                 unused.append(key)
         if len(unused) > 0:
-            logging.warning("Unused filter parameters ({})"
-                            "".format(', '.join(unused)),
-                            extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.warning,
+                msg="Unused filter parameters ({})".format(', '.join(unused)),
+                extra={'oname': self.name}
+            )
 
         self.filter_stats.clear()
         for key in self._filters:
@@ -503,8 +527,11 @@ class SeqLib(StoreManager):
         for ``'/'``.
         """
         if self.tsv_requested:
-            logging.info("Generating tab-separated output files",
-                         extra={'oname': self.name})
+            log_message(
+                logging_callback=logging.info,
+                msg="Generating tab-separated output files",
+                extra={'oname': self.name}
+            )
             for k in list(self.store.keys()):
                 self.write_table_tsv(k)
 
@@ -521,9 +548,11 @@ class SeqLib(StoreManager):
             The file name of the H5 store to load.
         """
         store = pd.HDFStore(fname)
-        logging.info("Using existing HDF5 data store '{}' for raw data"
-                     "".format(fname),
-                     extra={'oname': self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Using existing HDF5 data store '{}' for raw data".format(fname),
+            extra={'oname': self.name}
+        )
         # this could probably be much more efficient, but the PyTables docs
         # don't explain copying subsets of files adequately
         raw_keys = [key for key in store.keys() if key.startswith("/raw/")]
@@ -540,9 +569,9 @@ class SeqLib(StoreManager):
                 # Copy the metadata
                 self.set_metadata(
                     k, self.get_metadata(k, store=store), update=False)
-
-                logging.info(
-                    "Copied raw data '{}'".format(k),
+                log_message(
+                    logging_callback=logging.info,
+                    msg="Copied raw data '{}'".format(k),
                     extra={'oname': self.name}
                 )
         store.close()

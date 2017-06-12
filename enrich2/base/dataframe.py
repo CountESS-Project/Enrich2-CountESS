@@ -32,6 +32,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+from ..base.utils import log_message
 from ..base.constants import ELEMENT_LABELS
 from ..base.constants import AA_CODES, AA_LIST, NT_LIST
 from ..base.constants import WILD_TYPE_VARIANT
@@ -283,8 +284,11 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
         try:
             wt_score = values[WILD_TYPE_VARIANT]
         except KeyError:
-            logging.warning("Wild type score not measured, will be missing in "
-                            "plots", extra={'oname': 'dataframe.py'})
+            log_message(
+                logging_callback=logging.warning,
+                msg="Wild type score not measured, will be missing in plots",
+                extra={'oname': 'dataframe.py'}
+            )
             wt_score = np.nan
 
     # select only rows with singleton mutations

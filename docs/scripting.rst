@@ -311,3 +311,27 @@ Set this to false if your option is something more advanced than a ``float``,
 
 You can only define `one` instance of ``Options`` in a script.
 
+
+Logging Messages
+----------------
+In order to log messages to the Enrich2 terminal, import the ``log_message``
+function and the logging module:
+
+.. code-block:: python
+   :linenos:
+
+    import logging
+    from enrich2.base.utils import log_message
+
+In order to use this function, supply a function to use from the logging
+module, a message and a dictionary with the key ``oname`` for the ``extra``
+parameter:
+
+.. code-block:: python
+   :linenos:
+
+    log_message(
+        logging_callback=logging.info,
+        msg='Hello World!',
+        extra={'oname': 'name of object'}
+    )
