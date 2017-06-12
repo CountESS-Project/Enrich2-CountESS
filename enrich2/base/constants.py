@@ -52,7 +52,6 @@ SCORES_SHARED_FULL_TABLE = "scores_shared_full"
 SCORES_PVALUES_WT = "scores_pvalues_wt"
 SCORES_PVALUES = "scores_pvalues"
 OUTLIERS_TABLE = 'outliers'
-METADATA = "enrich2"
 
 
 #: Dataframe columns used by Enrich2

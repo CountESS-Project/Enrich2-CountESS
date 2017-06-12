@@ -351,7 +351,7 @@ class Experiment(StoreManager):
             
         See Also
         --------
-        :py:module:`~enrich2.base.constants`
+        :py:mod:`~enrich2.base.constants`
         """
         if self.check_store("/main/{}/counts".format(label)):
             return
@@ -417,7 +417,7 @@ class Experiment(StoreManager):
             
         See Also
         --------
-        :py:module:`~enrich2.base.constants`
+        :py:mod:`~enrich2.base.constants`
         """
         if self.check_store("/main/{}/scores_shared_full".format(label)):
             return
@@ -484,7 +484,7 @@ class Experiment(StoreManager):
             
         See Also
         --------
-        :py:module:`~enrich2.base.constants`
+        :py:mod:`~enrich2.base.constants`
         
         """
         if self.check_store("/main/{}/scores_shared".format(label)):
@@ -510,7 +510,7 @@ class Experiment(StoreManager):
             
         See Also
         --------
-        :py:module:`~enrich2.base.constants`
+        :py:mod:`~enrich2.base.constants`
         
         """
         if self.check_store("/main/{}/scores".format(label)):
@@ -601,7 +601,7 @@ class Experiment(StoreManager):
             
         See Also
         --------
-        :py:module:`~enrich2.base.constants`
+        :py:mod:`~enrich2.base.constants`
         
         """
         if self.check_store("/main/{}/scores_pvalues_wt".format(label)):
@@ -648,7 +648,7 @@ class Experiment(StoreManager):
             
         See Also
         --------
-        :py:module:`~enrich2.base.constants`
+        :py:mod:`~enrich2.base.constants`
         
         """
         if self.check_store("/main/{}/scores_pvalues".format(label)):

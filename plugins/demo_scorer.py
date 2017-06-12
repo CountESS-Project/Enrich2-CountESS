@@ -82,7 +82,7 @@ options.add_option(
     varname='h_string',
     dtype=str,
     default='This is a hidden string',
-    choices=None,
+    choices={},
     hidden=True
 )
 options.add_option(
@@ -90,7 +90,7 @@ options.add_option(
     varname='h_float',
     dtype=float,
     default=6.0,
-    choices=None,
+    choices={},
     hidden=True
 
 )
@@ -99,7 +99,7 @@ options.add_option(
     varname='h_int',
     dtype=int,
     default=5,
-    choices=None,
+    choices={},
     hidden=True
 )
 options.add_option(
@@ -107,7 +107,7 @@ options.add_option(
     varname='h_list',
     dtype=list,
     default=[1, 2, 3, 4],
-    choices=None,
+    choices={},
     hidden=True
 )
 
@@ -117,9 +117,6 @@ class DemoScorer(BaseScorerPlugin):
     name = 'Demo'
     version = '1.0'
     author = 'Alan Rubin, Daniel Esposito'
-
-    def __init__(self, store_manager, options):
-        super().__init__(store_manager, options)
 
     def compute_scores(self):
         for label in self.store_labels():

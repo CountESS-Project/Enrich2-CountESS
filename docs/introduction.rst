@@ -76,6 +76,8 @@ Enrich2 implements five types of SeqLib, each supporting different element types
 
 .. deprecated:: Overlap sequence libraries are no longer supported.
 
+.. Note:: Overlap sequence libraries are no longer supported and will result in an error.
+
 	Contains variant and synonymous elements. DNA variants are sequenced directly using overlapping paired-end reads. Requires FASTQ_ files for both forward and reverse reads.
 
 * Basic

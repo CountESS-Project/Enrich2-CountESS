@@ -21,6 +21,8 @@ The configuration GUI requires `Tkinter <https://docs.python.org/2/library/tkint
 
 .. note:: PyTables may not be installed when using the default settings for your distribution. If you encounter errors, check that the ``tables`` module is present. 
 
+.. note:: If you plan on performing alignment with your experimental designs, we recommend installing `AmBiVErT <https://github.com/genomematt/AmBiVErT>`_ for much faster alignment computation. Windows users having trouble building AmBiVErT should consider using the `Windows 10 Bash Ennvironment <https://msdn.microsoft.com/en-au/commandline/wsl/about>`_. Consult `here <https://insidewindows.net/2017/03/17/starter-guide-on-bash-on-windows-how-to-get-it-running-installing-apps-and-a-shell-and-customization/>`_ for instructions on how to run graphical applications using bash on windows.
+
 Installation and example dataset
 --------------------------------
 

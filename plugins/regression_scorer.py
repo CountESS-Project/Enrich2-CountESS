@@ -49,9 +49,6 @@ class RegressionScorer(BaseScorerPlugin):
     version = '1.0'
     author = 'Alan Rubin, Daniel Esposito'
 
-    def __init__(self, store_manager, options):
-        super().__init__(store_manager, options)
-
     def compute_scores(self):
         for label in self.store_labels():
             self.calc_log_ratios(label)

@@ -22,6 +22,7 @@ Enrich2 was written by `Alan F Rubin <mailto:alan.rubin@wehi.edu.au>`_ |ORCID_ic
     
     installation
     introduction
+    scripting
     gui
     seqlib_config
     output

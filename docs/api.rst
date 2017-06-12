@@ -3,6 +3,15 @@ Appendix: API documentation
 
 This page contains automatically generated documentation from the Enrich2 codebase. It is intended for developers and advanced users.
 
+:py:mod:`~enrich2.base.constants` --- Constants used by Enrich2
+===============================================================
+
+.. py:module:: constants
+	:synopsis: Constant definitions
+
+This module contains constant defitions used throughout Enrich2.
+
+
 :py:mod:`~enrich2.base.storemanager` --- Abstract class for Enrich2 data
 ========================================================================
 
@@ -123,7 +132,7 @@ Configuration object type detection
 .. automodule:: enrich2.config.config_check
 	:members:
 
-.. automodule:: enrich2.config.config_types
+.. automodule:: enrich2.config.types
 	:members:
 
 Dataframe and index helper functions

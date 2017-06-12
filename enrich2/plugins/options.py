@@ -40,7 +40,7 @@ __all__ = [
     'BaseOption',
     'Option',
     'BaseOptions',
-    'Options'
+    'Options',
     'OptionsFile',
     'parse',
     'validate',
