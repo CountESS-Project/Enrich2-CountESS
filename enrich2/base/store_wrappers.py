@@ -114,7 +114,11 @@ class StoreInterface(ABC):
     @abstractclassmethod
     def flush(self):
         pass
-        
+
+    @abstractclassmethod
+    def ensure_has_key(self, key):
+        pass
+
 
 class HDFStore(StoreInterface):
     """
@@ -123,8 +127,10 @@ class HDFStore(StoreInterface):
     
     Parameters
     ----------
-    store : `~pandas.HDFStore`, default: `None`
-        A previously opened HDFStore or `None`.
+    path : `str`, default: ''
+        Path to a h5 file, either existing or not.
+    mode : `str`, default: 'a'
+        Mode to open file.
     chunksize : `int`
         Size to chunk the writing
     format : `str`, default: 'table'
@@ -151,14 +157,21 @@ class HDFStore(StoreInterface):
     
     """
 
-    def __init__(self, store=None, chunksize=10000, format='table'):
-        if store is not None and not isinstance(store, pd.HDFStore):
-            raise TypeError("Store must be a pandas HDFStore.")
+    def __init__(self, path='', mode='a', chunksize=10000, format='table'):
+        if not isinstance(path, str):
+            raise TypeError("`path` must be a string.")
+        if not isinstance(mode, str):
+            raise TypeError("`mode` must be a string.")
         if not isinstance(chunksize, int):
-            raise TypeError("Chunksize must be an int.")
-        self._store = store
+            raise TypeError("`chunksize` must be an int.")
+        if not isinstance(format, str):
+            raise TypeError("`format` must be an string.")
+
+        self._store = None
         self._chunksize = chunksize
         self._format = format
+        if path:
+            self.open(path, mode)
 
     @property
     def chunksize(self):
@@ -315,8 +328,11 @@ class HDFStore(StoreInterface):
             :py:class:`~pandas.io.pytables.TableIterator`
         """
         self.ensure_open()
+        self.ensure_has_key(key)
         if not isinstance(where, str):
-            TypeError("'where' must be a string.")
+            raise TypeError("'where' must be a string.")
+        if columns and not isinstance(columns, list):
+            raise TypeError("`columns` must be a list.")
 
         has_columns = False
         if where is not None:
@@ -329,16 +345,27 @@ class HDFStore(StoreInterface):
                              "'columns' to specify the columns to return and"
                              "'where' to specify selection criteria.")
 
-        return self._store.select(
+        result = self._store.select(
             key=key,
             where=where,
             columns=columns,
             chunksize=self.chunksize if chunk else None
         )
+        if not chunk and result.empty:
+            log_message(
+                logging_callback=logging.warning,
+                msg="`select_as_multiple` with the following attributes: "
+                    "key='{}', where='{}', columns='{}', chunk='{}' "
+                    "returned an empty DataFrame.".format(
+                        key, where, columns, chunk),
+                extra={'oname': self.__class__.__name__}
+            )
+        return result
 
     def select_column(self, key, column):
         """
-        Return a single column from the table.
+        Return a single column from the table. Will be a series with an
+        integer index.
 
         Parameters
         ----------
@@ -349,13 +376,25 @@ class HDFStore(StoreInterface):
         
         Returns
         -------
-        :py:class:`~pandas.DataFrame`
+        :py:class:`~pandas.Series`
         """
         self.ensure_open()
-        return self._store.select_column(
+        self.ensure_has_key(key)
+        if not isinstance(column, str):
+            raise TypeError("`column` must be a string.")
+        result = self._store.select_column(
             key=key,
             column=column
         )
+        if result.empty:
+            log_message(
+                logging_callback=logging.warning,
+                msg="`select_as_multiple` with the following attributes: "
+                    "key='{}', column='{}' returned an empty "
+                    "DataFrame.".format(key, column),
+                extra={'oname': self.__class__.__name__}
+            )
+        return result
 
     def select_as_multiple(self, keys, where=None,
                            columns=None, selector=None, chunk=False):
@@ -371,7 +410,8 @@ class HDFStore(StoreInterface):
             A predicate string.
         columns : `list`
             List of columns to keep in the returned pandas object.
-        selector : the table to apply the where criteria (defaults to keys[0]
+        selector : `str`
+            the table to apply the where criteria (defaults to keys[0]
             if not supplied)
         chunk : `bool`
             ``True`` to return an iterator of type 
@@ -384,13 +424,27 @@ class HDFStore(StoreInterface):
             :py:class:`~pandas.io.pytables.TableIterator`
         """
         self.ensure_open()
-        if not isinstance(where, str):
-            TypeError("'where' must be a string.")
+
+        keys = list(keys)
+        for key in keys:
+            self.ensure_has_key(key)
+
+        if where is not None and not isinstance(where, str):
+            raise TypeError("`where` must be a string.")
+        if columns is not None and not isinstance(columns, list):
+            raise TypeError("`columns` must be a list.")
+        if selector is not None and not isinstance(selector, str):
+            raise TypeError("`selector` must be a string.")
 
         has_columns = False
         if where is not None:
             has_columns = (where.find('columns=') >= 0) or \
                           (where.find('column=') >= 0)
+        if has_columns:
+            raise ValueError("Cannot use keyword 'column(s)' in 'where' when "
+                             "using select_as_multiple. Use 'columns' to "
+                             "specify the columns to return and "
+                             "'where' to specify selection criteria.")
         if has_columns and chunk:
             raise ValueError("Cannot select columns in 'where' and chunk "
                              "simultaneously. This is not supported "
@@ -398,13 +452,23 @@ class HDFStore(StoreInterface):
                              "'columns' to specify the columns to return and"
                              "'where' to specify selection criteria.")
 
-        return self._store.select_as_multiple(
+        result = self._store.select_as_multiple(
             keys=keys,
             where=where,
             columns=columns,
             selector=selector,
             chunksize=self.chunksize if chunk else None
         )
+        if not chunk and result.empty:
+            log_message(
+                logging_callback=logging.warning,
+                msg="`select_as_multiple` with the following attributes: "
+                    "keys='{}', where='{}', columns='{}', selector='{}', "
+                    "chunk='{}' returned an empty DataFrame.".format(
+                        keys, where, columns, selector, chunk),
+                extra={'oname': self.__class__.__name__}
+            )
+        return result
 
     def remove(self, key, where=None):
         """
@@ -423,6 +487,7 @@ class HDFStore(StoreInterface):
             Number of rows removed (or None if not a Table)
         """
         self.ensure_open()
+        self.ensure_has_key(key)
         return self._store.remove(key, where)
 
     def append(self, key, value, data_columns=None, min_itemsize=None):
@@ -453,6 +518,9 @@ class HDFStore(StoreInterface):
                     "duplicate entries.",
                 extra={'oname': self.__class__.__name__}
             )
+
+        min_itemsize = min_itemsize or max(len(x) for x in value.index)
+        data_columns = data_columns or True
         self._store.append(
             key=key,
             value=value,
@@ -526,6 +594,7 @@ class HDFStore(StoreInterface):
             DataFrame at *key*
         """
         self.ensure_open()
+        self.ensure_has_key(key)
         if not self.check(key):
             raise KeyError("Key '{}' not found in store.".format(key))
         else:
@@ -545,6 +614,7 @@ class HDFStore(StoreInterface):
         update : `bool`
             Dictionary update the metadata instead of replacing it.
         """
+        self.ensure_has_key(key)
         if not isinstance(data, dict):
             raise TypeError("Enrich2 metadata must be a `dict`.")
         if update:
@@ -571,6 +641,7 @@ class HDFStore(StoreInterface):
             The metadata stored.
         """
         self.ensure_open()
+        self.ensure_has_key(key)
         if not self.check(key):
             raise KeyError("Key '{}' does not exist in store.".format(key))
         return self._store.get_storer(key).attrs.metadata
@@ -592,6 +663,7 @@ class HDFStore(StoreInterface):
             ``True`` if stored metadata and supplied metadata are equal
             according to the `==` operator.
         """
+        self.ensure_has_key(key)
         if not isinstance(data, dict):
             raise TypeError("Metadata must be a dictionary.")
         this_metadata = self.get_metadata(key)
@@ -604,3 +676,16 @@ class HDFStore(StoreInterface):
         if not self.is_open():
             raise ValueError("Cannot perform store operation if no store has"
                              " been opened.")
+
+    def ensure_has_key(self, key):
+        """
+        Throws a KeyError if the key is not found in the store.
+
+        Parameters
+        ----------
+        key : `str`
+            String key pointing to a table in the store.
+        """
+        self.ensure_open()
+        if not self.check(key):
+            raise KeyError("Key '{}' not found in store.".format(key))
