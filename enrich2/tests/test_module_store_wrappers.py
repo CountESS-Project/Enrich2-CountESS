@@ -304,7 +304,7 @@ class TestHDFStore(TestCase):
         expected = pd.DataFrame({'score': [0.1, 0.2]}, index=['AAA', 'AAC'])
         self.assertTrue(result.equals(expected))
 
-    def test_select_using_wherecolumns(self):
+    def test_error_select_using_wherecolumns(self):
         self.path = os.path.join(self.data_dir, 'test.h5')
         data = pd.DataFrame(
             {'count': [1, 2, 3], 'score': [0.1, 0.2, 0.3]},
@@ -313,11 +313,9 @@ class TestHDFStore(TestCase):
         self.store = HDFStore(self.path, mode='w')
         self.store.put('/test_table', data)
 
-        result = self.store.select(
-            '/test_table', where='columns=["score"] & count<3'
-        )
-        expected = pd.DataFrame({'score': [0.1, 0.2]}, index=['AAA', 'AAC'])
-        self.assertTrue(result.equals(expected))
+        with self.assertRaises(ValueError):
+            self.store.select(
+                '/test_table', where='columns=["score"] & count<3')
 
     def test_select_with_chunks(self):
         self.path = os.path.join(self.data_dir, 'test.h5')

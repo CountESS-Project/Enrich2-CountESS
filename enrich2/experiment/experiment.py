@@ -338,8 +338,7 @@ class Experiment(StoreManager):
                     bcm.drop("value.drop", axis="columns", inplace=True)
         if bcm is not None:
             bcm.sort_values("value", inplace=True)
-            self.store.put("/main/barcodemap", bcm, format="table",
-                           data_columns=bcm.columns)
+            self.store.put(key="/main/barcodemap", value=bcm)
 
     def calc_counts(self, label):
         """
@@ -391,14 +390,16 @@ class Experiment(StoreManager):
         first = True
         for s in self.selection_list():
             if first:
-                combined = s.store.select("/main/{}/counts_unfiltered"
-                                          "".format(label),
-                                          "columns='index'").index
+                combined = s.store.select(
+                    key="/main/{}/counts_unfiltered".format(label),
+                    columns=['index']
+                ).index
                 first = False
             else:
                 combined = combined.join(s.store.select(
-                    "/main/{}/counts_unfiltered".format(label),
-                    "columns='index'").index, how="outer")
+                    key="/main/{}/counts_unfiltered".format(label),
+                    columns=['index']
+                ).index, how="outer")
 
         # create and fill the data frames
         log_message(
@@ -410,12 +411,13 @@ class Experiment(StoreManager):
         data = pd.DataFrame(index=combined, columns=columns)
         for cnd in self.children:
             for sel in cnd.children:
-                sel_data = sel.store.select("/main/{}/counts_unfiltered"
-                                            "".format(label))
+                sel_data = sel.store.select(
+                    "/main/{}/counts_unfiltered".format(label))
                 for tp in sel.timepoints:
                     data.loc[:][cnd.name, sel.name, "c_{}".format(tp)] = \
                         sel_data["c_{}".format(tp)]
-        self.store.put("/main/{}/counts".format(label), data, format="table")
+
+        self.store.put("/main/{}/counts".format(label), data)
 
     def calc_shared_full(self, label):
         """
@@ -470,14 +472,15 @@ class Experiment(StoreManager):
         for s in self.selection_list():
             if first:
                 combined = s.store.select(
-                    "/main/{}/scores".format(label),
-                    "columns='index'").index
+                    key="/main/{}/scores".format(label),
+                    columns=['index']
+                ).index
                 first = False
             else:
                 combined = combined.join(
                     s.store.select(
-                        "/main/{}/scores".format(label),
-                        "columns='index'"
+                        key="/main/{}/scores".format(label),
+                        columns=['index']
                     ).index,
                     how="outer"
                 )
@@ -495,8 +498,7 @@ class Experiment(StoreManager):
                 sel_data = sel.store.select("/main/{}/scores".format(label))
                 for v in values_list:
                     data.loc[:][cnd.name, sel.name, v] = sel_data[v]
-        self.store.put("/main/{}/scores_shared_full".format(label), data,
-                       format="table")
+        self.store.put("/main/{}/scores_shared_full".format(label), data)
 
     def calc_shared(self, label):
         """
@@ -523,10 +525,7 @@ class Experiment(StoreManager):
             extra={'oname': self.name}
         )
         data = self.store.select("/main/{}/scores_shared_full".format(label))
-        self.store.put(
-            "/main/{}/scores_shared".format(label),
-            data, format="table"
-        )
+        self.store.put("/main/{}/scores_shared".format(label), data)
 
     def calc_scores(self, label):
         """
@@ -554,7 +553,7 @@ class Experiment(StoreManager):
         # set up new data frame
         shared_index = self.store.select(
             key="/main/{}/scores_shared".format(label),
-            where="columns='index'"
+            columns=['index']
         ).index
 
         columns = pd.MultiIndex.from_product(
@@ -627,7 +626,7 @@ class Experiment(StoreManager):
         # store the data
         if data.empty:
             raise ValueError("All {} have a NaN score.".format(label))
-        self.store.put("/main/{}/scores".format(label), data, format="table")
+        self.store.put("/main/{}/scores".format(label), data)
 
     def calc_pvalues_wt(self, label):
         """
@@ -648,8 +647,10 @@ class Experiment(StoreManager):
 
         idx = pd.IndexSlice
 
-        wt = self.store.select("/main/{}/scores".format(label),
-                               "index=WILD_TYPE_VARIANT")
+        wt = self.store.select(
+            key="/main/{}/scores".format(label),
+            where="index='{}'".format(WILD_TYPE_VARIANT)
+        )
         if len(wt) == 0:    # no wild type score
             log_message(
                 logging_callback=logging.info,
@@ -658,8 +659,10 @@ class Experiment(StoreManager):
                 extra={'oname': self.name}
             )
             return
-        data = self.store.select("/main/{}/scores".format(label),
-                                 "index!=WILD_TYPE_VARIANT")
+        data = self.store.select(
+            key="/main/{}/scores".format(label),
+            where="index!='{}'".format(WILD_TYPE_VARIANT)
+        )
 
         columns = pd.MultiIndex.from_product(
             [sorted(self.child_names()), sorted(["z", "pvalue_raw"])],
@@ -677,8 +680,7 @@ class Experiment(StoreManager):
             result_df.loc[:, idx[cnd, 'pvalue_raw']] = \
                 2 * stats.norm.sf(result_df.loc[:, idx[cnd, 'z']])
 
-        self.store.put("/main/{}/scores_pvalues_wt".format(label), result_df,
-                       format="table")
+        self.store.put("/main/{}/scores_pvalues_wt".format(label), result_df)
 
     def calc_pvalues_pairwise(self, label):
         """
@@ -728,8 +730,7 @@ class Experiment(StoreManager):
                 result_df.loc[:, idx[cnd1, cnd2, 'pvalue_raw']] = \
                     2 * stats.norm.sf(result_df.loc[:, idx[cnd1, cnd2, 'z']])
 
-        self.store.put("/main/{}/scores_pvalues".format(label), result_df,
-                       format="table")
+        self.store.put("/main/{}/scores_pvalues".format(label), result_df)
 
     def write_tsv(self):
         """

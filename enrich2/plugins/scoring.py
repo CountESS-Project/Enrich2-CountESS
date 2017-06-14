@@ -164,12 +164,7 @@ class BaseScorerPlugin(ABC):
         --------
         :py:class:`pandas.HDFStore`
         """
-        if not self._store_manager.check_store(key):
-            raise ValueError("Store {} does not exist [{}]".format(
-                key, self.name
-            ))
-        else:
-            return self._store_manager.store[key]
+        return self._store_manager.store.get(key)
 
     def store_put(self, *args, **kwargs):
         """

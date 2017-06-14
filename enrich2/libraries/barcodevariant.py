@@ -136,7 +136,8 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
         # required for creating new objects in GUI
         if self.barcode_map is not None:
             cfg['barcodes']['map file'] = self.barcode_map.filename
-            cfg['barcodes']['map file md5'] = compute_md5(self.barcode_map.filename)
+            cfg['barcodes']['map file md5'] = compute_md5(
+                self.barcode_map.filename)
         return cfg
 
     def calculate(self):
@@ -146,7 +147,7 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
         :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
         """
         if not self.check_store("/main/variants/counts"):
-            BarcodeSeqLib.calculate(self) # count the barcodes
+            BarcodeSeqLib.calculate(self)  # count the barcodes
             df_dict = dict()
             barcode_variants = dict()
 
@@ -159,8 +160,8 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             # store mapped barcodes
             self.save_filtered_counts(
                 label='barcodes',
-                query="index in self.barcode_map.keys() & "
-                "count >= self.barcode_min_count"
+                query="index in {} & count >= {}".format(
+                    list(self.barcode_map.keys()), self.barcode_min_count)
             )
 
             # count variants associated with the barcodes
@@ -192,17 +193,12 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
 
             # write the active subset of the BarcodeMap to the store
             barcodes = list(barcode_variants.keys())
-            data = {'value' : [barcode_variants[bc] for bc in barcodes]}
+            data = {'value': [barcode_variants[bc] for bc in barcodes]}
             barcode_variants = pd.DataFrame(data, index=barcodes)
             del barcodes
 
             barcode_variants.sort_values('value', inplace=True)
-            self.store.put(
-                "/raw/barcodemap",
-                barcode_variants,
-                data_columns=barcode_variants.columns,
-                format="table"
-            )
+            self.store.put(key="/raw/barcodemap", value=barcode_variants)
             del barcode_variants
 
             if self.aligner is not None:
@@ -213,12 +209,12 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
                 )
                 self.aligner_cache = None
 
-            #self.report_filter_stats()
+            # self.report_filter_stats()
             log_message(
                 logging_callback=logging.info,
                 msg="Removed {} unique barcodes ({} total variants) with "
                     "excess mutations".format(
-                    max_mut_barcodes, max_mut_variants),
+                        max_mut_barcodes, max_mut_variants),
                 extra={'oname': self.name}
             )
             self.save_filter_stats()

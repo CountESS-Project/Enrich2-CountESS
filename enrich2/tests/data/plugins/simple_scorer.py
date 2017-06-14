@@ -18,7 +18,10 @@
 import logging
 import numpy as np
 import pandas as pd
+
 from enrich2.plugins.scoring import BaseScorerPlugin
+from enrich2.base.constants import GROUP_MAIN, COUNTS_TABLE, SCORES_TABLE
+from enrich2.base.utils import log_message
 
 
 class SimpleScorer(BaseScorerPlugin):
@@ -27,37 +30,36 @@ class SimpleScorer(BaseScorerPlugin):
     version = '1.0'
     author = 'Alan Rubin, Daniel Esposito'
 
-    def __init__(self, store_manager, options):
-        super().__init__(store_manager, options)
-
     def compute_scores(self):
         for label in self.store_labels():
             self.calc_simple_ratios(label)
-
-    def row_apply_function(self, *args, **kwargs):
-        pass
 
     def calc_simple_ratios(self, label):
         """
         Calculate simplified (original Enrich) ratios scores.
         This method does not produce standard errors.
         """
-        if self.store_check("/main/{}/scores".format(label)):
+        if self.store_check(
+                "/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE)):
             return
 
-        logging.info("Calculating simple ratios "
-                     "({})".format(label), extra={'oname' : self.name})
+        log_message(
+            logging_callback=logging.info,
+            msg="Calculating simple ratios ({})".format(label),
+            extra={'oname': self.name}
+        )
 
         c_last = 'c_{}'.format(self.store_timepoints()[-1])
         df = self.store_select(
-            "/main/{}/counts".format(label),
-            "columns in ['c_0', {}]".format(c_last))
+            key="/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE),
+            columns=['c_0', '{}'.format(c_last)]
+        )
 
         # perform operations on the numpy values of the
         # dataframe for easier broadcasting
         num = df[c_last].values.astype("float") / df[c_last].sum(axis="index")
         denom = df['c_0'].values.astype("float") / df['c_0'].sum(axis="index")
-        ratios =  num / denom
+        ratios = num / denom
 
         # make it a data frame again
         ratios = pd.DataFrame(data=ratios, index=df.index, columns=['ratio'])
@@ -66,8 +68,6 @@ class SimpleScorer(BaseScorerPlugin):
         ratios = ratios[['score', 'SE', 'ratio']]   # re-order columns
 
         self.store_put(
-            key="/main/{}/scores".format(label),
-            value=ratios,
-            format="table",
-            data_columns=ratios.columns
+            key="/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE),
+            value=ratios
         )

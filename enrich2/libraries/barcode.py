@@ -243,6 +243,6 @@ class BarcodeSeqLib(SeqLib):
         if len(self.labels) == 1:  # only barcodes
             self.save_filtered_counts(
                 label='barcodes',
-                query="count >= self.barcode_min_count"
+                query="count >= {}".format(self.barcode_min_count)
             )
             self.save_filter_stats()

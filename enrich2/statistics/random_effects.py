@@ -170,9 +170,9 @@ def rml_estimator(y, sigma2i, iterations=50):
             sw2_k = np.sum(w_k ** 2, axis=0)
             betaML_k = np.sum(y_k * w_k, axis=0) / sw_k
 
-            num = np.sum(((y_k - betaML_k) ** 2) * (w_k ** 2),axis=0)
+            num = np.sum(((y_k - betaML_k) ** 2) * (w_k ** 2), axis=0)
             denom = (sw_k - (sw2_k / sw_k))
-            sigma2ML_k_new = sigma2ML_k * num / denom
+            sigma2ML_k_new = sigma2ML_k * (num / denom)
             eps_k = np.abs(sigma2ML_k - sigma2ML_k_new)
             sigma2ML_k = sigma2ML_k_new
 

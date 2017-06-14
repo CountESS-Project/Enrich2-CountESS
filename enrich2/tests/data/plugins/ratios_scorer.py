@@ -18,9 +18,13 @@
 import logging
 import numpy as np
 import pandas as pd
+
 from enrich2.plugins.scoring import BaseScorerPlugin
 from enrich2.plugins.options import Options
 from enrich2.base.constants import WILD_TYPE_VARIANT
+from enrich2.base.utils import log_message
+from enrich2.base.constants import IDENTIFIERS, VARIANTS, COUNTS_UNFILTERED_TABLE
+from enrich2.base.constants import COUNTS_TABLE, GROUP_MAIN, SCORES_TABLE
 
 
 options = Options()
@@ -40,15 +44,9 @@ class RatiosScorer(BaseScorerPlugin):
     version = '1.0'
     author = 'Alan Rubin, Daniel Esposito'
 
-    def __init__(self, store_manager, options):
-        super().__init__(store_manager, options)
-
     def compute_scores(self):
         for label in self.store_labels():
             self.calc_ratios(label)
-
-    def row_apply_function(self, *args, **kwargs):
-        pass
 
     def calc_ratios(self, label):
         """
@@ -59,33 +57,36 @@ class RatiosScorer(BaseScorerPlugin):
             - complete
             - full
         """
-        if self.store_check("/main/{}/scores".format(label)):
+        if self.store_check(
+                "/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE)):
             return
 
-        logging.info(
-            "Calculating ratios ({})".format(label),
-            extra={'oname' : self.name}
+        log_message(
+            logging_callback=logging.info,
+            msg="Calculating ratios ({})".format(label),
+            extra={'oname': self.name}
         )
         c_last = 'c_{}'.format(self.store_timepoints()[-1])
         df = self.store_select(
-            "/main/{}/counts".format(label),
-            "columns in ['c_0', {}]".format(c_last)
+            key="/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE),
+            columns=['c_0', '{}'.format(c_last)]
         )
 
         if self.logr_method == "wt":
-            if "variants" in self.store_labels():
-                wt_label = "variants"
-            elif "identifiers" in self.store_labels():
-                wt_label = "identifiers"
+            if VARIANTS in self.store_labels():
+                wt_label = VARIANTS
+            elif IDENTIFIERS in self.store_labels():
+                wt_label = IDENTIFIERS
             else:
                 raise ValueError('Failed to use wild type log '
                                  'ratio method, suitable data '
                                  'table not present [{}]'.format(self.name))
 
             shared_counts = self.store_select(
-                "/main/{}/counts".format(wt_label),
-                "columns in ['c_0', {}] & index='{}'".format(
-                    c_last, WILD_TYPE_VARIANT))
+                key="/{}/{}/{}".format(GROUP_MAIN, wt_label, COUNTS_TABLE),
+                where='index={}'.format(WILD_TYPE_VARIANT),
+                columns=['c_0', '{}'.format(c_last)]
+            )
 
             # wild type not found
             if len(shared_counts) == 0:
@@ -97,14 +98,15 @@ class RatiosScorer(BaseScorerPlugin):
 
         elif self.logr_method == "complete":
             shared_counts = self.store_select(
-                "/main/{}/counts".format(label),
-                "columns in ['c_0', {}]".format(c_last)
+                key="/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE),
+                columns=['c_0', '{}'.format(c_last)]
             ).sum(axis="index").values + 0.5
 
         elif self.logr_method == "full":
             shared_counts = self.store_select(
-                "/main/{}/counts_unfiltered".format(label),
-                "columns in ['c_0', {}]".format(c_last)
+                key="/{}/{}/{}".format(
+                    GROUP_MAIN, label, COUNTS_UNFILTERED_TABLE),
+                columns=['c_0', '{}'.format(c_last)]
             ).sum(axis="index", skipna=True).values + 0.5
         else:
             raise ValueError('Invalid log ratio method "{}" '
@@ -125,8 +127,6 @@ class RatiosScorer(BaseScorerPlugin):
         # re-order columns
         ratios = ratios[['score', 'SE', 'logratio', 'variance']]
         self.store_put(
-            key="/main/{}/scores".format(label),
-            value=ratios,
-            format="table",
-            data_columns=ratios.columns
+            key="/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE),
+            value=ratios
         )

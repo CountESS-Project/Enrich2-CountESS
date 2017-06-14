@@ -49,7 +49,6 @@ from .edit_dialog import EditDialog, clear_nones
 from .seqlib_apply_dialog import SeqLibApplyDialog
 from ..config.config_check import is_selection, seqlib_type
 from ..config.config_check import is_seqlib, is_experiment
-from ..libraries.overlap import OverlapSeqLib
 from ..libraries.seqlib import SeqLib
 from ..experiment.experiment import Experiment
 from .options_frame import ScorerScriptsDropDown
@@ -358,11 +357,7 @@ class Configurator(tk.Tk):
             element.name = None
             element.timepoint = None
             element.counts_file = None
-            if isinstance(element, OverlapSeqLib):
-                element.forward = None
-                element.reverse = None
-            else:
-                element.reads = None
+            element.reads = None
         else:
             raise ValueError("Unrecognized parent object "
                              "type '{}'".format(type(parent_element)))

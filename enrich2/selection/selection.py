@@ -424,11 +424,12 @@ class Selection(StoreManager):
 
             for tp in self.timepoints:
                 c = self.libraries[tp][0].store.select(
-                    lib_table, "index = index_chunk"
+                    lib_table, "index={}".format(list(index_chunk))
                 )
                 for lib in self.libraries[tp][1:]:
                     c = c.add(lib.store.select(
-                        lib_table, "index = index_chunk"), fill_value=0
+                        lib_table, "index={}".format(list(index_chunk))),
+                        fill_value=0
                     )
                 c.columns = ["c_{}".format(tp)]
                 if tp == 0:
@@ -441,7 +442,7 @@ class Selection(StoreManager):
                 self.store.append(
                     "/main/{}/counts_unfiltered".format(label),
                     tp_frame.astype(float),
-                    min_itemsize={'index' : max_index_length},
+                    min_itemsize={'index': max_index_length},
                     data_columns=list(tp_frame.columns)
                 )
             else:
@@ -474,12 +475,7 @@ class Selection(StoreManager):
         else:
             df = self.store.select("/main/{}/counts_unfiltered".format(label))
         df.dropna(axis="index", how="any", inplace=True)
-        self.store.put(
-            "/main/{}/counts".format(label),
-            df.astype(float),
-            format="table",
-            data_columns=df.columns
-        )
+        self.store.put("/main/{}/counts".format(label), df.astype(float))
 
     def combine_barcode_maps(self):
         """
@@ -508,11 +504,7 @@ class Selection(StoreManager):
                 bcm.loc[new.index, 'value'] = new['value.drop']
                 bcm.drop("value.drop", axis="columns", inplace=True)
         bcm.sort_values("value", inplace=True)
-        self.store.put(
-            "/main/barcodemap", bcm,
-            format="table",
-            data_columns=bcm.columns
-        )
+        self.store.put("/main/barcodemap", bcm)
 
     def timepoint_indices_intersect(self):
         """
@@ -804,9 +796,9 @@ class Selection(StoreManager):
 
         # get the scores
         df1 = self.store.select(
-            "/main/{}/scores".format(label), "columns=['score', 'SE']")
+            "/main/{}/scores".format(label), columns=['score', 'SE'])
         df2 = self.store.select(
-            "/main/{}/scores".format(label2), "columns=['score', 'SE']")
+            "/main/{}/scores".format(label2), columns=['score', 'SE'])
 
         # pre-calculate variances
         df1['var'] = df1['SE'] ** 2
@@ -860,7 +852,4 @@ class Selection(StoreManager):
         result_df['z'] = result_df['z'].astype(float)
         result_df['pvalue_raw'] = result_df['pvalue_raw'].astype(float)
 
-        self.store.put(
-            "/main/{}/outliers".format(label), result_df,
-            format="table", data_columns=result_df.columns
-        )
+        self.store.put("/main/{}/outliers".format(label), result_df)

@@ -233,6 +233,6 @@ class BasicSeqLib(VariantSeqLib):
                 else:
                     self.counts_from_reads()
             self.save_filtered_counts(
-                'variants', "count >= self.variant_min_count"
+                'variants', "count >= {}".format(self.variant_min_count)
             )
         self.count_synonymous()

@@ -168,10 +168,10 @@ class BcidSeqLib(BarcodeSeqLib):
             # store mapped barcodes
             self.save_filtered_counts(
                 label="barcodes",
-                query="index in self.barcode_map.keys() & "
-                      "count >= self.barcode_min_count"
+                query="index in {} & count >= {}".format(
+                    list(self.barcode_map.keys()), self.barcode_min_count
+                )
             )
-
             # count identifiers associated with the barcodes
             for bc, count in self.store['/main/barcodes/counts'].iterrows():
                 count = count['count']
@@ -197,11 +197,10 @@ class BcidSeqLib(BarcodeSeqLib):
             del barcodes
             barcode_identifiers.sort_values('value', inplace=True)
             self.store.put(
-                "/raw/barcodemap",
-                barcode_identifiers,
-                data_columns=barcode_identifiers.columns,
-                format="table"
+                key="/raw/barcodemap",
+                value=barcode_identifiers
             )
             del barcode_identifiers
-            #self.report_filter_stats()
+
+            # self.report_filter_stats()
             self.save_filter_stats()

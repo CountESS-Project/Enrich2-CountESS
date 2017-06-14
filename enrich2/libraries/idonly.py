@@ -121,5 +121,5 @@ class IdOnlySeqLib(SeqLib):
                 self.counts_from_file(self.counts_file)
             else:
                 raise ValueError("Missing counts file [{}]".format(self.name))
-            self.save_filtered_counts('identifiers',
-                                      "count >= self.identifier_min_count")
+            self.save_filtered_counts(
+                'identifiers', "count >= {}".format(self.identifier_min_count))

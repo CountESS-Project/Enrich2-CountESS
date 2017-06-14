@@ -314,7 +314,7 @@ class SeqLib(StoreManager):
             key = "/raw/{}/counts".format(label)
         else:
             key = "/main/{}/counts".format(label)
-        self.store.put(key, df, format="table", data_columns=df.columns)
+        self.store.put(key, df)
         del df
 
     def save_filtered_counts(self, label, query):
@@ -402,8 +402,7 @@ class SeqLib(StoreManager):
                 df.loc[SeqLib.filter_messages[key], 'count'] = \
                     self.filter_stats[key]
         df.dropna(inplace=True)
-        self.store.put('/raw/filter', df.astype(int), format="table",
-                       data_columns=df.columns)
+        self.store.put('/raw/filter', df.astype(int))
 
     def read_quality_filter(self, fq):
         """
@@ -563,8 +562,7 @@ class SeqLib(StoreManager):
             for k in raw_keys:
                 # Copy the data table
                 raw = store[k]
-                self.store.put(
-                    k, raw, format="table", data_columns=raw.columns)
+                self.store.put(k, raw)
 
                 # Copy the metadata
                 self.set_metadata(
@@ -600,8 +598,7 @@ class SeqLib(StoreManager):
         if label is None:
             raise ValueError("No valid element labels [{}]".format(self.name))
         key = "/raw/{}/counts".format(label)
-        self.store.put(key, df, format="table", data_columns=df.columns,
-                       dtype=np.int32)
+        self.store.put(key, df.astype(np.int32))
 
     def counts_from_file(self, fname):
         """

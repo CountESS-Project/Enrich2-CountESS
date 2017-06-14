@@ -34,6 +34,7 @@ from .utils import nested_format
 from ..base.utils import fix_filename
 from .config_constants import SCORER, SCORER_PATH
 from ..base.constants import ELEMENT_LABELS
+from ..base.store_wrappers import HDFStore
 
 import logging
 from ..base.utils import log_message
@@ -78,7 +79,7 @@ class StoreManager(object):
         method, and modified by the ``serialize`` method.
     store_path : str
         The filepath to the store being managed by this instance.
-    store : :py:class:`pd.HDFStore`
+    store : :py:class:`enrich2.base.store_wrappers.HDFStore`
         The store being managed by this instance.
     chunksize: int
         Chunksize used when iterating and selecting rows/columns from an
@@ -546,7 +547,8 @@ class StoreManager(object):
             self.store_path = cfg.store_path
             log_message(
                 logging_callback=logging.info,
-                msg='Using specified HDF5 data store "{}"'.format(self.store_path),
+                msg='Using specified HDF5 data store "{}"'.format(
+                    self.store_path),
                 extra={'oname': self.name}
             )
         else:
@@ -626,7 +628,7 @@ class StoreManager(object):
             upon store opening.
         """
         if self.has_store:
-            if self.store is not None and self.store.is_open:
+            if self.store is not None and self.store.is_open():
                 raise ValueError("Store is still open.")
 
             if not self.store_cfg:
@@ -641,7 +643,7 @@ class StoreManager(object):
                 extra={'oname': self.name}
             )
             if os.path.exists(self.store_path):
-                store = pd.HDFStore(self.store_path)
+                store = HDFStore(self.store_path, mode='a')
                 for key in store.keys():
                     if not self.check_metadata(key, store):
                         force_delete = True
@@ -662,7 +664,6 @@ class StoreManager(object):
                             'store "{}".'.format(self.store_path),
                         extra={'oname': self.name}
                     )
-                store.flush()
                 store.close()
             else:
                 log_message(
@@ -673,8 +674,7 @@ class StoreManager(object):
                 )
 
             # Open the store and delete tables if required.
-            self.store = pd.HDFStore(self.store_path, mode='a')
-
+            self.store = HDFStore(self.store_path, mode='a')
             if self.force_recalculate:
                 if "/main" in self.store:
                     log_message(
@@ -697,30 +697,12 @@ class StoreManager(object):
                     msg="Deleting all tables: {}".format(tables),
                     extra={'oname': self.name}
                 )
-                self.clear_store(self.store)
+                self.store.clear()
 
         if children and self.children is not None:
             for child in self.children:
                 child.store_open(
                     children=True, force_delete=force_delete)
-
-    def clear_store(self, store):
-        """
-        Clear all tables in a store
-        
-        Parameters
-        ----------
-        store : :py:class:`~pd.HDFStore`, optional, default None
-            Store to be cleared
-        """
-        for key in store.keys():
-            log_message(
-                logging_callback=logging.info,
-                msg="Deleting existing table with key '{}'.".format(key),
-                extra={'oname': self.name}
-            )
-            store.remove(key)
-        store.flush()
 
     def store_close(self, children=False):
         """
@@ -740,13 +722,12 @@ class StoreManager(object):
             for child in self.children:
                 child.store_close(children=True)
  
-        if self.has_store and self.store is not None and self.store.is_open:
+        if self.has_store and self.store is not None and self.store.is_open():
             # Set the metadata. Resets if it already exists, but that should
             # be fine since if it already exists, then it should match.
             for key in self.store.keys():
                 self.set_metadata(key, self.metadata(), update=False)
-            self.store.flush()
-            self.store.close()
+            self.store.close(fsync=True)
             self.store = None
 
     def get_table(self, key):
@@ -786,7 +767,7 @@ class StoreManager(object):
         `bool` 
             True if the key exists in the HDF5 store, else False.
         """
-        if key in list(self.store.keys()):
+        if self.store.check(key):
             log_message(
                 logging_callback=logging.info,
                 msg="Found existing '{}'".format(key),
@@ -834,24 +815,24 @@ class StoreManager(object):
 
         # assumes the source tables all have the same index
         # find the min_itemsize
-        max_index_length = self.store.select_column(source[0],
-                                                    'index').map(
-            len).max()
-        for df in self.store.select_as_multiple(source, source_query,
-                                                chunksize=self.chunksize,
-                                                selector=source[0]):
+        max_index_length = self.store.select_column(
+            key=source[0], column='index').map(len).max()
+
+        selections = self.store.select_as_multiple(
+            keys=source, where=source_query, selector=source[0], chunk=True)
+        for df in selections:
             if row_callback is not None:
-                df = df.apply(row_callback, args=row_callback_args,
-                              axis="columns")
+                df = df.apply(
+                    row_callback, args=row_callback_args, axis="columns")
             if destination not in self.store:
                 if destination_data_columns is None:
                     # if not specified, index all columns
                     destination_data_columns = list(df.columns)
-                self.store.append(destination, df,
+                self.store.append(key=destination, value=df,
                                   min_itemsize={'index': max_index_length},
                                   data_columns=destination_data_columns)
             else:
-                self.store.append(destination, df)
+                self.store.append(key=destination, value=df)
 
     def combined_index(self, tables):
         """
@@ -977,7 +958,7 @@ class StoreManager(object):
         if store is None:
             store = self.store
         try:
-            metadata = store.get_storer(key).attrs['enrich2']
+            metadata = store.get_metadata(key)
         except AttributeError:
             # store parameter was None
             if store is self.store:  
@@ -989,7 +970,7 @@ class StoreManager(object):
                     "'{}' in '{}' [{}]".format(key, store.filename, self.name))
         except KeyError:
             # no enrich2 metadata
-            return None
+            return {}
         else:
             return metadata
 
@@ -999,27 +980,17 @@ class StoreManager(object):
        
         Parameters
         ----------
-        key : str
+        key : `str`
             The name of the group or node in the HDF5 data store.
-        d : dict
+        d : `dict`
             The dictionary containing the new metadata.
-        update : bool, default True
+        update : `bool`, default: True
             If *update* is ``False``, *d* completely replaces the existing 
             metadata for *key*. Otherwise, *d* updates the existing 
             metadata using standard dictionary update
-        
-        Returns
-        -------
-        None
         """
-        # get existing for update
-        # also performs check for the node, so we don't check here
-        metadata = self.get_metadata(key)
-        if metadata is None or not update:
-            metadata = d
-        else:
-            metadata.update(d)
-        self.store.get_storer(key).attrs['enrich2'] = metadata
+        if self.store is not None:
+            self.store.set_metadata(key, d, update)
 
     def calculate(self):
         """
