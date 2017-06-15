@@ -518,13 +518,26 @@ class Experiment(StoreManager):
         if self.check_store("/main/{}/scores_shared".format(label)):
             return
 
-        log_message(
-            logging_callback=logging.info,
-            msg="Identifying subset shared across all "
-                "Selections ({})".format(label),
-            extra={'oname': self.name}
-        )
+        # log_message(
+        #     logging_callback=logging.info,
+        #     msg="Identifying subset shared across all "
+        #         "Selections ({})".format(label),
+        #     extra={'oname': self.name}
+        # )
+        # data = self.store.select("/main/{}/scores_shared_full".format(label))
+
+        idx = pd.IndexSlice
         data = self.store.select("/main/{}/scores_shared_full".format(label))
+
+        # identify variants found in all selections in at least one condition
+        complete = np.full(len(data.index), False, dtype=bool)
+        for cnd in data.columns.levels[0]:
+            complete = np.logical_or(
+                complete,
+                data.loc[:, idx[cnd, :, :]].notnull().all(axis='columns')
+            )
+
+        data = data.loc[complete]
         self.store.put("/main/{}/scores_shared".format(label), data)
 
     def calc_scores(self, label):
@@ -593,12 +606,8 @@ class Experiment(StoreManager):
 
                 # multiple replicates
                 else:
-                    log_message(
-                        logging_callback=logging.info,
-                        msg="Line 611",
-                        extra={'oname': self.name}
-                    )
-                    betaML, sigma2ML, eps, reps = rml_estimator(y, sigma2i)
+                    from ..statistics.random_effects import old_rml_estimator
+                    betaML, sigma2ML, eps, reps = old_rml_estimator(y, sigma2i)
                     data.loc[:, idx[cnd, 'score']] = betaML
                     data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2ML)
                     data.loc[:, idx[cnd, 'epsilon']] = eps
@@ -615,13 +624,13 @@ class Experiment(StoreManager):
 
             # identify variants found in all selections in at least
             # one condition
-            complete = np.full(len(data.index), False, dtype=bool)
-            for cnd in data.columns.levels[0]:
-                complete = np.logical_or(
-                    complete,
-                    data.loc[:, idx[cnd, :]].notnull().all(axis='columns')
-                )
-            data = data.loc[complete]
+            # complete = np.full(len(data.index), False, dtype=bool)
+            # for cnd in data.columns.levels[0]:
+            #     complete = np.logical_or(
+            #         complete,
+            #         data.loc[:, idx[cnd, :]].notnull().all(axis='columns')
+            #     )
+            # data = data.loc[complete]
 
         # store the data
         if data.empty:
