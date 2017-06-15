@@ -33,7 +33,8 @@ __all__ = [
     "nan_filter_generator",
 ]
 
-def __old_rml_estimator(y, sigma2i, iterations=50):
+
+def old_rml_estimator(y, sigma2i, iterations=50):
     """
     Implementation of the robust maximum likelihood estimator.
 
@@ -76,7 +77,7 @@ def __old_rml_estimator(y, sigma2i, iterations=50):
                                          axis=0) / (sw - (sw2 / sw))
         eps = np.abs(sigma2ML - sigma2ML_new)
         sigma2ML = sigma2ML_new
-    return betaML, sigma2ML, eps
+    return betaML, sigma2ML, eps, None
 
 
 def nan_filter_generator(data):
@@ -155,6 +156,10 @@ def rml_estimator(y, sigma2i, iterations=50):
             lambda col: col[~np.isnan(col)], 0, y[:, selector])
         sigma2i_k = np.apply_along_axis(
             lambda col: col[~np.isnan(col)], 0, sigma2i[:, selector])
+
+        print(k)
+        print(y_k)
+        print(sigma2i_k)
 
         # Main alogrithm on the formatted data
         w_k = 1 / sigma2i_k

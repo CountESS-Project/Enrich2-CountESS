@@ -150,21 +150,28 @@ class Aligner(object):
         self.seq2 = None
         self.calls = 0
 
-        global _AMBIVERT
-        if backend == 'ambivert' and _AMBIVERT:
-            self.align = self.align_ambivert
-            log_message(
-                logging_callback=logging.info,
-                msg="Using ambivert alignment backend.",
-                extra={'oname': 'Aligner'}
-            )
-        else:
-            self.align = self.align_enrich2
-            log_message(
-                logging_callback=logging.info,
-                msg="Using enrich2 alignment backend.",
-                extra={'oname': 'Aligner'}
-            )
+        # global _AMBIVERT
+        # if backend == 'ambivert' and _AMBIVERT:
+        #     self.align = self.align_ambivert
+        #     log_message(
+        #         logging_callback=logging.info,
+        #         msg="Using ambivert alignment backend.",
+        #         extra={'oname': 'Aligner'}
+        #     )
+        # else:
+        #     self.align = self.align_enrich2
+        #     log_message(
+        #         logging_callback=logging.info,
+        #         msg="Using enrich2 alignment backend.",
+        #         extra={'oname': 'Aligner'}
+        #     )
+
+        self.align = self.align_enrich2
+        log_message(
+            logging_callback=logging.info,
+            msg="Using enrich2 alignment backend.",
+            extra={'oname': 'Aligner'}
+        )
 
     def align_ambivert(self, seq1, seq2):
         """
@@ -270,11 +277,11 @@ class Aligner(object):
                 insert = (self.matrix[i, j - 1]['score'] +
                           self.similarity['gap_open'], Aligner._INS)
 
-                traces = [delete, insert, match]
-                max_score = max(delete, insert, match, key=lambda x: x[0])[0]
-                possible_traces = [t for t in traces if t[0] == max_score]
-                priority_move = sorted(possible_traces, key=lambda x: x[1])[0]
-                self.matrix[i, j] = priority_move
+                # traces = [delete, insert, match]
+                # max_score = max(delete, insert, match, key=lambda x: x[0])[0]
+                # possible_traces = [t for t in traces if t[0] == max_score]
+                # priority_move = sorted(possible_traces, key=lambda x: x[1])[0]
+                # self.matrix[i, j] = priority_move
 
                 # def dotype(lol):
                 #     if lol == self._MAT:
@@ -288,8 +295,8 @@ class Aligner(object):
                 # print("Possible Tracebacks: {}".format([dotype(t[1]) for t in possible_traces]))
                 # print("Chosen Traceback: {}".format(dotype(priority_move[1])))
 
-                # max_score = max(delete, insert, match, key=lambda x: x[0])
-                # self.matrix[i, j] = max_score
+                max_score = max(delete, insert, match, key=lambda x: x[0])
+                self.matrix[i, j] = max_score
 
         self.matrix[0, 0] = (0, Aligner._END)
 
