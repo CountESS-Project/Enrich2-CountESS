@@ -26,7 +26,7 @@ from io import StringIO
 loader = unittest.TestLoader()
 tests = loader.discover(
     start_dir='./',
-    pattern="test_experiment_*.py"
+    pattern="test_experiment_barcode_lib.py"
 )
 test_runner = unittest.TextTestRunner()
 test_runner.run(tests)

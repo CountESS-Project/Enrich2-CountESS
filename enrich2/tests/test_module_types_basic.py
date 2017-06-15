@@ -17,11 +17,11 @@
 
 
 import sys
-import shutil
-import json
+import os
 from unittest import TestCase
 
 from ..config.types import *
+from ..base.config_constants import *
 
 
 # -------------------------------------------------------------------------- #
@@ -545,10 +545,10 @@ class WildTypeConfigTest(TestCase):
         wt_cfg = WildTypeConfiguration(cfg).validate()
         self.assertEqual(wt_cfg.reference_offset, 2)
 
-    def test_ignore_ref_offset_not_multiple_of_three_coding(self):
+    def test_error_ref_offset_not_multiple_of_three_coding(self):
         cfg = {SEQUENCE: "AAA", REF_OFFSET: 2, CODING: True}
-        wt_cfg = WildTypeConfiguration(cfg).validate()
-        self.assertEqual(wt_cfg.reference_offset, 0)
+        with self.assertRaises(ValueError):
+            WildTypeConfiguration(cfg).validate()
 
     def test_error_sequence_not_str(self):
         cfg = {SEQUENCE: b'AAA'}

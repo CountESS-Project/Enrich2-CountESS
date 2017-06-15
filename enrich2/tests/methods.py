@@ -209,7 +209,7 @@ def test_main_variants_scores_shared_full(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_variants_scores_shared(self):
@@ -223,7 +223,7 @@ def test_main_variants_scores_shared(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_variants_scores_pvalues_wt(self):
@@ -237,7 +237,7 @@ def test_main_variants_scores_pvalues_wt(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_variants_scores(self):
@@ -251,7 +251,7 @@ def test_main_variants_scores(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_variants_weights(self):
@@ -265,7 +265,7 @@ def test_main_variants_weights(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_variants_log_ratios(self):
@@ -279,7 +279,7 @@ def test_main_variants_log_ratios(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_variants_counts(self):
@@ -293,7 +293,7 @@ def test_main_variants_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_variants_counts_unfiltered(self):
@@ -307,7 +307,7 @@ def test_main_variants_counts_unfiltered(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_raw_variants_counts(self):
@@ -318,10 +318,11 @@ def test_raw_variants_counts(self):
     expected = dispatch_loader(
         fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
+
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 # -------------------------------------------------------------------------- #
@@ -340,7 +341,7 @@ def test_main_synonymous_scores_shared_full(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_synonymous_scores_shared(self):
@@ -354,7 +355,7 @@ def test_main_synonymous_scores_shared(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_synonymous_scores_pvalues_wt(self):
@@ -368,7 +369,7 @@ def test_main_synonymous_scores_pvalues_wt(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_synonymous_scores(self):
@@ -382,7 +383,7 @@ def test_main_synonymous_scores(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_synonymous_weights(self):
@@ -396,7 +397,7 @@ def test_main_synonymous_weights(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_synonymous_log_ratios(self):
@@ -410,7 +411,7 @@ def test_main_synonymous_log_ratios(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_synonymous_counts(self):
@@ -424,7 +425,7 @@ def test_main_synonymous_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_synonymous_counts_unfiltered(self):
@@ -438,7 +439,7 @@ def test_main_synonymous_counts_unfiltered(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_raw_synonymous_counts(self):
@@ -452,7 +453,7 @@ def test_raw_synonymous_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 # -------------------------------------------------------------------------- #
@@ -471,7 +472,7 @@ def test_main_barcodes_scores_shared_full(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_barcodes_scores_shared(self):
@@ -485,7 +486,7 @@ def test_main_barcodes_scores_shared(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_barcodes_scores_pvalues_wt(self):
@@ -499,7 +500,7 @@ def test_main_barcodes_scores_pvalues_wt(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_barcodes_scores(self):
@@ -510,10 +511,11 @@ def test_main_barcodes_scores(self):
     expected = dispatch_loader(
         fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
+
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_barcodes_weights(self):
@@ -527,7 +529,7 @@ def test_main_barcodes_weights(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_barcodes_log_ratios(self):
@@ -541,7 +543,7 @@ def test_main_barcodes_log_ratios(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_barcodes_counts(self):
@@ -594,6 +596,7 @@ def test_main_barcodemap(self):
     expected = dispatch_loader(
         fname, self.result_dir, self.file_sep)
     result = self.obj.store[key]
+
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
@@ -606,8 +609,9 @@ def test_raw_barcodemap(self):
     fname = "{}_{}.{}".format(
         self.file_prefix, file_suffix, self.file_ext)
     expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep)
-    result = self.obj.store[key]
+        fname, self.result_dir, self.file_sep).astype(str)
+    result = self.obj.store[key].astype(str)
+
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
@@ -630,7 +634,7 @@ def test_main_identifiers_scores_shared_full(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_identifiers_scores_shared(self):
@@ -644,7 +648,7 @@ def test_main_identifiers_scores_shared(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_identifiers_scores_pvalues_wt(self):
@@ -658,7 +662,7 @@ def test_main_identifiers_scores_pvalues_wt(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_identifiers_scores(self):
@@ -672,7 +676,7 @@ def test_main_identifiers_scores(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_identifiers_weights(self):
@@ -686,7 +690,7 @@ def test_main_identifiers_weights(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_identifiers_log_ratios(self):
@@ -700,7 +704,7 @@ def test_main_identifiers_log_ratios(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_identifiers_counts(self):
@@ -714,7 +718,7 @@ def test_main_identifiers_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_main_identifiers_counts_unfiltered(self):
@@ -728,7 +732,7 @@ def test_main_identifiers_counts_unfiltered(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 def test_raw_identifiers_counts(self):
@@ -742,7 +746,7 @@ def test_raw_identifiers_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(np.isclose(expected, result, equal_nan=True).all())
+    self.assertTrue(result.equals(expected))
 
 
 # -------------------------------------------------------------------------- #
@@ -756,8 +760,9 @@ def test_raw_filter(self):
     fname = "{}_{}.{}".format(
         self.file_prefix, file_suffix, self.file_ext)
     expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep)
-    result = self.obj.store[key]
+        fname, self.result_dir, self.file_sep).astype(np.int32)
+    result = self.obj.store[key].astype(np.int32)
+
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))

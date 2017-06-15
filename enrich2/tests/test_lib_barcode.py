@@ -64,6 +64,7 @@ class TestBarcodeSeqLibCountsIntegratedFilters(unittest.TestCase):
     def test_all_hdf5_dataframes(self):
         self.test_component.runTest()
 
+
 # -------------------------------------------------------------------------- #
 #
 #                   BARCODE MINCOUNT COUNT TESTING
@@ -282,10 +283,8 @@ class TestBarcodeSeqLibWithTrimLenSetting(unittest.TestCase):
             save=False, verbose=False)
         self.test_component.setUp()
 
-
     def tearDown(self):
         self.test_component.tearDown()
-
 
     def test_all_hdf5_dataframes(self):
         self.test_component.runTest()

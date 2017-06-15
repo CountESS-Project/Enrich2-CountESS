@@ -18,6 +18,7 @@
 import unittest
 
 from ..config.types import *
+from ..config.config_check import element_type
 
 
 class TestConfigTypesModule(unittest.TestCase):

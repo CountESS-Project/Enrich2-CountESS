@@ -167,6 +167,8 @@ def seqlib_type(cfg):
                 raise ValueError("Unable to determine SeqLib type.")
         else:
             return "BarcodeSeqLib"
+    elif VARIANTS in cfg and OVERLAP in cfg:
+        raise ValueError("OverlapSeqLib no longer supported.")
     elif VARIANTS in cfg:
         return "BasicSeqLib"
     elif IDENTIFIERS in cfg:

@@ -59,7 +59,7 @@ class TestBasicSeqLibCountsIntegrated(unittest.TestCase):
         cfg['variants']['wild type']['sequence'] = "TTT"
 
         # Set Variant parameters
-        cfg['variants']['wild type']['reference offset'] = 5
+        cfg['variants']['wild type']['reference offset'] = 3
         cfg['variants']['min counts'] = 2
         cfg['variants']['max mutations'] = 1
         cfg['variants']['use aligner'] = True
@@ -78,8 +78,7 @@ class TestBasicSeqLibCountsIntegrated(unittest.TestCase):
     
     def tearDown(self):
         self.test_component.tearDown()
-    
-    
+
     def test_all_hdf5_dataframes(self):
         self.test_component.runTest()
 
@@ -303,6 +302,7 @@ class TestBasicSeqLibCountsWithMinQualFQFilter(unittest.TestCase):
     def test_all_hdf5_dataframes(self):
         self.test_component.runTest()
 
+
 # -------------------------------------------------------------------------- #
 #
 #                    FASTQ AVG QUAL FILTER COUNT TESTING
@@ -446,38 +446,6 @@ class TestBasicSeqLibCountsWithRefOffset(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
         cfg['variants']['wild type']['reference offset'] = 6
-
-        self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP,
-            save=False,
-            verbose=False
-        )
-        self.test_component.setUp()
-
-    def tearDown(self):
-        self.test_component.tearDown()
-
-    def test_all_hdf5_dataframes(self):
-        self.test_component.runTest()
-
-# -------------------------------------------------------------------------- #
-#
-#                    VARIANT WT-OFFSET COUNT TESTING
-#
-# -------------------------------------------------------------------------- #
-class TestBasicSeqLibCountsWithRefOffsetNotMultipleOfThree(unittest.TestCase):
-    
-    def setUp(self):
-        prefix = 'reference_offset_not_multiple'
-        cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq'][
-            'reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['variants']['wild type']['reference offset'] = 5
 
         self.test_component = HDF5TestComponent(
             store_constructor=BasicSeqLib,

@@ -103,40 +103,40 @@ class TestWildTypeModule(unittest.TestCase):
         cfg = make_cfg("1234ACa")
         wt = WildTypeSequence("Test")
         with self.assertRaises(ValueError):
-             wt.configure(cfg)
+            wt.configure(cfg)
         cfg = make_cfg("GATTAC^&")
         wt = WildTypeSequence("Test")
         with self.assertRaises(ValueError):
-             wt.configure(cfg)
+            wt.configure(cfg)
 
     def test_error_when_coding_but_seqlen_not_multiple_of_three(self):
         cfg = make_cfg("GATTACA", coding=True)
         wt = WildTypeSequence("Test")
         with self.assertRaises(ValueError):
-             wt.configure(cfg)
+            wt.configure(cfg)
 
-    def test_ignore_protein_offset_when_coding_but_not_multiple_of_three(self):
+    def test_error_protein_offset_when_coding_but_not_multiple_of_three(self):
         cfg = make_cfg("AAAAAA", offset=1, coding=True)
         wt = WildTypeSequence("Test")
-        wt.configure(cfg)
-        self.assertEquals(wt.protein_offset, 0)
+        with self.assertRaises(ValueError):
+            wt.configure(cfg)
 
     def test_error_invalid_offset_not_a_number(self):
         cfg = make_cfg("AAAAAA", offset='a')
         wt = WildTypeSequence("Test")
         with self.assertRaises(TypeError):
-             wt.configure(cfg)
+            wt.configure(cfg)
 
         cfg = make_cfg("AAAAAA", offset=None)
         wt = WildTypeSequence("Test")
         with self.assertRaises(TypeError):
-             wt.configure(cfg)
+            wt.configure(cfg)
 
     def test_error_invalid_offset_negative(self):
         cfg = make_cfg("AAAAAA", offset=-1)
         wt = WildTypeSequence("Test")
         with self.assertRaises(ValueError):
-             wt.configure(cfg)
+            wt.configure(cfg)
 
     def test_correct_dna_offset_loads_when_coding(self):
         cfg = make_cfg("AAAAAA", offset=3, coding=True)
@@ -201,7 +201,7 @@ class TestWildTypeModule(unittest.TestCase):
         wt = WildTypeSequence("Test")
         wt.configure(cfg)
         with self.assertRaises(AttributeError):
-            wt.position_tuples(protein =True)
+            wt.position_tuples(protein=True)
 
 
 if __name__ == "__main__":

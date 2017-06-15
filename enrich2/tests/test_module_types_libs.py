@@ -16,12 +16,14 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import os
 import sys
 import shutil
 import json
 from unittest import TestCase
 
 from ..config.types import *
+from ..base.config_constants import *
 
 
 # -------------------------------------------------------------------------- #

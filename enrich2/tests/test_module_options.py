@@ -778,17 +778,17 @@ class TestOptionsFile(TestCase):
 
     def setUp(self):
         from io import StringIO
-        json_full = '{"scorer": {"scorer_options": {"weighted": true}}}'
-        json_inner = '{"scorer_options": {"weighted": true}}'
-        json_bad_1 = '{"badkey": {"scorer_options": {"weighted": true}}}'
+        json_full = '{"scorer": {"scorer options": {"weighted": true}}}'
+        json_inner = '{"scorer options": {"weighted": true}}'
+        json_bad_1 = '{"badkey": {"scorer options": {"weighted": true}}}'
         json_bad_2 = '{"scorer": {"badkey": {"weighted": true}}}'
-        json_empty = '{"scorer": {"scorer_options": {}}}'
+        json_bad_type = '{"scorer": {"scorer options": []}}'
 
         self.good_file_full = StringIO(json_full)
         self.good_file_inner = StringIO(json_inner)
         self.file_bad_full = StringIO(json_bad_1)
         self.file_bad_inner = StringIO(json_bad_2)
-        self.file_empty = StringIO(json_empty)
+        self.file_bad_type = StringIO(json_bad_type)
 
         self.json_opt_file = OptionsFile.default_json_options_file()
 
@@ -797,7 +797,7 @@ class TestOptionsFile(TestCase):
         self.good_file_inner.close()
         self.file_bad_full.close()
         self.file_bad_inner.close()
-        self.file_empty.close()
+        self.file_bad_type.close()
 
     def test_options_file(self):
         expected = {'weighted': True}
@@ -813,6 +813,6 @@ class TestOptionsFile(TestCase):
         with self.assertRaises(ValueError):
             self.json_opt_file.parse_to_dict(self.file_bad_inner)
 
-        with self.assertRaises(ValueError):
-            result = self.json_opt_file.parse_to_dict(self.file_empty)
+        with self.assertRaises(TypeError):
+            result = self.json_opt_file.parse_to_dict(self.file_bad_type)
             self.json_opt_file.validate_cfg(result)

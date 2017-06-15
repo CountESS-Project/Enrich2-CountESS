@@ -21,6 +21,7 @@ from functools import reduce
 
 from ..config.config_check import *
 
+
 def get_from_nested_dict(dictionary, map_list):
     return reduce(operator.getitem, map_list, dictionary)
 

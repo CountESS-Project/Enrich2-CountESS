@@ -693,7 +693,7 @@ class WildTypeConfiguration(Configuration):
 
         if SEQUENCE not in cfg:
             raise KeyError("Missing '{}' from base library "
-                             "configuration.".format(SEQUENCE))
+                           "configuration.".format(SEQUENCE))
 
         self.coding = cfg.get(CODING, False)
         self.reference_offset = cfg.get(REF_OFFSET, 0)
