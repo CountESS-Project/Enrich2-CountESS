@@ -30,6 +30,7 @@ from queue import Queue
 import hashlib
 import os
 import logging
+import traceback
 
 from .config_constants import BARCODE_MAP_FILE, READS, COUNTS_FILE, SCORER_PATH
 from ..base.constants import CALLBACK, MESSAGE, KWARGS
@@ -92,20 +93,28 @@ def log_message(logging_callback, msg, **kwargs):
     ----------
     logging_callback : `Callable`
         The logging function to use from the logging module.
-    msg : `str`
+    msg : `str` or `Exception`
         The message to log.
     kwargs : `dict`
         Keyword arguments for logging module.
     """
     log = {CALLBACK: logging_callback, MESSAGE: msg, KWARGS: kwargs}
-    # if 'extra' in kwargs:
-    #     if 'oname' not in kwargs:
-    #         kwargs['oname'] = 'OnameNotSupplied'
     queue = get_logging_queue(init=False)
     if queue is None:
         logging_callback(msg, **kwargs)
+        if isinstance(msg, Exception):
+            tb = msg.__traceback__
+            logging.exception(''.join(traceback.format_tb(tb)), **kwargs)
     else:
         queue.put(log)
+        if isinstance(msg, Exception):
+            tb = msg.__traceback__
+            error = {
+                CALLBACK: logging.exception,
+                MESSAGE: ''.join(traceback.format_tb(tb)),
+                KWARGS: kwargs
+            }
+            queue.put(error)
 
 
 def nested_format(data, default, tab_level=1):

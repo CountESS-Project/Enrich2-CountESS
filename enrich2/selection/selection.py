@@ -292,13 +292,11 @@ class Selection(StoreManager):
         """
         cfg = StoreManager.serialize(self)
         cfg[LIBRARIES] = [child.serialize() for child in self.children]
-        if self.get_root() is self \
-                and self.get_root().scorer_class is not None:
-            cfg[SCORER] = {
-                SCORER_PATH: self.get_root().scorer_path,
-                SCORER_OPTIONS: self.get_root().scorer_class_attrs,
-                SCORER_PATH + " md5": compute_md5(self.get_root().scorer_path)
-            }
+        cfg[SCORER] = {
+            SCORER_PATH: self.get_root().scorer_path,
+            SCORER_OPTIONS: self.get_root().scorer_class_attrs,
+            SCORER_PATH + " md5": compute_md5(self.get_root().scorer_path)
+        }
         return cfg
 
     def add_child(self, child):
@@ -424,11 +422,15 @@ class Selection(StoreManager):
 
             for tp in self.timepoints:
                 c = self.libraries[tp][0].store.select(
-                    lib_table, "index={}".format(list(index_chunk))
+                    key=lib_table,
+                    where="index={}".format(list(index_chunk))
                 )
                 for lib in self.libraries[tp][1:]:
-                    c = c.add(lib.store.select(
-                        lib_table, "index={}".format(list(index_chunk))),
+                    c = c.add(
+                        lib.store.select(
+                            key=lib_table,
+                            where="index={}".format(list(index_chunk))
+                        ),
                         fill_value=0
                     )
                 c.columns = ["c_{}".format(tp)]
@@ -440,15 +442,15 @@ class Selection(StoreManager):
             # save the unfiltered counts
             if "/main/{}/counts_unfiltered".format(label) not in self.store:
                 self.store.append(
-                    "/main/{}/counts_unfiltered".format(label),
-                    tp_frame.astype(float),
+                    key="/main/{}/counts_unfiltered".format(label),
+                    value=tp_frame.astype(float),
                     min_itemsize={'index': max_index_length},
                     data_columns=list(tp_frame.columns)
                 )
             else:
                 self.store.append(
-                    "/main/{}/counts_unfiltered".format(label),
-                    tp_frame.astype(float)
+                    key="/main/{}/counts_unfiltered".format(label),
+                    value=tp_frame.astype(float)
                 )
 
     def filter_counts(self, label):
@@ -466,7 +468,7 @@ class Selection(StoreManager):
         valid_type = (self.is_barcodeid() or self.is_barcodevariant())
         if valid_type and label != 'barcodes':
             # calculate proper combined counts
-            # df = self.store.select("/main/barcodes/counts")
+            # df = self.store._store.select("/main/barcodes/counts")
             # this should exist because of the order of label calculations
             # redo the barcode->variant/id mapping with the filtered counts
             # NOT YET IMPLEMENTED
@@ -475,7 +477,11 @@ class Selection(StoreManager):
         else:
             df = self.store.select("/main/{}/counts_unfiltered".format(label))
         df.dropna(axis="index", how="any", inplace=True)
-        self.store.put("/main/{}/counts".format(label), df.astype(float))
+        self.store.put(
+            "/main/{}/counts".format(label),
+            df.astype(float),
+            data_columns=df.columns
+        )
 
     def combine_barcode_maps(self):
         """
@@ -498,13 +504,16 @@ class Selection(StoreManager):
             if bcm is None:
                 bcm = lib.store['/raw/barcodemap']
             else:
-                bcm = bcm.join(lib.store['/raw/barcodemap'],
-                               rsuffix=".drop", how="outer")
+                bcm = bcm.join(
+                    lib.store['/raw/barcodemap'], rsuffix=".drop", how="outer")
                 new = bcm.loc[pd.isnull(bcm)['value']]
                 bcm.loc[new.index, 'value'] = new['value.drop']
                 bcm.drop("value.drop", axis="columns", inplace=True)
         bcm.sort_values("value", inplace=True)
-        self.store.put("/main/barcodemap", bcm)
+        self.store.put(
+            key="/main/barcodemap", value=bcm,
+            data_columns=bcm.columns
+        )
 
     def timepoint_indices_intersect(self):
         """
@@ -560,7 +569,7 @@ class Selection(StoreManager):
         Parameters
         ----------
         key : `str`
-            string key used to index a :py:class:`pd.HDFStore` store.
+            string key used to index a :py:class:`pd.HDFStore` store._store.
 
         Returns
         -------
@@ -602,12 +611,12 @@ class Selection(StoreManager):
 
     def table_exists_for_key(self, key):
         """
-        Checks to see if a table exists in a hdf5 store.
+        Checks to see if a table exists in a hdf5 store._store.
 
         Parameters
         ----------
         key : `str` 
-            String key used to index a :py:class:`pd.HDFStore` store.
+            String key used to index a :py:class:`pd.HDFStore` store._store.
 
         Returns
         -------
@@ -708,7 +717,7 @@ class Selection(StoreManager):
         mapping = dict()
         try:
             variants = self.store.select_column(
-                "/main/variants/counts", "index"
+                key="/main/variants/counts", column="index"
             )
         except KeyError:
             raise KeyError(
@@ -852,4 +861,7 @@ class Selection(StoreManager):
         result_df['z'] = result_df['z'].astype(float)
         result_df['pvalue_raw'] = result_df['pvalue_raw'].astype(float)
 
-        self.store.put("/main/{}/outliers".format(label), result_df)
+        self.store.put(
+            key="/main/{}/outliers".format(label), value=result_df,
+            data_columns=result_df.columns
+        )

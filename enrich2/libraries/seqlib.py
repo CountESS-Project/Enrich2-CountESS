@@ -35,6 +35,7 @@ import pandas as pd
 from ..base.storemanager import StoreManager
 from ..base.utils import fix_filename, compute_md5, log_message
 from ..base.constants import ELEMENT_LABELS
+from ..base.store_wrappers import HDFStore
 
 
 __all__ = [
@@ -314,7 +315,7 @@ class SeqLib(StoreManager):
             key = "/raw/{}/counts".format(label)
         else:
             key = "/main/{}/counts".format(label)
-        self.store.put(key, df)
+        self.store.put(key, df, data_columns=df.columns)
         del df
 
     def save_filtered_counts(self, label, query):
@@ -402,7 +403,7 @@ class SeqLib(StoreManager):
                 df.loc[SeqLib.filter_messages[key], 'count'] = \
                     self.filter_stats[key]
         df.dropna(inplace=True)
-        self.store.put('/raw/filter', df.astype(int))
+        self.store.put('/raw/filter', df.astype(int), data_columns=df.columns)
 
     def read_quality_filter(self, fq):
         """
@@ -517,13 +518,17 @@ class SeqLib(StoreManager):
     # ---------------------------------------------------------------------- #
     #                           File I/O
     # ---------------------------------------------------------------------- #
-    def write_tsv(self):
+    def write_tsv(self, **kwargs):
         """
         Write each table from the store to its own tab-separated file.
 
         Files are written to a ``tsv`` directory in the default output
         location. File names are the HDF5 key with ``'_'`` substituted 
         for ``'/'``.
+
+        Parameters
+        ----------
+        **kwargs : 
         """
         if self.tsv_requested:
             log_message(
@@ -546,7 +551,7 @@ class SeqLib(StoreManager):
         fname : `str`
             The file name of the H5 store to load.
         """
-        store = pd.HDFStore(fname)
+        store = HDFStore(fname)
         log_message(
             logging_callback=logging.info,
             msg="Using existing HDF5 data store '{}' for raw data".format(fname),
@@ -562,11 +567,12 @@ class SeqLib(StoreManager):
             for k in raw_keys:
                 # Copy the data table
                 raw = store[k]
-                self.store.put(k, raw)
-
-                # Copy the metadata
+                self.store.put(k, raw, data_columns=raw.columns)
+                # copy the metadata
                 self.set_metadata(
                     k, self.get_metadata(k, store=store), update=False)
+
+                # Copy the metadata
                 log_message(
                     logging_callback=logging.info,
                     msg="Copied raw data '{}'".format(k),
@@ -598,7 +604,7 @@ class SeqLib(StoreManager):
         if label is None:
             raise ValueError("No valid element labels [{}]".format(self.name))
         key = "/raw/{}/counts".format(label)
-        self.store.put(key, df.astype(np.int32))
+        self.store.put(key, df.astype(np.int32), data_columns=df.columns)
 
     def counts_from_file(self, fname):
         """
@@ -622,7 +628,7 @@ class SeqLib(StoreManager):
         if not os.path.exists(fname):
             raise IOError("Counts file '{}' not found [{}]"
                           "".format(fname, self.name))
-        elif os.path.splitext(fname)[-1].lower() in (".h5"):
+        elif os.path.splitext(fname)[-1].lower() in [".h5"]:
             self.counts_from_file_h5(self.counts_file)
         elif os.path.splitext(fname)[-1].lower() in \
                 (".txt", ".tsv", ".csv"):

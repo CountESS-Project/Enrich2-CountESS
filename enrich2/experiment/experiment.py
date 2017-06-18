@@ -37,7 +37,8 @@ from ..base.utils import compute_md5, log_message
 
 from ..base.constants import WILD_TYPE_VARIANT
 from ..base.storemanager import StoreManager
-from ..statistics.random_effects import rml_estimator, nan_filter_generator
+from ..statistics.random_effects import partitioned_rml_estimator
+from ..statistics.random_effects import nan_filter_generator
 from .condition import Condition
 
 
@@ -338,7 +339,7 @@ class Experiment(StoreManager):
                     bcm.drop("value.drop", axis="columns", inplace=True)
         if bcm is not None:
             bcm.sort_values("value", inplace=True)
-            self.store.put(key="/main/barcodemap", value=bcm)
+            self.store.put("/main/barcodemap", bcm, data_columns=bcm.columns)
 
     def calc_counts(self, label):
         """
@@ -375,10 +376,11 @@ class Experiment(StoreManager):
                 selections_index.extend([sel.name] * len(sel.timepoints))
                 values_index.extend(["c_{}".format(x) for x in
                                      sorted(sel.timepoints)])
-        columns = pd.MultiIndex.from_tuples(
-            list(zip(conditions_index, selections_index, values_index)),
-            names=["condition", "selection", "timepoint"]
-        )
+        columns = pd.MultiIndex.from_tuples(list(zip(conditions_index,
+                                                selections_index,
+                                                values_index)),
+                                            names=["condition", "selection",
+                                                   "timepoint"])
 
         # create union index
         log_message(
@@ -412,11 +414,11 @@ class Experiment(StoreManager):
         for cnd in self.children:
             for sel in cnd.children:
                 sel_data = sel.store.select(
-                    "/main/{}/counts_unfiltered".format(label))
+                    key="/main/{}/counts_unfiltered".format(label)
+                )
                 for tp in sel.timepoints:
                     data.loc[:][cnd.name, sel.name, "c_{}".format(tp)] = \
                         sel_data["c_{}".format(tp)]
-
         self.store.put("/main/{}/counts".format(label), data)
 
     def calc_shared_full(self, label):
@@ -457,10 +459,11 @@ class Experiment(StoreManager):
                 conditions_index.extend([cnd.name] * len(values_list))
                 selections_index.extend([sel.name] * len(values_list))
                 values_index.extend(sorted(values_list))
-        columns = pd.MultiIndex.from_tuples(
-            list(zip(conditions_index, selections_index,  values_index)),
-            names=["condition", "selection", "value"])
-
+        columns = pd.MultiIndex.from_tuples(list(zip(conditions_index,
+                                                selections_index,
+                                                values_index)),
+                                            names=["condition", "selection",
+                                                   "value"])
         # create union index
         log_message(
             logging_callback=logging.info,
@@ -473,17 +476,15 @@ class Experiment(StoreManager):
             if first:
                 combined = s.store.select(
                     key="/main/{}/scores".format(label),
-                    columns=['index']
+                    columns=["index"]
                 ).index
                 first = False
             else:
-                combined = combined.join(
-                    s.store.select(
-                        key="/main/{}/scores".format(label),
-                        columns=['index']
-                    ).index,
-                    how="outer"
-                )
+                combined = combined.join(s.store.select(
+                    key="/main/{}/scores".format(label),
+                    columns=["index"]
+                ).index,
+                    how="outer")
 
         # create and fill the data frames
         log_message(
@@ -518,26 +519,30 @@ class Experiment(StoreManager):
         if self.check_store("/main/{}/scores_shared".format(label)):
             return
 
-        # log_message(
-        #     logging_callback=logging.info,
-        #     msg="Identifying subset shared across all "
-        #         "Selections ({})".format(label),
-        #     extra={'oname': self.name}
-        # )
-        # data = self.store.select("/main/{}/scores_shared_full".format(label))
+        log_message(
+            logging_callback=logging.info,
+            msg="Identifying subset shared across all "
+                "Selections ({})".format(label),
+            extra={'oname': self.name}
+        )
 
+        data = self.store.select(
+            "/main/{}/scores_shared_full".format(label))
+
+        # identify variants found in all selections in at least two conditions
         idx = pd.IndexSlice
-        data = self.store.select("/main/{}/scores_shared_full".format(label))
-
-        # identify variants found in all selections in at least one condition
         complete = np.full(len(data.index), False, dtype=bool)
         for cnd in data.columns.levels[0]:
-            complete = np.logical_or(
-                complete,
-                data.loc[:, idx[cnd, :, :]].notnull().all(axis='columns')
+            mask_se = (data.loc[:, idx[cnd, :, 'SE']].notnull().sum(
+                axis='columns') >= 2
             )
-
+            mask_score = (data.loc[:, idx[cnd, :, 'score']].notnull().sum(
+                axis='columns') >= 2
+            )
+            complete = np.logical_or(complete, mask_se)
+            complete = np.logical_or(complete, mask_score)
         data = data.loc[complete]
+
         self.store.put("/main/{}/scores_shared".format(label), data)
 
     def calc_scores(self, label):
@@ -566,7 +571,7 @@ class Experiment(StoreManager):
         # set up new data frame
         shared_index = self.store.select(
             key="/main/{}/scores_shared".format(label),
-            columns=['index']
+            columns=["index"]
         ).index
 
         columns = pd.MultiIndex.from_product(
@@ -606,8 +611,8 @@ class Experiment(StoreManager):
 
                 # multiple replicates
                 else:
-                    from ..statistics.random_effects import old_rml_estimator
-                    betaML, sigma2ML, eps, reps = old_rml_estimator(y, sigma2i)
+                    betaML, sigma2ML, eps, reps = \
+                        partitioned_rml_estimator(y, sigma2i)
                     data.loc[:, idx[cnd, 'score']] = betaML
                     data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2ML)
                     data.loc[:, idx[cnd, 'epsilon']] = eps
@@ -621,16 +626,6 @@ class Experiment(StoreManager):
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'SE']] = 0.
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'score']] = 0.
                     data.loc[WILD_TYPE_VARIANT, idx[:, 'epsilon']] = 0.
-
-            # identify variants found in all selections in at least
-            # one condition
-            # complete = np.full(len(data.index), False, dtype=bool)
-            # for cnd in data.columns.levels[0]:
-            #     complete = np.logical_or(
-            #         complete,
-            #         data.loc[:, idx[cnd, :]].notnull().all(axis='columns')
-            #     )
-            # data = data.loc[complete]
 
         # store the data
         if data.empty:
@@ -658,7 +653,7 @@ class Experiment(StoreManager):
 
         wt = self.store.select(
             key="/main/{}/scores".format(label),
-            where="index='{}'".format(WILD_TYPE_VARIANT)
+            where="index={}".format(WILD_TYPE_VARIANT)
         )
         if len(wt) == 0:    # no wild type score
             log_message(
@@ -670,7 +665,7 @@ class Experiment(StoreManager):
             return
         data = self.store.select(
             key="/main/{}/scores".format(label),
-            where="index!='{}'".format(WILD_TYPE_VARIANT)
+            where="index!={}".format(WILD_TYPE_VARIANT)
         )
 
         columns = pd.MultiIndex.from_product(
@@ -741,7 +736,7 @@ class Experiment(StoreManager):
 
         self.store.put("/main/{}/scores_pvalues".format(label), result_df)
 
-    def write_tsv(self):
+    def write_tsv(self, subdirectory=None, keys=None):
         """
         Write each table from the store to its own tab-separated file.
 

@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-def old_rml_estimator(y, sigma2i, iterations=50):
+def rml_estimator(y, sigma2i, iterations=50):
     """
     Implementation of the robust maximum likelihood estimator.
 
@@ -77,7 +77,7 @@ def old_rml_estimator(y, sigma2i, iterations=50):
                                          axis=0) / (sw - (sw2 / sw))
         eps = np.abs(sigma2ML - sigma2ML_new)
         sigma2ML = sigma2ML_new
-    return betaML, sigma2ML, eps, None
+    return betaML, sigma2ML, eps
 
 
 def nan_filter_generator(data):
@@ -98,7 +98,7 @@ def nan_filter_generator(data):
     """
     max_replicates = data.shape[0]
     data_num_nans = np.sum(np.isnan(data), axis=0)
-    for k in range(0, max_replicates, 1):
+    for k in range(0, max_replicates-1, 1):
         selector = data_num_nans == k
         if np.sum(selector) == 0:
             continue
@@ -108,7 +108,7 @@ def nan_filter_generator(data):
         yield data_k, rep_num
 
 
-def rml_estimator(y, sigma2i, iterations=50):
+def partitioned_rml_estimator(y, sigma2i, iterations=50):
     """
     Implementation of the robust maximum likelihood estimator.
 
@@ -144,7 +144,8 @@ def rml_estimator(y, sigma2i, iterations=50):
     eps = np.zeros(shape=(y.shape[1],)) * np.nan
     nreps = np.zeros(shape=(y.shape[1],)) * np.nan
     y_num_nans = np.sum(np.isnan(y), axis=0)
-    for k in range(0, max_replicates, 1):
+
+    for k in range(0, max_replicates-1, 1):
         # Partition y based on the number of NaNs a column has,
         # corresponding to the number of replicates a variant has
         # across selections.
@@ -157,29 +158,7 @@ def rml_estimator(y, sigma2i, iterations=50):
         sigma2i_k = np.apply_along_axis(
             lambda col: col[~np.isnan(col)], 0, sigma2i[:, selector])
 
-        print(k)
-        print(y_k)
-        print(sigma2i_k)
-
-        # Main alogrithm on the formatted data
-        w_k = 1 / sigma2i_k
-        sw_k = np.sum(w_k, axis=0)
-        beta0_k = np.sum(y_k * w_k, axis=0) / sw_k
-        sigma2ML_k = np.sum(
-            (y_k - np.mean(y_k, axis=0)) ** 2 / (len(beta0_k) - 1), axis=0
-        )
-        eps_k = np.zeros(beta0_k.shape)
-        for _ in range(iterations):
-            w_k = 1 / (sigma2i_k + sigma2ML_k)
-            sw_k = np.sum(w_k, axis=0)
-            sw2_k = np.sum(w_k ** 2, axis=0)
-            betaML_k = np.sum(y_k * w_k, axis=0) / sw_k
-
-            num = np.sum(((y_k - betaML_k) ** 2) * (w_k ** 2), axis=0)
-            denom = (sw_k - (sw2_k / sw_k))
-            sigma2ML_k_new = sigma2ML_k * (num / denom)
-            eps_k = np.abs(sigma2ML_k - sigma2ML_k_new)
-            sigma2ML_k = sigma2ML_k_new
+        betaML_k, sigma2ML_k, eps_k = rml_estimator(y_k, sigma2i_k, iterations)
 
         # Handles the case when SE is 0 resulting in NaN values.
         betaML_k[np.isnan(betaML_k)] = 0.

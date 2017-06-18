@@ -29,6 +29,7 @@ import time
 import getpass
 import collections
 import pandas as pd
+from tables.file import _open_files
 
 from .utils import nested_format
 from ..base.utils import fix_filename
@@ -219,6 +220,7 @@ class StoreManager(object):
         self._force_recalculate = None
         self._component_outliers = None
         self._tsv_requested = None
+        self._ignore_metadata = None
 
         # GUI variables
         self.treeview_id = None
@@ -624,9 +626,13 @@ class StoreManager(object):
             Open the stores of all children objects
             
         force_delete : `bool`
-            Delete existing tables under ``'/main'`` and ``'/raw'``
-            upon store opening.
+            Delete existing tables under ``'/main'`` upon store opening.
         """
+        if children and self.children is not None:
+            for child in self.children:
+                child.store_open(children=True)
+
+        clear = False
         if self.has_store:
             if self.store is not None and self.store.is_open():
                 raise ValueError("Store is still open.")
@@ -636,7 +642,6 @@ class StoreManager(object):
                 self.store_path = os.path.join(
                     self.output_dir,
                     "{}_{}.h5".format(fname, self.store_suffix))
-
             log_message(
                 logging_callback=logging.info,
                 msg="Loading from store path '{}'.".format(self.store_path),
@@ -645,37 +650,44 @@ class StoreManager(object):
             if os.path.exists(self.store_path):
                 store = HDFStore(self.store_path, mode='a')
                 for key in store.keys():
-                    if not self.check_metadata(key, store):
-                        force_delete = True
-                        msg = 'Found existing HDF5 data store "{}", but ' \
-                              'metadata did not match with this ' \
-                              'instance. Overridding existing store.'.format(
-                                self.store_path)
-                        log_message(
-                            logging_callback=logging.info,
-                            msg=msg,
-                            extra={'oname': self.name}
-                        )
-                        break
+                    clear |= not self.check_metadata(key, store)
+                if clear:
+                    msg = 'Found existing HDF5 data store "{}", but ' \
+                          'metadata did not match with this ' \
+                          'instance.'.format(self.store_path)
+                    log_message(
+                        logging_callback=logging.info,
+                        msg=msg,
+                        extra={'oname': self.name}
+                    )
+                    if not store.is_empty():
+                        try:
+                            store.clear()
+                        except ValueError:
+                            raise IOError("Store '{}' currently has an open"
+                                          "file handle not owned by Enrich2."
+                                          "Cannot overwrite existing "
+                                          "data.".format(self.store_path))
                 else:
                     log_message(
                         logging_callback=logging.info,
-                        msg='Found existing HDF5 data '
-                            'store "{}".'.format(self.store_path),
+                        msg='Found existing HDF5 data store "{}" with matching'
+                            ' metadata.'.format(self.store_path),
                         extra={'oname': self.name}
                     )
                 store.close()
+
             else:
                 log_message(
                     logging_callback=logging.info,
-                    msg='Creating new HDF5 data store '
-                        '"{}"'.format(self.store_path),
+                    msg='Creating new HDF5 data store "{}"'.format(
+                        self.store_path),
                     extra={'oname': self.name}
                 )
 
-            # Open the store and delete tables if required.
             self.store = HDFStore(self.store_path, mode='a')
-            if self.force_recalculate:
+
+            if self.force_recalculate or force_delete:
                 if "/main" in self.store:
                     log_message(
                         logging_callback=logging.info,
@@ -689,20 +701,6 @@ class StoreManager(object):
                         msg="No existing calculated values in file",
                         extra={'oname': self.name}
                     )
-            if force_delete:
-                tables = ', '.join(
-                    ["'{}'".format(x) for x in self.store.keys()])
-                log_message(
-                    logging_callback=logging.info,
-                    msg="Deleting all tables: {}".format(tables),
-                    extra={'oname': self.name}
-                )
-                self.store.clear()
-
-        if children and self.children is not None:
-            for child in self.children:
-                child.store_open(
-                    children=True, force_delete=force_delete)
 
     def store_close(self, children=False):
         """
@@ -727,7 +725,7 @@ class StoreManager(object):
             # be fine since if it already exists, then it should match.
             for key in self.store.keys():
                 self.set_metadata(key, self.metadata(), update=False)
-            self.store.close(fsync=True)
+            self.store.close()
             self.store = None
 
     def get_table(self, key):
@@ -767,7 +765,7 @@ class StoreManager(object):
         `bool` 
             True if the key exists in the HDF5 store, else False.
         """
-        if self.store.check(key):
+        if key in list(self.store.keys()):
             log_message(
                 logging_callback=logging.info,
                 msg="Found existing '{}'".format(key),
@@ -816,10 +814,11 @@ class StoreManager(object):
         # assumes the source tables all have the same index
         # find the min_itemsize
         max_index_length = self.store.select_column(
-            key=source[0], column='index').map(len).max()
+            source[0], 'index').map(len).max()
 
         selections = self.store.select_as_multiple(
-            keys=source, where=source_query, selector=source[0], chunk=True)
+            keys=source, where=source_query, selector=source[0], chunk=True
+        )
         for df in selections:
             if row_callback is not None:
                 df = df.apply(
@@ -828,11 +827,11 @@ class StoreManager(object):
                 if destination_data_columns is None:
                     # if not specified, index all columns
                     destination_data_columns = list(df.columns)
-                self.store.append(key=destination, value=df,
+                self.store.append(destination, df,
                                   min_itemsize={'index': max_index_length},
                                   data_columns=destination_data_columns)
             else:
-                self.store.append(key=destination, value=df)
+                self.store.append(destination, df)
 
     def combined_index(self, tables):
         """
@@ -906,7 +905,7 @@ class StoreManager(object):
         ----------
         key : `str`
             The key to the current table
-        store : :py:class:`~pandas.HDFStore`
+        store : :py:class:`~HDFStore`
             The store object to check
 
         Returns
@@ -940,7 +939,7 @@ class StoreManager(object):
         ----------
         key : `str`
             The name of the group or node in the HDF5 data store.
-        store : :py:class:`~pd.HDFStore`, optional, default None
+        store : :py:class:`~HDFStore`, optional, default None
             Can be an external open HDFStore (used when copying metadata
             from raw counts). If it is ``None``, use this object's store.
         
@@ -955,24 +954,12 @@ class StoreManager(object):
         raises AttributeError if there no store is passed and this object's 
             store is also ``None``.
         """
+        if store is None and self.store is None:
+            raise AttributeError("Store has not yet been configured.")
+
         if store is None:
             store = self.store
-        try:
-            metadata = store.get_metadata(key)
-        except AttributeError:
-            # store parameter was None
-            if store is self.store:  
-                raise AttributeError(
-                    "Invalid HDF store node '{}' [{}]".format(key, self.name))
-            else:
-                raise AttributeError(
-                    "Invalid external HDF store node "
-                    "'{}' in '{}' [{}]".format(key, store.filename, self.name))
-        except KeyError:
-            # no enrich2 metadata
-            return {}
-        else:
-            return metadata
+        return store.get_metadata(key)
 
     def set_metadata(self, key, d, update=True):
         """
@@ -989,8 +976,17 @@ class StoreManager(object):
             metadata for *key*. Otherwise, *d* updates the existing 
             metadata using standard dictionary update
         """
-        if self.store is not None:
-            self.store.set_metadata(key, d, update)
+        # get existing for update
+        # also performs check for the node, so we don't check here
+        # metadata = self.get_metadata(key)
+        # if metadata is None or not update:
+        #     metadata = d
+        # else:
+        #     metadata.update(d)
+        # self.store.get_storer(key).attrs['enrich2'] = metadata
+
+        self.store.set_metadata(key, d, update)
+
 
     def calculate(self):
         """

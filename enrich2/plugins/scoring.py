@@ -104,7 +104,7 @@ class BaseScorerPlugin(ABC):
             self.compute_scores()
         except BaseException as err:
             raise Exception("The following error occured when trying to run "
-                            "plugin '{}':\n\n{}.".format(self.name, err))
+                            "plugin '{}': {}.".format(self.name, err))
 
     @classmethod
     def validate(cls):

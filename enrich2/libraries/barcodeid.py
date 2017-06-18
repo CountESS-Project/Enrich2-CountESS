@@ -172,6 +172,7 @@ class BcidSeqLib(BarcodeSeqLib):
                     list(self.barcode_map.keys()), self.barcode_min_count
                 )
             )
+
             # count identifiers associated with the barcodes
             for bc, count in self.store['/main/barcodes/counts'].iterrows():
                 count = count['count']
@@ -198,7 +199,8 @@ class BcidSeqLib(BarcodeSeqLib):
             barcode_identifiers.sort_values('value', inplace=True)
             self.store.put(
                 key="/raw/barcodemap",
-                value=barcode_identifiers
+                value=barcode_identifiers,
+                data_columns=barcode_identifiers.columns
             )
             del barcode_identifiers
 

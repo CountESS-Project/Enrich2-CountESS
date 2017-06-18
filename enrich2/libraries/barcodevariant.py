@@ -161,7 +161,8 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             self.save_filtered_counts(
                 label='barcodes',
                 query="index in {} & count >= {}".format(
-                    list(self.barcode_map.keys()), self.barcode_min_count)
+                    list(self.barcode_map.keys()), self.barcode_min_count
+                )
             )
 
             # count variants associated with the barcodes
@@ -198,7 +199,11 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             del barcodes
 
             barcode_variants.sort_values('value', inplace=True)
-            self.store.put(key="/raw/barcodemap", value=barcode_variants)
+            self.store.put(
+                key="/raw/barcodemap",
+                value=barcode_variants,
+                data_columns=barcode_variants.columns
+            )
             del barcode_variants
 
             if self.aligner is not None:

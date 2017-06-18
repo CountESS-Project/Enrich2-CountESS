@@ -25,11 +25,13 @@ Contains an interface to abstractly represent store operations such as
 this interface.
 """
 
+import logging
+import tables
 import pandas as pd
 from abc import ABC, abstractclassmethod
 
-import logging
 from ..base.utils import log_message
+
 
 
 class StoreInterface(ABC):
@@ -47,7 +49,7 @@ class StoreInterface(ABC):
         pass
 
     @abstractclassmethod
-    def put(self, key, value, append=False):
+    def put(self, key, value, data_columns=None, min_itemsize=None, append=False):
         pass
 
     @abstractclassmethod
@@ -92,7 +94,7 @@ class StoreInterface(ABC):
         pass
 
     @abstractclassmethod
-    def close(self, fsync=False):
+    def close(self):
         pass
 
     @abstractclassmethod
@@ -121,14 +123,6 @@ class StoreInterface(ABC):
 
     @abstractclassmethod
     def ensure_open(self):
-        pass
-
-    @abstractclassmethod
-    def flush(self, fsync=False):
-        pass
-
-    @abstractclassmethod
-    def ensure_has_key(self, key):
         pass
 
 
@@ -186,13 +180,13 @@ class HDFStore(StoreInterface):
             self.open(path, mode)
 
     def __getitem__(self, item):
-        return self.get(item)
+        return self._store.__getitem__(item)
 
     def __iter__(self):
-        return iter(self.keys())
+        return self._store.__iter__()
 
     def __contains__(self, item):
-        return item in self._store
+        return self._store.__contains__(item)
 
     @property
     def chunksize(self):
@@ -274,7 +268,7 @@ class HDFStore(StoreInterface):
         self.ensure_open()
         return self._store.keys()
 
-    def close(self, fsync=False):
+    def close(self):
         """
         Closes the currently opened store. Flushes changes to disk by default,
         then sets the current store to ``None``.
@@ -285,22 +279,8 @@ class HDFStore(StoreInterface):
           call ``os.fsync()`` on the file handle to force writing to disk.
         """
         if self.is_open():
-            self.flush(fsync)
             self._store.close()
         self._store = None
-
-    def flush(self, fsync=False):
-        """
-        Flushes changes to disk. Not always guranteed to be written
-        immediately.
-
-        Parameters
-        ----------
-        fsync : `bool`, default: ``False``
-          call ``os.fsync()`` on the file handle to force writing to disk.
-        """
-        if self.is_open():
-            self._store.flush(fsync)
 
     def open(self, path, mode='a'):
         """
@@ -316,14 +296,7 @@ class HDFStore(StoreInterface):
         """
         if self.is_open():
             self.close()
-        try:
-            self._store = pd.HDFStore(path, mode)
-        except ValueError:
-            pd.HDFStore(path, mode='a').close()
-            self._store = pd.HDFStore(path, mode)
-        for key in self.keys():
-            if not self.get_metadata(key):
-                self.set_metadata(key, {})
+        self._store = pd.HDFStore(path, mode)
 
     def select(self, key, where=None, columns=None, chunk=False):
         """
@@ -357,7 +330,6 @@ class HDFStore(StoreInterface):
             :py:class:`~pandas.io.pytables.TableIterator`
         """
         self.ensure_open()
-        self.ensure_has_key(key)
         if where is not None and not isinstance(where, str):
             raise TypeError("`where` must be a string.")
         if columns is not None and not isinstance(columns, list):
@@ -421,7 +393,6 @@ class HDFStore(StoreInterface):
         :py:class:`~pandas.Series`
         """
         self.ensure_open()
-        self.ensure_has_key(key)
         if not isinstance(column, str):
             raise TypeError("`column` must be a string.")
 
@@ -476,10 +447,7 @@ class HDFStore(StoreInterface):
             :py:class:`~pandas.io.pytables.TableIterator`
         """
         self.ensure_open()
-
         keys = list(keys)
-        for key in keys:
-            self.ensure_has_key(key)
 
         if where is not None and not isinstance(where, str):
             raise TypeError("`where` must be a string.")
@@ -585,14 +553,21 @@ class HDFStore(StoreInterface):
                 max_index_length = max(len(x) for x in value.index)
                 min_itemsize = {'index': max_index_length}
 
-            self._store.append(
-                key=key,
-                value=value,
-                min_itemsize=min_itemsize,
-                data_columns=data_columns or True
-            )
+            if data_columns is None:
+                self._store.append(
+                    key=key,
+                    value=value,
+                    min_itemsize=min_itemsize,
+                )
+            else:
+                self._store.append(
+                    key=key,
+                    value=value,
+                    min_itemsize=min_itemsize,
+                    data_columns=list(data_columns)
+                )
 
-    def put(self, key, value, append=False):
+    def put(self, key, value, data_columns=None, min_itemsize=None, append=False):
         """
         Puts *value* into group *key*. Will append to an existing dataframe
         if *key* is already populated and *append* is ``True``, otherwise
@@ -604,11 +579,18 @@ class HDFStore(StoreInterface):
             String key pointing to a table in the store.
         value : :py:class:`~pandas.DataFrame`
             The dataframe object to store.
+        data_columns : `list`
+            List of columns to create as indexed data columns for on-disk
+            queries, or True to use all columns. By default only the axes
+            of the object are indexed. 
+            See `here <http://pandas.pydata.org/pandas-docs/stable/io.html#query-via-data-columns>`
+        min_itemsize : `int`:
+            The size of the largest index in *value*
         append : `bool`
             ``True`` to append to an existing dataframe.
         """
         self.ensure_open()
-        if append:
+        if append and self.check(key):
             if set(value.index) & set(self.get(key).index):
                 log_message(
                     logging_callback=logging.warning,
@@ -620,10 +602,25 @@ class HDFStore(StoreInterface):
         if isinstance(value.columns, pd.MultiIndex):
             self._store.put(key, value, format='table', append=append)
         else:
-            self._store.put(
-                key, value, format='table',
-                append=append, data_columns=True
-            )
+            if min_itemsize is None:
+                max_index_length = max(len(x) for x in value.index)
+                min_itemsize = {'index': max_index_length}
+
+            if data_columns is None:
+                self._store.put(
+                    key, value,
+                    format=self._format,
+                    append=append,
+                    min_itemsize=min_itemsize,
+                )
+            else:
+                self._store.put(
+                    key, value,
+                    format=self._format,
+                    append=append,
+                    min_itemsize=min_itemsize,
+                    data_columns=list(data_columns)
+                )
 
     def clear(self):
         """
@@ -664,11 +661,10 @@ class HDFStore(StoreInterface):
             DataFrame at *key*
         """
         self.ensure_open()
-        self.ensure_has_key(key)
-        if not self.check(key):
-            raise KeyError("Key '{}' not found in store.".format(key))
-        else:
+        try:
             return self._store[key]
+        except KeyError:
+            raise KeyError("Key '{}' not found in store.".format(key))
 
     def set_metadata(self, key, data, update=False):
         """
@@ -684,7 +680,6 @@ class HDFStore(StoreInterface):
         update : `bool`
             Dictionary update the metadata instead of replacing it.
         """
-        self.ensure_has_key(key)
         if not isinstance(data, dict):
             raise TypeError("Enrich2 metadata must be a `dict`.")
         if update:
@@ -692,9 +687,14 @@ class HDFStore(StoreInterface):
                 metadata = self.get_metadata(key)
                 metadata.update(data)
             except AttributeError:
-                self._store.get_storer(key).attrs.metadata = data
+                self._store.get_storer(key).attrs['enrich2'] = data
+            except KeyError:
+                raise KeyError("Key '{}' not found in store.".format(key))
         else:
-            self._store.get_storer(key).attrs.metadata = data
+            try:
+                self._store.get_storer(key).attrs['enrich2'] = data
+            except KeyError:
+                raise KeyError("Key '{}' not found in store.".format(key))
 
     def get_metadata(self, key):
         """
@@ -711,12 +711,11 @@ class HDFStore(StoreInterface):
             The metadata stored.
         """
         self.ensure_open()
-        self.ensure_has_key(key)
-        if not self.check(key):
-            raise KeyError("Key '{}' does not exist in store.".format(key))
         try:
-            return self._store.get_storer(key).attrs.metadata
+            return self._store.get_storer(key).attrs['enrich2']
         except AttributeError:
+            return {}
+        except KeyError:
             return {}
 
     def check_metadata(self, key, data):
@@ -736,7 +735,6 @@ class HDFStore(StoreInterface):
             ``True`` if stored metadata and supplied metadata are equal
             according to the `==` operator.
         """
-        self.ensure_has_key(key)
         if not isinstance(data, dict):
             raise TypeError("Metadata must be a dictionary.")
         this_metadata = self.get_metadata(key)
@@ -749,16 +747,3 @@ class HDFStore(StoreInterface):
         if not self.is_open():
             raise ValueError("Cannot perform store operation if no store has"
                              " been opened.")
-
-    def ensure_has_key(self, key):
-        """
-        Throws a KeyError if the key is not found in the store.
-
-        Parameters
-        ----------
-        key : `str`
-            String key pointing to a table in the store.
-        """
-        self.ensure_open()
-        if not self.check(key):
-            raise KeyError("Key '{}' not found in store.".format(key))
