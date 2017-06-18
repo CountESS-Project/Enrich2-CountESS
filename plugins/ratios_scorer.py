@@ -66,8 +66,8 @@ class RatiosScorer(BaseScorerPlugin):
         )
         c_last = 'c_{}'.format(self.store_timepoints()[-1])
         df = self.store_select(
-            "/main/{}/counts".format(label),
-            "columns in ['c_0', {}]".format(c_last)
+            key="/main/{}/counts".format(label),
+            columns=['c_0', '{}'.format(c_last)]
         )
 
         if self.logr_method == "wt":
@@ -81,9 +81,10 @@ class RatiosScorer(BaseScorerPlugin):
                                  'table not present [{}]'.format(self.name))
 
             shared_counts = self.store_select(
-                "/main/{}/counts".format(wt_label),
-                "columns in ['c_0', {}] & index='{}'".format(
-                    c_last, WILD_TYPE_VARIANT))
+                key="/main/{}/counts".format(wt_label),
+                columns=['c_0', '{}'.format(c_last)],
+                where="index='{}'".format(WILD_TYPE_VARIANT)
+            )
 
             # wild type not found
             if len(shared_counts) == 0:
@@ -95,14 +96,14 @@ class RatiosScorer(BaseScorerPlugin):
 
         elif self.logr_method == "complete":
             shared_counts = self.store_select(
-                "/main/{}/counts".format(label),
-                "columns in ['c_0', {}]".format(c_last)
+                key="/main/{}/counts".format(label),
+                columns=['c_0', '{}'.format(c_last)]
             ).sum(axis="index").values + 0.5
 
         elif self.logr_method == "full":
             shared_counts = self.store_select(
-                "/main/{}/counts_unfiltered".format(label),
-                "columns in ['c_0', {}]".format(c_last)
+                key="/main/{}/counts_unfiltered".format(label),
+                columns=['c_0', '{}'.format(c_last)]
             ).sum(axis="index", skipna=True).values + 0.5
         else:
             raise ValueError('Invalid log ratio method "{}" '
@@ -125,6 +126,5 @@ class RatiosScorer(BaseScorerPlugin):
         self.store_put(
             key="/main/{}/scores".format(label),
             value=ratios,
-            format="table",
             data_columns=ratios.columns
         )

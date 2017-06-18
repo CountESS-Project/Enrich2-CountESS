@@ -49,8 +49,8 @@ class SimpleScorer(BaseScorerPlugin):
 
         c_last = 'c_{}'.format(self.store_timepoints()[-1])
         df = self.store_select(
-            "/main/{}/counts".format(label),
-            "columns in ['c_0', {}]".format(c_last))
+            key="/main/{}/counts".format(label),
+            columns=['c_0', '{}'.format(c_last)])
 
         # perform operations on the numpy values of the
         # dataframe for easier broadcasting
@@ -67,6 +67,5 @@ class SimpleScorer(BaseScorerPlugin):
         self.store_put(
             key="/main/{}/scores".format(label),
             value=ratios,
-            format="table",
             data_columns=ratios.columns
         )

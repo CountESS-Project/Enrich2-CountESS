@@ -558,6 +558,7 @@ class HDFStore(StoreInterface):
                     key=key,
                     value=value,
                     min_itemsize=min_itemsize,
+                    data_columns=list(value.columns)
                 )
             else:
                 self._store.append(
@@ -612,6 +613,7 @@ class HDFStore(StoreInterface):
                     format=self._format,
                     append=append,
                     min_itemsize=min_itemsize,
+                    data_columns=list(value.columns)
                 )
             else:
                 self._store.put(
@@ -682,14 +684,17 @@ class HDFStore(StoreInterface):
         """
         if not isinstance(data, dict):
             raise TypeError("Enrich2 metadata must be a `dict`.")
+
+        if not self.check(key):
+            raise KeyError("Key '{}' not found in store.".format(key))
+
         if update:
             try:
                 metadata = self.get_metadata(key)
                 metadata.update(data)
+                self._store.get_storer(key).attrs['enrich2'] = metadata
             except AttributeError:
                 self._store.get_storer(key).attrs['enrich2'] = data
-            except KeyError:
-                raise KeyError("Key '{}' not found in store.".format(key))
         else:
             try:
                 self._store.get_storer(key).attrs['enrich2'] = data
@@ -711,6 +716,9 @@ class HDFStore(StoreInterface):
             The metadata stored.
         """
         self.ensure_open()
+        if not self.check(key):
+            raise KeyError("Key '{}' not found in store.".format(key))
+
         try:
             return self._store.get_storer(key).attrs['enrich2']
         except AttributeError:
