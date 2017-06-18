@@ -138,7 +138,7 @@ class TestHDFStore(TestCase):
         self.store.put('/test_table', data)
         self.store.remove('/test_table')
         with self.assertRaises(KeyError):
-            self.store.ensure_has_key('/test_table')
+            self.store['/test_table']
 
     def test_remove_existing_key_where_count_less_than_3(self):
         self.path = os.path.join(self.data_dir, 'test.h5')
