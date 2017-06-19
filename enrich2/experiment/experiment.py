@@ -538,13 +538,13 @@ class Experiment(StoreManager):
             )
             complete = np.logical_or(complete, mask_score)
 
-            try:
-                mask_se = (data.loc[:, idx[cnd, :, 'SE']].notnull().sum(
-                    axis='columns') >= 2
-                           )
-                complete = np.logical_or(complete, mask_se)
-            except KeyError:
-                pass
+            # try:
+            #     mask_se = (data.loc[:, idx[cnd, :, 'SE']].notnull().sum(
+            #         axis='columns') >= 2
+            #                )
+            #     complete = np.logical_or(complete, mask_se)
+            # except KeyError:
+            #     pass
 
         data = data.loc[complete]
         self.store.put("/main/{}/scores_shared".format(label), data)
@@ -620,6 +620,7 @@ class Experiment(StoreManager):
                     data.loc[:, idx[cnd, 'score']] = betaML
                     data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2ML)
                     data.loc[:, idx[cnd, 'epsilon']] = eps
+                    # TODO: uncomment these
                     # data.loc[:, idx[cnd, 'nreps']] = reps
 
                 # special case for normalized wild type variant

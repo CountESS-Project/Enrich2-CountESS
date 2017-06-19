@@ -220,6 +220,7 @@ class StoreManager(object):
         self._component_outliers = None
         self._tsv_requested = None
         self._ignore_metadata = None
+        self.override_filter_stats = True
 
         # GUI variables
         self.treeview_id = None
@@ -664,7 +665,7 @@ class StoreManager(object):
                             store.clear()
                         except ValueError:
                             raise IOError("Store '{}' currently has an open"
-                                          "file handle not owned by Enrich2."
+                                          "file handle not owned by Enrich2. "
                                           "Cannot overwrite existing "
                                           "data.".format(self.store_path))
                 else:
@@ -674,6 +675,7 @@ class StoreManager(object):
                             ' metadata.'.format(self.store_path),
                         extra={'oname': self.name}
                     )
+                    self.override_filter_stats = False
                 store.close()
 
             else:
@@ -975,15 +977,6 @@ class StoreManager(object):
             metadata for *key*. Otherwise, *d* updates the existing 
             metadata using standard dictionary update
         """
-        # get existing for update
-        # also performs check for the node, so we don't check here
-        # metadata = self.get_metadata(key)
-        # if metadata is None or not update:
-        #     metadata = d
-        # else:
-        #     metadata.update(d)
-        # self.store.get_storer(key).attrs['enrich2'] = metadata
-
         self.store.set_metadata(key, d, update)
 
 

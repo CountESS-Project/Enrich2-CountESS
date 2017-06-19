@@ -403,7 +403,15 @@ class SeqLib(StoreManager):
                 df.loc[SeqLib.filter_messages[key], 'count'] = \
                     self.filter_stats[key]
         df.dropna(inplace=True)
-        self.store.put('/raw/filter', df.astype(int), data_columns=df.columns)
+        if self.override_filter_stats:
+            self.store.put(
+                '/raw/filter', df.astype(int), data_columns=df.columns)
+        else:
+            log_message(
+                logging.info,
+                msg='Keeping old filter stats from previous store file.',
+                extra={'oname': self.name}
+            )
 
     def read_quality_filter(self, fq):
         """
