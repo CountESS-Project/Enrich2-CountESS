@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 import tkinter as tk
 import tkinter.filedialog
@@ -50,7 +50,9 @@ def clear_nones(d):
 
 
 # All valid suffixes for a FASTQ file that can be recognized by Enrich2
-_FASTQ_SUFFIXES = [x + y for x in (".fq", ".fastq") for y in ("", ".bz2", ".gz")]
+_FASTQ_SUFFIXES = [
+    x + y for x in (".fq", ".fastq") for y in ("", ".bz2", ".gz")
+]
 
 
 #: Dictionary defining the layout of the edit UI elements in columns

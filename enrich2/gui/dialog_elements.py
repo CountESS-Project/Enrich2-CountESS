@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 
 import os.path
@@ -29,10 +29,56 @@ DEFAULT_COLUMNS = 3
 
 
 class SectionLabel(object):
+    """
+    A custom object representing a label for a discrete GUI section
+    
+    Parameters
+    ----------
+    text : `str`
+        The text label for the section.
+    
+    Attributes
+    ----------
+    text : `str`
+        The text label for the section.
+         
+    Methods
+    -------
+    body
+        Creates the body frame for the label.
+    validate
+        validate method to be overridden 
+    apply
+        apply method to be overridden 
+    enable 
+        enable method to be overridden
+    disable
+        disable method to be overriden
+    """
     def __init__(self, text):
         self.text = text
 
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
+        """
+        Builds the main frame for housing the label, to be contained within
+        some master tk widget.
+        
+        Parameters
+        ----------
+        master : A Tk widget or window.
+            Master widget.
+        row : 
+            The row number of the label frame.
+        columns : 
+            The column span of the label frame.
+        kwargs : `dict`
+            Keyword arguments. No used in this implementation.
+            
+        Returns
+        -------
+        `int`
+            Returns the number of rows taken by this element.
+        """
         label = Label(master, text=self.text, justify=LEFT)
         label.grid(row=row, column=0, columnspan=columns, sticky="w")
         return 1
@@ -51,6 +97,50 @@ class SectionLabel(object):
 
 
 class Checkbox(object):
+    """
+    A utility class to represent a custom checkbox with helper methods.
+    
+    Parameters
+    ----------
+    text : `str`
+        The text label for the checkbox.
+    cfg : `dict`
+        A dictionary representing of widgets with `key` being the key in the
+        cfg for this widget.
+    key : `str`
+        The key for this widget in `cfg`. 
+    
+    Attributes
+    ----------
+    checkbox : `Checkbox`
+        A tk checkbox widget.
+    enabled : `bool`
+        Boolean indicating if this widget is enabled.
+    value : `BooleanVar`
+        The tk variable linked to the checkbox.
+    text : `str`
+        The text label for the checkbox
+    cfg : `dict`
+        A dictionary representing of widgets with `key` being the key in the
+        cfg for this widget.
+    key : `str`
+        The key for this widget in `cfg`. 
+    
+    Methods
+    -------
+    body
+        Place the required elements using the grid layout method.
+        Returns the number of rows taken by this element.
+    validate
+        Validate the checkbox selection. Returns True, always.
+    apply
+        If enabled, sets the configuration for `key` as the current
+        checkbox selection.   
+    enable
+        Enables the checkbox widget from interaction.
+    disable
+        Disables the checkbox widget from interaction.
+    """
     def __init__(self, text, cfg, key):
         self.checkbox = None
         self.enabled = True
@@ -70,28 +160,55 @@ class Checkbox(object):
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
         """
         Place the required elements using the grid layout method.
-
         Returns the number of rows taken by this element.
+        
+        Parameters
+        ----------
+        master : A tk widget or window.
+        row : `int`
+            The row variable to use during packing/grid
+        columns : `int`
+            The columnspan to use during packing/grid
+        kwargs : `dict`
+            Keyword arguements to pass to packing/grid. Currently ignored.
+            
+        Returns
+        -------
+        `int`
+            Returns the number of rows taken by this element.
         """
-        self.checkbox = Checkbutton(master, text=self.text,
-                                        variable=self.value)
+        self.checkbox = Checkbutton(
+            master, text=self.text, variable=self.value)
         self.checkbox.grid(row=row, column=0, columnspan=columns, sticky="w")
         return 1
 
     def validate(self):
+        """
+        Validate the checkbox selection.
+        """
         return True
 
     def apply(self):
+        """
+        If enabled, sets the configuration for `key` as the current
+        checkbox selection.        
+        """
         if self.enabled:
             self.cfg[self.key] = self.value.get()
         else:
             self.cfg[self.key] = None
 
     def enable(self):
+        """
+        Set the state of the checkbox widget to not disabled.
+        """
         self.enabled = True
         self.checkbox.state(["!disabled"])
 
     def disable(self):
+        """
+        Set the state of the checkbox widget to disabled.
+        """
         self.enabled = False
         self.checkbox.state(["disabled"])
 
@@ -99,8 +216,51 @@ class Checkbox(object):
 class MyEntry(object):
     """
     Base class for labeled Entry fields.
-
     *text* is the Label/error box text.
+    
+    Parameters
+    ----------
+    text : `str`
+        The text label for the checkbox.
+    cfg : `dict`
+        A dictionary representing of widgets with `key` being the key in the
+        cfg for this widget.
+    key : `str`
+        The key for this widget in `cfg`. 
+    optional : `bool`, default: ``False``
+        Specifies if entry input is optional or not.
+    
+    Attributes
+    ----------
+    entry : `Entry`
+        A tk Entry widget.
+    enabled : `bool`
+        Boolean indicating if this widget is enabled.
+    value : `StringVar`
+        The tk variable linked to the widget.
+    text : `str`
+        The text label for the widget
+    cfg : `dict`
+        A dictionary representing of widgets with `key` being the key in the
+        cfg for this widget.
+    key : `str`
+        The key for this widget in `cfg`. 
+    
+    Methods
+    -------
+    body
+        Place the required elements using the grid layout method.
+        Returns the number of rows taken by this element.
+    validate
+        Validates the input. Returns ``True`` unless the field is blank and
+        *optional* is ``False``.
+    apply
+        If enabled, sets the configuration at `key` as the current
+        entry text stored in the tkvar.    
+    enable
+        Enables the widget to allow interaction.
+    disable
+        Disables the widget from interaction.
     """
     def __init__(self, text, cfg, key, optional=False):
         self.entry = None
@@ -122,8 +282,22 @@ class MyEntry(object):
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
         """
         Place the required elements using the grid layout method.
-
         Returns the number of rows taken by this element.
+        
+        Parameters
+        ----------
+        master : A tk widget or window.
+        row : `int`
+            The row variable to use during packing/grid
+        columns : `int`
+            The columnspan to use during packing/grid
+        kwargs : `dict`
+            Keyword arguements to pass to packing/grid. Currently ignored.
+            
+        Returns
+        -------
+        `int`
+            Returns the number of rows taken by this element.
         """
         label = Label(master, text=self.text, justify=LEFT)
         label.grid(row=row, column=0, columnspan=1, sticky="e")
@@ -145,16 +319,26 @@ class MyEntry(object):
             return True
 
     def apply(self):
+        """
+        If enabled, sets the configuration at `key` as the current
+        entry text stored in the tkvar.   
+        """
         if self.enabled and len(self.value.get()) > 0:
             self.cfg[self.key] = self.value.get()
         else:
             self.cfg[self.key] = None
 
     def enable(self):
+        """
+        Enables the widget.
+        """
         self.enabled = True
         self.entry.state(["!disabled"])
 
     def disable(self):
+        """
+        Disables the widget from interaction.
+        """
         self.enabled = False
         self.entry.state(["disabled"])
 
@@ -163,10 +347,45 @@ class FileEntry(MyEntry):
     """
     Creates a labeled Entry field for a file or directory.
 
-    *text* is the Label/error box text.
-    *directory* is ``True`` if selecting a directory (instead of a file).
-    *extensions* is a list of valid file endings
-
+    Parameters
+    ----------
+    text : `str` 
+        is the Label/error box text.
+    directory : `bool`
+        is ``True`` if selecting a directory (instead of a file).
+    extensions : `list`
+        is a list of valid file endings
+    cfg : `dict`
+        A dictionary representing of widgets with `key` being the key in the
+        cfg for this widget.
+    key : `str`
+        The key for this widget in `cfg`. 
+    optional : `bool`, default: ``False``
+        Specifies if entry input is optional or not.
+    
+    Attributes
+    ----------
+    choose : `Button`
+        Choose file button.
+    clear : `Button`
+        Clear selection button.
+    directory : `bool`
+        is ``True`` if selecting a directory (instead of a file).
+    extensions : `list`
+        is a list of valid file endings
+    
+    Methods
+    -------
+    body
+        Place the required elements using the grid layout method.
+        Returns the number of rows taken by this element.
+    validate
+        Validate the selected file to make sure it exists and has the 
+        correct extension.
+    enable
+        Enables the widget to allow interaction.
+    disable
+        Disables the widget from interaction.
     """
     def __init__(self, text, cfg, key, optional=False, directory=False,
                  extensions=None):
@@ -183,8 +402,22 @@ class FileEntry(MyEntry):
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
         """
         Place the required elements using the grid layout method.
-
         Returns the number of rows taken by this element.
+        
+        Parameters
+        ----------
+        master : A tk widget or window.
+        row : `int`
+            The row variable to use during packing/grid
+        columns : `int`
+            The columnspan to use during packing/grid
+        kwargs : `dict`
+            Keyword arguements to pass to packing/grid. Currently ignored.
+            
+        Returns
+        -------
+        `int`
+            Returns the number of rows taken by this element.
         """
         label = Label(master, text=self.text, justify=LEFT)
         label.grid(row=row, column=0, columnspan=1, sticky="e")
@@ -209,6 +442,10 @@ class FileEntry(MyEntry):
         return 2
 
     def validate(self):
+        """
+        Validate the selected file to make sure it exists and has the 
+        correct extension.
+        """
         if not self.enabled:
             return True
 
@@ -242,6 +479,9 @@ class FileEntry(MyEntry):
                 return False
 
     def enable(self):
+        """
+        Enables the widget to allow interaction.
+        """
         self.enabled = True
         self.entry.state(["!disabled"])
         self.choose.state(["!disabled"])
@@ -249,6 +489,9 @@ class FileEntry(MyEntry):
             self.clear.state(["!disabled"])
 
     def disable(self):
+        """
+        Disables the widget from interaction.
+        """
         self.enabled = False
         self.entry.state(["disabled"])
         self.choose.state(["disabled"])
@@ -259,8 +502,24 @@ class FileEntry(MyEntry):
 class StringEntry(MyEntry):
     """
     Creates a labeled Entry field for a string.
-
-    *text* is the Label/error box text.
+    
+    Parameters
+    ----------
+    text : `str` 
+        is the Label/error box text.
+    cfg : `dict`
+        A dictionary representing of widgets with `key` being the key in the
+        cfg for this widget.
+    key : `str`
+        The key for this widget in `cfg`. 
+    optional : `bool`, default: ``False``
+        Specifies if entry input is optional or not.
+        
+    Methods
+    -------
+    body
+        Place the required elements using the grid layout method.
+        Returns the number of rows taken by this element.
     """
     def __init__(self, text, cfg, key, optional=False):
         MyEntry.__init__(self, text, cfg, key, optional)
@@ -268,8 +527,22 @@ class StringEntry(MyEntry):
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
         """
         Place the required elements using the grid layout method.
-
         Returns the number of rows taken by this element.
+        
+        Parameters
+        ----------
+        master : A tk widget or window.
+        row : `int`
+            The row variable to use during packing/grid
+        columns : `int`
+            The columnspan to use during packing/grid
+        kwargs : `dict`
+            Keyword arguements to pass to packing/grid. Currently ignored.
+            
+        Returns
+        -------
+        `int`
+            Returns the number of rows taken by this element.
         """
         label = Label(master, text=self.text, justify=LEFT)
         label.grid(row=row, column=0, columnspan=1, sticky="w")
@@ -282,7 +555,36 @@ class IntegerEntry(MyEntry):
     """
     Creates a labeled Entry field for an integer.
 
-    *text* is the Label/error box text.
+    Parameters
+    ----------
+    text : `str` 
+        is the Label/error box text.
+    cfg : `dict`
+        A dictionary representing of widgets with `key` being the key in the
+        cfg for this widget.
+    key : `str`
+        The key for this widget in `cfg`. 
+    optional : `bool`, default: ``False``
+        Specifies if entry input is optional or not.
+    minvalue : `int`
+        Minimum value the entry can take.
+        
+    Attributes
+    ----------
+    minvalue : `int`
+        Minimum value the entry can take.
+        
+    Methods
+    -------
+    body
+        Place the required elements using the grid layout method.
+        Returns the number of rows taken by this element.
+    validate
+        Validates the input. Returns ``True`` unless the field is blank and
+        *optional* is ``False``.
+    apply
+        If enabled, sets the configuration at `key` as the current
+        entry text stored in the tkvar.    
     """
     def __init__(self, text, cfg, key, optional=False, minvalue=0):
         MyEntry.__init__(self, text, cfg, key, optional)
@@ -292,12 +594,26 @@ class IntegerEntry(MyEntry):
              **kwargs):
         """
         Add the labeled entry to the Frame *master* using grid at *row*.
-
-        *width* controls the width of the Entry.
-        *left* is ``True`` if the Entry is to the left of the Label.
-        *columns* is the number of columns in *master*.
-
         Returns the number of rows taken by this element.
+      
+        Parameters
+        ----------
+        master : A tk widget or window.
+        row : `int`
+            The row variable to use during packing/grid
+        columns : `int`
+            Is the number of columns in *master*.
+        kwargs : `dict`
+            Keyword arguements to pass to packing/grid. Currently ignored.
+        width : `int` 
+            Controls the width of the Entry.
+        left : `bool` 
+            Is ``True`` if the Entry is to the left of the Label.
+            
+        Returns
+        -------
+        `int`
+            Returns the number of rows taken by this element.
         """
         if left:
             entry_column = 0
@@ -360,6 +676,9 @@ class IntegerEntry(MyEntry):
                     return True
 
     def apply(self):
+        """
+        Applies the value in the tkvar to the cfg passed during creation.
+        """
         if self.enabled and len(self.value.get()) > 0:
             self.cfg[self.key] = int(self.value.get())
         else:

@@ -150,6 +150,7 @@ class Aligner(object):
         self.seq2 = None
         self.calls = 0
 
+        # TODO: uncomment aligner backend
         # global _AMBIVERT
         # if backend == 'ambivert' and _AMBIVERT:
         #     self.align = self.align_ambivert

@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 
 from tkinter import Toplevel, BOTH
@@ -24,18 +24,43 @@ class CustomDialog(Toplevel):
     """
     Class to open dialogs which uses ttk instead of tkinter for style
     consistency. This class is intended as a base class for custom dialogs
+    
+    Parameters
+    ----------
+    parent : `enrich2.gui.configurator.Configurator`
+        A parent window (the application window)
+    title : `str`
+        The dialog window title
+    body_frame_text: `str`, default: ''   
+        Specify text to house all elements in a `LabelFrame`
+        
+    Methods
+    -------
+    body
+        Create dialog body, overrides TopLevel.
+    destroy
+        Handles the destory window event.
+    buttonbox
+        Adds a standard button box to the dialog.
+    ok
+        Handles the 'ok' button press event.
+    cancel
+        Handles the 'cancel' button press event.
+    validate
+        This method is called automatically to validate the data before the
+        dialog is destroyed. By default, it always validates OK.
+    apply
+        This method is called automatically to process the data, *after*
+        the dialog is destroyed. By default, it does nothing.
+    
+    See Also
+    --------
+    :py:class:`~Toplevel`
     """
 
     def __init__(self, parent, title = None, body_frame_text=''):
         """
         Initialize a dialog.
-        
-        Parameters
-        ----------
-        parent : `Toplevel`
-            A parent window (the application window)
-        title : `str`
-            The dialog window title
         """
         Toplevel.__init__(self, parent)
 
@@ -105,7 +130,9 @@ class CustomDialog(Toplevel):
         self.wait_window(self)
 
     def destroy(self):
-        """Destroy the window"""
+        """
+        Destroy the window
+        """
         self.initial_focus = None
         Toplevel.destroy(self)
 
@@ -138,6 +165,9 @@ class CustomDialog(Toplevel):
         self.bind("<Escape>", self.cancel)
 
     def ok(self, event=None):
+        """
+        Handles the 'ok' button click.
+        """
         if not self.validate():
             self.initial_focus.focus_set() # put focus back
             return
@@ -152,6 +182,9 @@ class CustomDialog(Toplevel):
             self.cancel()
 
     def cancel(self, event=None):
+        """
+        Handles the 'cancel' button click event.
+        """
         # put focus back to the parent window
         if self.parent is not None:
             self.parent.focus_set()
@@ -164,7 +197,6 @@ class CustomDialog(Toplevel):
         This method is called automatically to validate the data before the
         dialog is destroyed. By default, it always validates OK.
         """
-
         return 1
 
     def apply(self):

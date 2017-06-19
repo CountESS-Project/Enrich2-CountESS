@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 
 from .dialog import CustomDialog
@@ -27,6 +27,15 @@ def subtree_ids(treeview, x, level=0):
     and every element below it in the Treeview *treeview*.
 
     The level of *x* is 0, children of *x* are 1, and so forth.
+    
+    Parameters
+    ----------
+    treeview : `Treeview`
+        The treeview to traverse
+    x : `object`
+        enrich2 object id.
+    level : `int`, default: 0
+        The level in the tree to start at.
     """
     id_list = list()
     id_list.append((x, level))
@@ -38,7 +47,41 @@ def subtree_ids(treeview, x, level=0):
 class DeleteDialog(CustomDialog):
     """
     Confirmation dialog box for deleting the selected items from the Treeview.
+    
+    
+    Parameters
+    ----------
+    parent_window : `TopLevel` or `Tk`
+        Parent Tk window managing this dialog
+    tree : `Tk`
+        Tk object containing a treeview the delete dialog box should reference. 
+    title : `str`: default: 'Create Root Object'
+        The title of the dialog window.
+        
+    Attributes
+    ----------
+    tree : `Treeview`
+        The treeview of the main app.
+    id_tuples: `list`
+        A list of tuples containing (id, object) to house an elements
+        id and related instance.
+    
+    Methods
+    -------
+    body
+        Creates the body for the root dialog, laying out the radio boxes
+        choices for each root object type (experiment, selection, library).
+    buttonbox
+        Creates a buttonbox to handles the radio box selection.
+    apply
+        Applies the root configuration to the selected root element upon
+        clicking `ok`.
+      
+    See Also
+    --------
+    :py:class:`~enrich2.gui.dialog.CustomDialog`
     """
+
     def __init__(self, parent_window, tree, title="Confirm Deletion"):
         self.tree = tree
         self.id_tuples = list()
@@ -47,12 +90,16 @@ class DeleteDialog(CustomDialog):
                 self.id_tuples.extend(subtree_ids(self.tree.treeview, x))
         CustomDialog.__init__(self, parent_window, title)
 
-
     def body(self, master):
         """
         Generates the required text listing all elements that will be deleted.
 
         Displays the "OK" and "Cancel" buttons.
+                
+        Parameters
+        ----------
+        master : `TopLevel` or `Tk`
+            Master window.
         """
         if len(self.id_tuples) == 0:
             message_string = "No elements selected."
@@ -70,7 +117,6 @@ class DeleteDialog(CustomDialog):
                     bullet=bullet, name=self.tree.get_element(x).name)
         message = Label(master, text=message_string, justify="left")
         message.grid(row=0, sticky="w")
-
 
     def buttonbox(self):
         """

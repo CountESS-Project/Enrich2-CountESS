@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 
 from tkinter import StringVar
@@ -46,6 +46,46 @@ globals()['IdOnlySeqLib'] = IdOnlySeqLib
 class CreateRootDialog(CustomDialog):
     """
     Dialog box for creating a new root element.
+    
+    
+    Parameters
+    ----------
+    parent_window : `TopLevel` or `Tk`
+        Parent Tk window managing this dialog
+    title : `str`: default: 'Create Root Object'
+        The title of the dialog window.
+        
+    Attributes
+    ----------
+    element_tkstring : `StringVar`
+        String name of the selected root element to index into the globals
+        to get the right class to instantiate.
+    cfg_dict: `dict`
+        Configuration dictionary to configure root element with.
+    output_directory_tk: `StringVar`
+        The output directory variable linked to the `output directory` 
+        string entry field.
+    name_tk : `StringVar`
+        The name variable linked to the `Name` string entry field.
+    element : :py:class:`~enrich2.base.storemanager.StoreManager`
+        Root element object.
+    
+    Methods
+    -------
+    body
+        Creates the body for the root dialog, laying out the radio boxes
+        choices for each root object type (experiment, selection, library).
+    buttonbox
+        Creates a buttonbox to handles the radio box selection.
+    validate
+        Validate the selection and configuration of the root object.
+    apply
+        Applies the root configuration to the selected root element upon
+        clicking `ok`.
+      
+    See Also
+    --------
+    :py:class:`~enrich2.gui.dialog.CustomDialog`
     """
     def __init__(self, parent_window, title="Create Root Object"):
         self.element_tkstring = StringVar()
@@ -61,6 +101,14 @@ class CreateRootDialog(CustomDialog):
         CustomDialog.__init__(self, parent_window, title)
 
     def body(self, master):
+        """
+        Creates the body for rendering.
+        
+        Parameters
+        ----------
+        master : `TopLevel` or `Tk`
+            Master window.
+        """
         row_no = 0
 
         config_frame = LabelFrame(master, text="Root Configuration")
@@ -108,10 +156,23 @@ class CreateRootDialog(CustomDialog):
         self.bind("<Return>", self.ok)
 
     def validate(self):
+        """
+        Checks the fields specified by the output directory and root object
+        name entry fields.
+        
+        Returns
+        -------
+        `bool`
+        """
         # check the fields
         return self.output_directory_tk.validate() and self.name_tk.validate()
 
     def apply(self):
+        """
+        Gets the configuration specified by the fields `output_directory`
+        and `name` and applies them to the selected root element to create
+        a new root object.
+        """
         # apply the fields
         self.output_directory_tk.apply()
         self.name_tk.apply()
