@@ -533,16 +533,20 @@ class Experiment(StoreManager):
         idx = pd.IndexSlice
         complete = np.full(len(data.index), False, dtype=bool)
         for cnd in data.columns.levels[0]:
-            mask_se = (data.loc[:, idx[cnd, :, 'SE']].notnull().sum(
-                axis='columns') >= 2
-            )
             mask_score = (data.loc[:, idx[cnd, :, 'score']].notnull().sum(
                 axis='columns') >= 2
             )
-            complete = np.logical_or(complete, mask_se)
             complete = np.logical_or(complete, mask_score)
-        data = data.loc[complete]
 
+            try:
+                mask_se = (data.loc[:, idx[cnd, :, 'SE']].notnull().sum(
+                    axis='columns') >= 2
+                           )
+                complete = np.logical_or(complete, mask_se)
+            except KeyError:
+                pass
+
+        data = data.loc[complete]
         self.store.put("/main/{}/scores_shared".format(label), data)
 
     def calc_scores(self, label):
