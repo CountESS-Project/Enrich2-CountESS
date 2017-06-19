@@ -23,8 +23,7 @@ from enrich2.plugins.scoring import BaseScorerPlugin
 from enrich2.plugins.options import Options
 from enrich2.base.constants import WILD_TYPE_VARIANT
 from enrich2.base.utils import log_message
-from enrich2.base.constants import IDENTIFIERS, VARIANTS, COUNTS_UNFILTERED_TABLE
-from enrich2.base.constants import COUNTS_TABLE, GROUP_MAIN, SCORES_TABLE
+from enrich2.base.constants import IDENTIFIERS, VARIANTS
 
 
 options = Options()
@@ -57,8 +56,7 @@ class RatiosScorer(BaseScorerPlugin):
             - complete
             - full
         """
-        if self.store_check(
-                "/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE)):
+        if self.store_check("/main/{}/scores".format(label)):
             return
 
         log_message(
@@ -68,7 +66,7 @@ class RatiosScorer(BaseScorerPlugin):
         )
         c_last = 'c_{}'.format(self.store_timepoints()[-1])
         df = self.store_select(
-            key="/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE),
+            key="/main/{}/counts".format(label),
             columns=['c_0', '{}'.format(c_last)]
         )
 
@@ -83,9 +81,9 @@ class RatiosScorer(BaseScorerPlugin):
                                  'table not present [{}]'.format(self.name))
 
             shared_counts = self.store_select(
-                key="/{}/{}/{}".format(GROUP_MAIN, wt_label, COUNTS_TABLE),
-                where='index={}'.format(WILD_TYPE_VARIANT),
-                columns=['c_0', '{}'.format(c_last)]
+                key="/main/{}/counts".format(wt_label),
+                columns=['c_0', '{}'.format(c_last)],
+                where="index='{}'".format(WILD_TYPE_VARIANT)
             )
 
             # wild type not found
@@ -98,14 +96,13 @@ class RatiosScorer(BaseScorerPlugin):
 
         elif self.logr_method == "complete":
             shared_counts = self.store_select(
-                key="/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE),
+                key="/main/{}/counts".format(label),
                 columns=['c_0', '{}'.format(c_last)]
             ).sum(axis="index").values + 0.5
 
         elif self.logr_method == "full":
             shared_counts = self.store_select(
-                key="/{}/{}/{}".format(
-                    GROUP_MAIN, label, COUNTS_UNFILTERED_TABLE),
+                key="/main/{}/counts_unfiltered".format(label),
                 columns=['c_0', '{}'.format(c_last)]
             ).sum(axis="index", skipna=True).values + 0.5
         else:
@@ -127,6 +124,7 @@ class RatiosScorer(BaseScorerPlugin):
         # re-order columns
         ratios = ratios[['score', 'SE', 'logratio', 'variance']]
         self.store_put(
-            key="/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE),
-            value=ratios
+            key="/main/{}/scores".format(label),
+            value=ratios,
+            data_columns=ratios.columns
         )

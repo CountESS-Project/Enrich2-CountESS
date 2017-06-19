@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 
 from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.base.constants import GROUP_MAIN, COUNTS_TABLE, SCORES_TABLE
 from enrich2.base.utils import log_message
 
 
@@ -39,8 +38,7 @@ class SimpleScorer(BaseScorerPlugin):
         Calculate simplified (original Enrich) ratios scores.
         This method does not produce standard errors.
         """
-        if self.store_check(
-                "/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE)):
+        if self.store_check("/main/{}/scores".format(label)):
             return
 
         log_message(
@@ -51,9 +49,8 @@ class SimpleScorer(BaseScorerPlugin):
 
         c_last = 'c_{}'.format(self.store_timepoints()[-1])
         df = self.store_select(
-            key="/{}/{}/{}".format(GROUP_MAIN, label, COUNTS_TABLE),
-            columns=['c_0', '{}'.format(c_last)]
-        )
+            key="/main/{}/counts".format(label),
+            columns=['c_0', '{}'.format(c_last)])
 
         # perform operations on the numpy values of the
         # dataframe for easier broadcasting
@@ -68,6 +65,7 @@ class SimpleScorer(BaseScorerPlugin):
         ratios = ratios[['score', 'SE', 'ratio']]   # re-order columns
 
         self.store_put(
-            key="/{}/{}/{}".format(GROUP_MAIN, label, SCORES_TABLE),
-            value=ratios
+            key="/main/{}/scores".format(label),
+            value=ratios,
+            data_columns=ratios.columns
         )

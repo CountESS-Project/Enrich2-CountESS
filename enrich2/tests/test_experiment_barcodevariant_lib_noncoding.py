@@ -43,12 +43,11 @@ class TestExperimentBcvLibWLSScoringCompleteNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -66,12 +65,11 @@ class TestExperimentBcvLibWLSScoringFullNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -88,12 +86,11 @@ class TestExperimentBcvLibWLSScoringWTNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -111,12 +108,11 @@ class TestExperimentBcvLibOLSScoringCompleteNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -134,12 +130,11 @@ class TestExperimentBcvLibOLSScoringFullNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -157,12 +152,11 @@ class TestExperimentBcvLibOLSScoringWTNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -180,12 +174,11 @@ class TestExperimentBcvLibRatiosScoringCompleteNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -203,12 +196,11 @@ class TestExperimentBcvLibRatiosScoringFullNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -226,12 +218,11 @@ class TestExperimentBcvLibRatiosScoringWTNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -249,12 +240,11 @@ class TestExperimentBcvLibCountsScoringCompleteNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -272,12 +262,11 @@ class TestExperimentBcvLibCountsScoringFullNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -295,12 +284,11 @@ class TestExperimentBcvLibCountsScoringWTNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -317,12 +305,11 @@ class TestExperimentBcvLibSimpleScoringCompleteNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -339,12 +326,11 @@ class TestExperimentBcvLibSimpleScoringFullNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -361,12 +347,11 @@ class TestExperimentBcvLibSimpleScoringWTNormNC(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}_{}'.format(LIBTYPE, CODING_STR, scoring, logr)
-
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=False)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='noncoding')
         self.general_test_component.setUp()
 
     def tearDown(self):

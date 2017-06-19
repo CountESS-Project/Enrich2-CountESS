@@ -32,9 +32,9 @@ class CustomDialog(Toplevel):
         
         Parameters
         ----------
-        parent : Toplevel
+        parent : `Toplevel`
             A parent window (the application window)
-        title : str
+        title : `str`
             The dialog window title
         """
         Toplevel.__init__(self, parent)
@@ -127,7 +127,8 @@ class CustomDialog(Toplevel):
         """
         w = Button(self.button_box, text="OK", width=10, command=self.ok)
         w.grid(column=0, row=0, padx=5, pady=5)
-        w = Button(self.button_box, text="Cancel", width=10, command=self.cancel)
+        w = Button(
+            self.button_box, text="Cancel", width=10, command=self.cancel)
         w.grid(column=1, row=0, padx=5, pady=5)
         self.button_box.rowconfigure(0, weight=1)
         self.button_box.columnconfigure(0, weight=1)

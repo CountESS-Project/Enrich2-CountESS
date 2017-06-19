@@ -74,13 +74,9 @@ class TestBcvSeqLibCountsIntegrated(unittest.TestCase):
         cfg['variants']['use aligner'] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
     
@@ -113,13 +109,9 @@ class TestBcvSeqLibCountsBarcodesMinCountFilter(unittest.TestCase):
         cfg['barcodes']['min count'] = 2
         
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -153,13 +145,9 @@ class TestBcvSeqLibCountsCountsOnlyMode(unittest.TestCase):
         cfg['barcodes']['min count'] = 4
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -193,14 +181,9 @@ class TestBcvSeqLibCountsAvgQFQFilter(unittest.TestCase):
         cfg['fastq']['filters']['avg quality'] = 39
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(
-                CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -234,13 +217,9 @@ class TestBcvSeqLibCountsMinQFQFilter(unittest.TestCase):
         cfg['fastq']['filters']['min quality'] = 39
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -274,13 +253,9 @@ class TestBcvSeqLibCountsMaxNFQFilter(unittest.TestCase):
         cfg['fastq']['filters']['max N'] = 0
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -314,13 +289,9 @@ class TestBcvSeqLibCountsNotChasteFQFilter(unittest.TestCase):
         cfg['fastq']['filters']['chastity'] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -351,13 +322,9 @@ class TestBcvSeqLibDetectMultiMutations(unittest.TestCase):
             READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -389,13 +356,9 @@ class TestBcvSeqLibDetectSingleMutations(unittest.TestCase):
             READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -428,13 +391,9 @@ class TestBcvSeqLibWithRevcomp(unittest.TestCase):
         cfg['fastq']['reverse'] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -469,13 +428,9 @@ class TestBcvSeqLibWithTrimLengthAt3(unittest.TestCase):
         cfg['fastq']['length'] = 3
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -509,13 +464,9 @@ class TestBcvSeqLibWithTrimStartAt4(unittest.TestCase):
         cfg['fastq']['start'] = 4
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -548,13 +499,9 @@ class TestBcvSeqLibDetectSynonymous(unittest.TestCase):
         cfg['variants']['wild type']['sequence'] = 'CCTCCT'
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -583,13 +530,9 @@ class TestBcvSeqLibDetectWildtype(unittest.TestCase):
             READS_DIR)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -622,13 +565,9 @@ class TestBcvSeqLibWithVariantMaxMutationsFilter(unittest.TestCase):
         cfg['variants']['max mutations'] = 1
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -660,13 +599,9 @@ class TestBcvSeqLibWithVariantMinCountFilter(unittest.TestCase):
         cfg['variants']['min count'] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -699,13 +634,9 @@ class TestBcvSeqLibWithReferenceOffset(unittest.TestCase):
         cfg['variants']['wild type']['reference offset'] = 3
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 
@@ -738,13 +669,9 @@ class TestBcvSeqLibWithUseAlignerSetting(unittest.TestCase):
         cfg['variants']['use aligner'] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib,
-            cfg=cfg,
-            file_prefix="{}_{}".format(CODING_STR, prefix),
-            result_dir=RESULT_DIR,
-            file_ext=FILE_EXT,
-            file_sep=FILE_SEP, save=False,
-            verbose=False
+            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
 

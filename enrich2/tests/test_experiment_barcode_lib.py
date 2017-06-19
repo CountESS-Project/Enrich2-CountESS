@@ -42,12 +42,13 @@ class TestExperimentBarocdeLibWLSScoringCompleteNorm(unittest.TestCase):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
-        file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
 
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, params=params, verbose=True)
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -56,210 +57,210 @@ class TestExperimentBarocdeLibWLSScoringCompleteNorm(unittest.TestCase):
     def test_all_hdf5_dataframes(self):
         self.general_test_component.runTest()
 
-#
-# class TestExperimentBarocdeLibWLSScoringFullNorm(unittest.TestCase):
-#
-#     def setUp(self):
-#         scoring = 'WLS'
-#         logr = 'full'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
-#
-#
-# class TestExperimentBarocdeLibOLSScoringCompleteNorm(unittest.TestCase):
-#
-#     def setUp(self):
-#         scoring = 'OLS'
-#         logr = 'complete'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
-#
-#
-# class TestExperimentBarocdeLibOLSScoringFullNorm(unittest.TestCase):
-#
-#     def setUp(self):
-#         scoring = 'OLS'
-#         logr = 'full'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
-#
-#
-# class TestExperimentBarocdeLibRatiosScoringCompleteNorm(unittest.TestCase):
-#
-#     def setUp(self):
-#         scoring = 'ratios'
-#         logr = 'complete'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
-#
-#
-# class TestExperimentBarocdeLibRatiosScoringFullNorm(unittest.TestCase):
-#
-#     def setUp(self):
-#         scoring = 'ratios'
-#         logr = 'full'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
-#
-#
-# class TestExperimentBarocdeLibCountsScoringCompleteNorm(unittest.TestCase):
-#
-#     def setUp(self):
-#         scoring = 'counts'
-#         logr = 'complete'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
-#
-#
-# class TestExperimentBarocdeLibCountsScoringFullNorm(unittest.TestCase):
-#
-#     def setUp(self):
-#         scoring = 'counts'
-#         logr = 'full'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
-#
-#
-# class TestExperimentBarocdeLibSimpleScoringCompleteNorm(unittest.TestCase):
-#     def setUp(self):
-#         scoring = 'simple'
-#         logr = 'complete'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
-#
-#
-# class TestExperimentBarocdeLibSimpleScoringFullNorm(unittest.TestCase):
-#     def setUp(self):
-#         scoring = 'simple'
-#         logr = 'full'
-#         cfg = load_config_data(CFG_FILE, CFG_DIR)
-#         cfg = update_cfg_file(cfg, scoring, logr)
-#         params = deepcopy(DEFAULT_STORE_PARAMS)
-#         file_prefix = '{}_{}_{}'.format(LIBTYPE, scoring, logr)
-#
-#         self.general_test_component = HDF5TestComponent(
-#             store_constructor=Experiment, cfg=cfg, file_prefix=file_prefix,
-#             result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-#             save=False, params=params, verbose=False)
-#         self.general_test_component.setUp()
-#
-#     def tearDown(self):
-#         self.general_test_component.tearDown()
-#
-#     def test_all_hdf5_dataframes(self):
-#         self.general_test_component.runTest()
+
+class TestExperimentBarocdeLibWLSScoringFullNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'WLS'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestExperimentBarocdeLibOLSScoringCompleteNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'OLS'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestExperimentBarocdeLibOLSScoringFullNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'OLS'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestExperimentBarocdeLibRatiosScoringCompleteNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'ratios'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestExperimentBarocdeLibRatiosScoringFullNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'ratios'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestExperimentBarocdeLibCountsScoringCompleteNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'counts'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestExperimentBarocdeLibCountsScoringFullNorm(unittest.TestCase):
+
+    def setUp(self):
+        scoring = 'counts'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestExperimentBarocdeLibSimpleScoringCompleteNorm(unittest.TestCase):
+    def setUp(self):
+        scoring = 'simple'
+        logr = 'complete'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
+
+
+class TestExperimentBarocdeLibSimpleScoringFullNorm(unittest.TestCase):
+    def setUp(self):
+        scoring = 'simple'
+        logr = 'full'
+        cfg = load_config_data(CFG_FILE, CFG_DIR)
+        cfg = update_cfg_file(cfg, scoring, logr)
+        params = deepcopy(DEFAULT_STORE_PARAMS)
+
+        self.general_test_component = HDF5TestComponent(
+            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
+            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
+            logr_method=logr, coding='')
+        self.general_test_component.setUp()
+
+    def tearDown(self):
+        self.general_test_component.tearDown()
+
+    def test_all_hdf5_dataframes(self):
+        self.general_test_component.runTest()
 
 
 if __name__ == "__main__":

@@ -57,12 +57,11 @@ class TestBcidSeqLibCountsIntegratedFilters(unittest.TestCase):
         cfg['barcodes']['min count'] = 2
         cfg['identifiers']['min count'] = 3
         
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='integrated', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -87,12 +86,11 @@ class TestBcidSeqLibCountsBarcodeMinCountSetting(unittest.TestCase):
             READS_DIR, 'barcode_map.txt')
         cfg['barcodes']['min count'] = 2
 
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='mincount', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -117,12 +115,11 @@ class TestBcidSeqLibCountsCountsOnlyMode(unittest.TestCase):
         cfg['barcodes']['map file'] = "{}/{}".format(
             READS_DIR, 'barcode_map.txt')
         
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='counts_only', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -149,12 +146,11 @@ class TestBcidSeqLibCountsAvgQualFQFilter(unittest.TestCase):
             READS_DIR, 'barcode_map.txt')
         cfg['fastq']['filters']['avg quality'] = 38
         
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='filter_avgq', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -180,12 +176,11 @@ class TestBcidSeqLibCountsMaxNFQFilter(unittest.TestCase):
             READS_DIR, 'barcode_map.txt')
         cfg['fastq']['filters']['max N'] = 0
         
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='filter_maxn', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -212,12 +207,11 @@ class TestBcidSeqLibCountsMinQualFQFilter(unittest.TestCase):
             READS_DIR, 'barcode_map.txt')
         cfg['fastq']['filters']['min quality'] = 20
 
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='filter_minq', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -244,12 +238,12 @@ class TestBcidSeqLibCountsNotChasteFQFilter(unittest.TestCase):
             READS_DIR, 'barcode_map.txt')
         cfg['fastq']['filters']['chastity'] = True
 
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='filter_not_chaste', scoring_method='',
+            logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -276,12 +270,12 @@ class TestBcidSeqLibCountsWithIdentifiersMinCountFilter(unittest.TestCase):
             READS_DIR, 'barcode_map.txt')
         cfg['identifiers']['min count'] = 2
 
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='identifiers_mincount', scoring_method='',
+            logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -308,12 +302,11 @@ class TestBcidSeqLibCountsWithRevCompSetting(unittest.TestCase):
             READS_DIR, 'revcomp_barcode_map.txt')
         cfg['fastq']['reverse'] = True
 
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='revcomp', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -340,12 +333,11 @@ class TestBcidSeqLibCountsWithTrimLengthSetting(unittest.TestCase):
             READS_DIR, 'trim_len_barcode_map.txt')
         cfg['fastq']['length'] = 3
 
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='trim_len', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -372,12 +364,11 @@ class TestBcidSeqLibCountsWithTrimStartSetting(unittest.TestCase):
             READS_DIR, 'trim_start_barcode_map.txt')
         cfg['fastq']['start'] = 4
 
-        self.test_component = HDF5TestComponent(store_constructor=BcidSeqLib,
-                                                cfg=cfg, file_prefix=prefix,
-                                                result_dir=RESULT_DIR,
-                                                file_ext=FILE_EXT,
-                                                file_sep=FILE_SEP, save=False,
-                                                verbose=False)
+        self.test_component = HDF5TestComponent(
+            store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='trim_start', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):

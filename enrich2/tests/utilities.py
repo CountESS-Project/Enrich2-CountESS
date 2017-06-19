@@ -152,7 +152,7 @@ def load_df_from_pkl(fname, direc='data/result/'):
         raise IOError("Failed to open '{}".format(path))
 
 
-def save_result_to_txt(test_obj, direc, prefix, sep='\t'):
+def save_result_to_txt(test_obj, direc, sep='\t'):
     """
     Utility function to save a :py:class:`~pd.HDFStore` as a series of 
     delimited tsv. One file is created for each :py:class:`~pd.DataFrame` in
@@ -176,9 +176,8 @@ def save_result_to_txt(test_obj, direc, prefix, sep='\t'):
 
     """
     for key in test_obj.store:
-        name = "{}/{}_{}.tsv".format(
+        name = "{}/{}.tsv".format(
             direc,
-            prefix,
             key[1:].replace("/", "_")
         )
         path = create_file_path(name, direc="")
@@ -187,7 +186,7 @@ def save_result_to_txt(test_obj, direc, prefix, sep='\t'):
     return
 
 
-def save_result_to_pkl(test_obj, direc, prefix):
+def save_result_to_pkl(test_obj, direc):
     """
     Utility function to save a :py:class:`~pd.HDFStore` as a series of 
     pickle files. One file is created for each :py:class:`~pd.DataFrame` in
@@ -209,9 +208,8 @@ def save_result_to_pkl(test_obj, direc, prefix):
 
     """
     for key in test_obj.store:
-        name = "{}/{}_{}.pkl".format(
+        name = "{}/{}.pkl".format(
             direc,
-            prefix,
             key[1:].replace("/", "_")
         )
         path = create_file_path(name, direc="")
@@ -239,6 +237,7 @@ def dispatch_loader(fname, direc, sep='\t'):
         DataFrame parsed from the file.
     """
     ext = fname.split('.')[-1]
+    # print('Loading from: {}/{}'.format(direc, fname))
     if ext in ('tsv' or 'txt'):
         return load_df_from_txt(fname, direc, sep)
     elif ext == 'pkl':

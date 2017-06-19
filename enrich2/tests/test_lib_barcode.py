@@ -53,9 +53,10 @@ class TestBarcodeSeqLibCountsIntegratedFilters(unittest.TestCase):
         cfg['barcodes']['min count'] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, file_prefix='integrated',
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='integrated', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -78,9 +79,10 @@ class TestBarcodeSeqLibCountWithBarcodeMinCountSetting(unittest.TestCase):
         cfg['barcodes']['min count'] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg,
-            file_prefix='barcode_mincount', result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='mincount', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -103,9 +105,10 @@ class TestBarcodeSeqLibCountCountsOnlyMode(unittest.TestCase):
         cfg['barcodes']['min count'] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg,
-            file_prefix='counts_only', result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='counts_only', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -128,9 +131,10 @@ class TestBarcodeSeqLibWithAvgQualityFQFilter(unittest.TestCase):
         cfg['fastq']['filters']['avg quality'] = 39
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg,
-            file_prefix='filter_avgq', result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='filter_avgq', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -153,9 +157,10 @@ class TestBarcodeSeqLibWithMaxNFQFilter(unittest.TestCase):
         cfg['fastq']['filters']['max N'] = 1
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg,
-            file_prefix='filter_maxn', result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='filter_maxn', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -178,9 +183,10 @@ class TestBarcodeSeqLibWithMinQualFQFilter(unittest.TestCase):
         cfg['fastq']['filters']['min quality'] = 38
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg,
-            file_prefix='filter_minq', result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='filter_minq', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -203,9 +209,11 @@ class TestBarcodeSeqLibWithChastityFQFilter(unittest.TestCase):
         cfg['fastq']['filters']['chastity'] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg,
-            file_prefix='filter_not_chaste', result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='filter_not_chaste', scoring_method='',
+            logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -228,9 +236,10 @@ class TestBarcodeSeqLibWithRevcompSetting(unittest.TestCase):
         cfg['fastq']['reverse'] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, file_prefix='revcomp',
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='revcomp', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -253,9 +262,10 @@ class TestBarcodeSeqLibWithTrimStartSetting(unittest.TestCase):
         cfg['fastq']['start'] = 4
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, file_prefix='trim_start',
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='trim_start', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
@@ -278,9 +288,10 @@ class TestBarcodeSeqLibWithTrimLenSetting(unittest.TestCase):
         cfg['fastq']['length'] = 5
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, file_prefix='trim_len',
-            result_dir=RESULT_DIR, file_ext=FILE_EXT, file_sep=FILE_SEP,
-            save=False, verbose=False)
+            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
+            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
+            libtype='trim_len', scoring_method='', logr_method='', coding=''
+        )
         self.test_component.setUp()
 
     def tearDown(self):
