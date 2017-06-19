@@ -549,7 +549,7 @@ class HDFStore(StoreInterface):
         if isinstance(value.columns, pd.MultiIndex):
             self._store.append(key=key, value=value)
         else:
-            if min_itemsize is None:
+            if min_itemsize is None and len(value.index):
                 max_index_length = max(len(x) for x in value.index)
                 min_itemsize = {'index': max_index_length}
 
@@ -603,7 +603,7 @@ class HDFStore(StoreInterface):
         if isinstance(value.columns, pd.MultiIndex):
             self._store.put(key, value, format='table', append=append)
         else:
-            if min_itemsize is None:
+            if min_itemsize is None and len(value.index):
                 max_index_length = max(len(x) for x in value.index)
                 min_itemsize = {'index': max_index_length}
 

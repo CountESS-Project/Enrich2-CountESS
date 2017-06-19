@@ -29,7 +29,6 @@ import time
 import getpass
 import collections
 import pandas as pd
-from tables.file import _open_files
 
 from .utils import nested_format
 from ..base.utils import fix_filename
