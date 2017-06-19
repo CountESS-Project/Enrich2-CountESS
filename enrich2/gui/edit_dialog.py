@@ -42,6 +42,17 @@ from tkinter.ttk import *
 def clear_nones(d):
     """
     Return a copy of dictionary *d* with keys with value ``None`` removed.
+    
+    Parameters
+    ----------
+    d : `dict`
+        Dictionary to clear.
+    
+    Returns
+    -------
+    `dict`
+        Return a copy of dictionary *d* with keys with value ``None`` removed.
+        If a dict was not passed, it simply returns the what was passed.
     """
     if not isinstance(d, dict):
         return d
@@ -80,6 +91,46 @@ element_layouts = {
 
 
 class CountsToggle(object):
+    """
+    Counts toggle is a class containing a widget which handles correct
+    enable/disabling of Counts and FASTQ GUI panes.
+    
+    Parameters
+    ----------
+    frame_dict : `dict`
+        A dictionary of current frames in the seqlib configure box.
+        
+    Attributes
+    ----------
+    mode : `~tk.StringVar`
+        Mode variable linked to radiobuttons
+    frame_dict : `dict`
+        A dictionary of current frames in the seqlib configure box.  
+    rb_fastq : `RadioButton`
+        Radiobutton enabling the selection of fastq mode.
+    rb_counts : `RadioButton`
+        Radiobutton enabling the selection of counts mode.
+    
+    Methods
+    -------
+    body
+        Add CountsToggle to the Frame *master* using grid at *row*.
+        Returns the number of rows taken by this element.
+    counts_mode
+        Disables non-counts mode frames in *frame_dict*, and enables the 
+        counts frame.
+    fastq_mode
+        Disables counts mode frames in *frame_dict*, and enables the 
+        non-counts frames.
+    validate
+        Not currently used.
+    apply
+        Not currently used.
+    enable 
+        Not currently used.
+    disable
+        Not currently used.
+    """
     def __init__(self, frame_dict):
         self.mode = tk.StringVar()
         self.frame_dict = frame_dict
@@ -87,6 +138,25 @@ class CountsToggle(object):
         self.rb_coutns = None
 
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
+        """
+        Add CountsToggle to the Frame *master* using grid at *row*.
+        Returns the number of rows taken by this element.
+
+        Parameters
+        ----------
+        master : A tk widget or window.
+        row : `int`
+            The row variable to use during packing/grid
+        columns : `int`
+            Is the number of columns in *master*.
+        kwargs : `dict`
+            Keyword arguements to pass to packing/grid. Currently ignored.
+
+        Returns
+        -------
+        `int`
+            Returns the number of rows taken by this element.
+        """
         self.rb_fastq = Radiobutton(
             master, text="FASTQ File Mode",
             variable=self.mode, value="FASTQ",
@@ -103,6 +173,10 @@ class CountsToggle(object):
         return 2
 
     def counts_mode(self):
+        """
+        Disables non-counts mode frames in *frame_dict*, and enables the 
+        counts frame.
+        """
         for k in ['filters', 'fastq', 'overlap', 'trimming']:
             if k in self.frame_dict:
                 for x in self.frame_dict[k]:
@@ -119,6 +193,10 @@ class CountsToggle(object):
                         print(x, k)
 
     def fastq_mode(self):
+        """
+        Disables counts mode frames in *frame_dict*, and enables the 
+        non-counts frames.
+        """
         for k in ['counts']:
             if k in self.frame_dict:
                 for x in self.frame_dict[k]:
@@ -151,11 +229,46 @@ class EditDialog(CustomDialog):
     """
     Dialog box for editing elements. Also used to set properties 
     on newly-created elements.
-
-    *parent_window* is the Tk window that owns this child window
-    *tree* is the object containing the config tree and associated Treeview
-    *new* is ``True`` if we are creating a new child of the focused item or 
-    ``False`` if we are editing the focused item
+   
+    Parameters
+    ----------
+    tree : `enrich2.gui.configurator.Configurator`
+        Is the object containing the config tree and associated Treeview
+    parent_window : `TopLevel` or `Tk`
+        Parent Tk window managing this dialog
+    element : :py:class:`~enrich2.base.storemanager.StoreManager`
+        Root element object to edit.
+    title : `str`: default: 'Configure Object'
+        The title of the dialog window.
+           
+    Attributes
+    ----------
+    tree : `enrich2.gui.configurator.Configurator`
+        A parent window (the application window)
+    element : :py:class:`~enrich2.base.storemanager.StoreManager`
+        Root element object to edit.
+    element_cfg : `dict`
+        Configuration dictionary relating to element containing cfg
+        parameters.
+    frame_dict : `dict`
+        A dictionary of current frames in the seqlib configure box.
+    toggle : `CountsToggle`
+        Toggle object to enable/disable parts of the seqlib edit dialog.
+    parent_window : `TopLevel` or `Tk`
+        Parent Tk window managing this dialog
+    name_entry : `~.dialog_elements.StringEntry`
+        The name variable linked to the `Name` string entry field.
+    
+    Methods
+    -------
+    body
+        Add the UI elements to the edit window. Ordering and placement of UI 
+        elements in columns is defined by the ``element_layouts`` dictionary.
+    validation
+        Called when the user chooses "OK", before closing the box.
+        Also checks that child name is unique.
+    apply
+        Called when the user chooses "OK" and the box closes.
     """
     def __init__(self, parent_window, tree, element, title="Configure Object"):
         self.tree = tree
@@ -330,6 +443,11 @@ class EditDialog(CustomDialog):
         """
         Add the UI elements to the edit window. Ordering and placement of UI 
         elements in columns is defined by the ``element_layouts`` dictionary.
+        
+        Parameters
+        ----------
+        master : `TopLevel` or `Tk`
+            Master window.
         """
         main = Frame(master, padding=(3, 3, 12, 12))
         main.grid(row=0, column=0, sticky="nsew")
@@ -351,7 +469,6 @@ class EditDialog(CustomDialog):
     def validate(self):
         """
         Called when the user chooses "OK", before closing the box.
-
         Also checks that child name is unique.
         """
         for tk_list in self.frame_dict.values():
@@ -383,7 +500,8 @@ class EditDialog(CustomDialog):
             else:
                 self.element.configure(
                     clear_nones(self.element_cfg),
-                    configure_children=False, init_from_gui=True)
+                    configure_children=False, init_from_gui=True
+                )
 
             # insert into the object if necessary
             if self.element.parent is not None:
