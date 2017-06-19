@@ -341,8 +341,10 @@ class SeqLib(StoreManager):
             msg="Converting raw {} counts to main counts".format(label),
             extra={'oname': self.name}
         )
+
         raw_table = "/raw/{}/counts".format(label)
         main_table = "/main/{}/counts".format(label)
+
         self.map_table(
             source=raw_table, destination=main_table, source_query=query)
 
