@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,7 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import glob
@@ -45,8 +45,79 @@ OptionMenu = ttk.OptionMenu
 #                Editable Options (Visible/Invisible) Frame
 # -------------------------------------------------------------------------- #
 class OptionsFrame(Frame, Iterable):
+    """
+    This class represents an independent Frame object which renders and 
+    handles the setting of options defined in a script file.
+    
+    Parameters
+    ----------
+    parent : :py:class:`tkinter.ttk.Frame` or :py:class:`~tkinter.TopLevel`
+        The parent frame or window.
+    options : :py:class:`~enrich2.plugins.options.Options`
+        The options this frame should manage.
+    kw : `dict`
+        Keyword arguments for the Frame class.
+        
+    Attributes
+    ----------
+    parent : :py:class:`tkinter.ttk.Frame` or :py:class:`~tkinter.TopLevel`
+        The parent frame or window.
+    row : `int`
+        The row number used for grid/packing.
+    options : :py:class:`~enrich2.plugins.options.Options`
+        The options this frame should manage.
+    vname_tkvars_map : `dict`
+        A mapping of option variable names to their corresponding tk-variable.
+        
+    Methods
+    -------
+    parse_options
+        Parses a :py:class:`~enrich2.plugins.options.Options` instance.
+        If an option is visible, it creates an appropriate widget based
+        on it's data type to render in the GUI.
+    create_widget_from_option
+        Creates a GUI widget based on the data-type of the supplied option.
+        Each deligated function creates a tk-variable that is mapped to 
+        in *vname_tkvars_map*.
+    make_choice_menu_widget
+        Creates drop-down menu for an option that contains choices.
+    make_entry
+        Creates a general text-entry widget for an option.
+    make_bool_entry_widget
+        Creates a boolean tick-box widget for an option.
+    make_string_entry_widget
+        Creates a string entry widget for an option.
+    make_int_entry_widget
+        Creates an int entry widget for an option.
+    make_float_entry_widget
+        Creates a float entry widget for an option.
+    set_validate
+        Attempts to set both an option indexed in the ``options`` attribute
+        by *varname* and the corresponding tk variable with value.
+    get_option_by_varname
+        Get the instance of an option with the variable name *varname*
+    set_option
+        Attempts to set an option indexed in the ``options`` attribute
+        by *varname* with value.       
+    set_variable
+        Attempts to set a tk variable indexed in the ``vname_tkvar_map`` 
+        attribute by *varname* with value.      
+    get_option_cfg
+        Returns a dictionary of all options managed by this instance. Keys
+        are the option variable names *varname* and values are a 
+        tuple of (option value, boolean), the boolean indicating if the value
+        is the same as the default for an option.
+    has_options
+        Returns True if the options managed by this instance contains options.
+    
+    See Also
+    --------
+    :py:class:`~tkinter.ttk.Frame`
+    :py:class:`~collections.Iterable`
+    """
     def __init__(self, parent, options, **kw):
-        super(OptionsFrame, self).__init__(parent, **kw)
+        Frame.__init__(self, parent, **kw)
+        Iterable.__init__(self)
         self.parent = parent
         self.row = 0
 
@@ -62,6 +133,16 @@ class OptionsFrame(Frame, Iterable):
         return iter(list(self.options.keys()))
 
     def parse_options(self, options):
+        """
+        Parses a :py:class:`~enrich2.plugins.options.Options` instance.
+        If an option is visible, it creates an appropriate widget based
+        on it's data type to render in the GUI.
+        
+        Parameters
+        ----------
+        options : :py:class:`~enrich2.plugins.options.Options`
+            The options object to parse.
+        """
         if not len(options):
             label_text = "No options found."
             label = Label(self, text=label_text, justify=LEFT)
@@ -76,6 +157,16 @@ class OptionsFrame(Frame, Iterable):
         return
 
     def create_widget_from_option(self, option):
+        """
+        Creates a GUI widget based on the data-type of the supplied option.
+        Each deligated function creates a tk-variable that is mapped to 
+        in *vname_tkvars_map*.
+        
+        Parameters
+        ----------
+        option : :py:class:`~enrich2.plugins.options.Option`
+            The option to create a widget for.
+        """
         if option.choices:
             self.make_choice_menu_widget(option)
         elif option.dtype in (str, 'string', 'char', 'chr'):
@@ -91,6 +182,14 @@ class OptionsFrame(Frame, Iterable):
                              "dtype {}.".format(option.dtype))
 
     def make_choice_menu_widget(self, option):
+        """
+        Creates drop-down menu for an option that contains choices.
+
+        Parameters
+        ----------
+        option : :py:class:`~enrich2.plugins.options.Option`
+            The option to create the widget for.
+        """
         variable = StringVar(self)
         variable.set(option.get_default_value())
 
@@ -104,11 +203,24 @@ class OptionsFrame(Frame, Iterable):
         vname = option.varname
         set_func = lambda _, y=variable, x=vname: self.set_validate(x, y.get())
         popup_menu = OptionMenu(
-            self, variable, option.get_choice_key(), *choices, command=set_func)
+            self, variable,
+            option.get_choice_key(), *choices, command=set_func
+        )
         popup_menu.grid(sticky=E, column=1, row=self.row)
         self.vname_tkvars_map[option.varname] = variable
 
     def make_entry(self, variable, option):
+        """
+        Creates a general text-entry widget for an option.
+
+        Parameters
+        ----------
+        variable : A tkinter variable
+            A variable that should be linked to the *varname* of the option
+            so that modifications can be accessed easily.
+        option : :py:class:`~enrich2.plugins.options.Option`
+            The option to create the widget for.
+        """
         label_text = "{}: ".format(option.name)
         label = Label(self, text=label_text, justify=LEFT)
         label.grid(sticky=EW, column=0, row=self.row)
@@ -138,6 +250,14 @@ class OptionsFrame(Frame, Iterable):
         return entry
 
     def make_bool_entry_widget(self, option):
+        """
+        Creates a boolean tick-box widget for an option.
+
+        Parameters
+        ----------
+        option : :py:class:`~enrich2.plugins.options.Option`
+            The option to create the widget for.
+        """
         variable = BooleanVar(self)
         variable.set(option.get_default_value())
 
@@ -151,22 +271,63 @@ class OptionsFrame(Frame, Iterable):
         checkbox.grid(sticky=E, column=1, row=self.row)
         self.vname_tkvars_map[option.varname] = variable
 
-    def make_string_entry_widget(self, option: Option) -> None:
+    def make_string_entry_widget(self, option):
+        """
+        Creates a string entry widget for an option.
+
+        Parameters
+        ----------
+        option : :py:class:`~enrich2.plugins.options.Option`
+            The option to create the widget for.
+        """
         variable = StringVar(self)
         variable.set(option.dtype(option.get_default_value()))
         self.make_entry(variable, option)
 
     def make_int_entry_widget(self, option):
+        """
+        Creates an int entry widget for an option.
+
+        Parameters
+        ----------
+        option : :py:class:`~enrich2.plugins.options.Option`
+            The option to create the widget for.
+        """
         variable = IntVar(self)
         variable.set(option.dtype(option.get_default_value()))
         self.make_entry(variable, option)
 
-    def make_float_entry_widget(self, option: Option) -> None:
+    def make_float_entry_widget(self, option):
+        """
+        Creates a float entry widget for an option.
+
+        Parameters
+        ----------
+        option : :py:class:`~enrich2.plugins.options.Option`
+            The option to create the widget for.
+        """
         variable = DoubleVar(self)
         variable.set(option.dtype(option.get_default_value()))
         self.make_entry(variable, option)
 
     def set_validate(self, varname, value):
+        """
+        Attempts to set both an option indexed in the ``options`` attribute
+        by *varname* and the corresponding tk variable with value.
+
+        Parameters
+        ----------
+        varname : `str`
+            The key of the option to set with *value* and validate.
+        value : `Any`
+            Value to validate and set the option with
+            
+        Returns
+        -------
+        `bool` 
+            A boolean indicating if the value could be successfully
+            validated and set.
+        """
         bad_input_msg = "Error validating input for entry {}:\n\n{}"
         try:
             self.set_variable(varname, value)
@@ -182,6 +343,14 @@ class OptionsFrame(Frame, Iterable):
         return True
 
     def get_option_by_varname(self, varname):
+        """
+        Get the instance of an option with the variable name *varname*
+        
+        Returns
+        -------
+        :py:class:`~enrich2.plugins.options.Option`
+            The option with varname equal to *varname*
+        """
         option = self.options.get(varname, None)
         if option is None:
             raise KeyError("No option with the variable name '{}' could "
@@ -189,15 +358,48 @@ class OptionsFrame(Frame, Iterable):
         return option
 
     def set_option(self, varname, value):
+        """
+        Attempts to set an option indexed in the ``options`` attribute
+        by *varname* with value.
+        
+        Parameters
+        ----------
+        varname : `str`
+            The key of the option to set with *value* and validate.
+        value : `Any`
+            Value to validate and set the option with
+        """
         option = self.get_option_by_varname(varname)
         option.set_value(value)
 
     def set_variable(self, varname, value):
+        """
+        Attempts to set a tk variable indexed in the ``vname_tkvar_map`` 
+        attribute by *varname* with value.
+
+        Parameters
+        ----------
+        varname : `str`
+            The key of the option to set with *value* and validate.
+        value : `Any`
+            Value to validate and set the option with
+        """
         variable = self.vname_tkvars_map.get(varname, None)
         if variable is not None:
             variable.set(value)
 
     def get_option_cfg(self):
+        """
+        Returns a dictionary of all options managed by this instance. Keys
+        are the option variable names *varname* and values are a 
+        tuple of (option value, boolean), the boolean indicating if the value
+        is the same as the default for an option.
+        
+        Returns
+        -------
+        `dict`
+            Option configuration dictionary.
+        """
         cfg = {}
         for varname, opt in self.options.items():
             value = opt.get_value()
@@ -207,6 +409,14 @@ class OptionsFrame(Frame, Iterable):
         return cfg
 
     def has_options(self):
+        """
+        Returns True if the options managed by this instance contains options.
+        
+        Returns
+        -------
+        `bool`
+            True if ``options`` is not empty.
+        """
         return self.options.has_options()
 
 
@@ -214,7 +424,68 @@ class OptionsFrame(Frame, Iterable):
 #                        Frame for File Handling
 # -------------------------------------------------------------------------- #
 class OptionsFileFrame(Frame):
-    def __init__(self, parent, options_file, **config):
+    """
+    This class represents a Frame subclass which manages the loading of
+    option configuration files. If this instance is linked to a 
+    :py:class:`~OptionsFrame` then loading a configuration file will
+    attempt to match up the options in that frame to the ones found
+    in parsed configuration file, and handle the validation/setting of these
+    options.
+    
+    Parameters
+    ----------
+    parent : :py:class:`tkinter.ttk.Frame` or :py:class:`~tkinter.TopLevel`
+        The parent frame or window.
+    options_file : :py:class:`~enrich2.plugins.options.OptionsFile`
+        The options file instance to parse/validate options files with.
+    config : `dict`
+        Keyword arguments to pass into Frame __init__
+    
+    Attributes
+    ----------
+    row : `int`
+        The row number used for grid/packing.
+    active_cfg : `dict`
+        A dictionary of option variable names and their corresponding
+        values.
+    options_frame : :py:class:`~OptionsFrame`
+        A linked options frame. ``None`` if it doesn't exist.
+    options_file : :py:class:`~enrich2.plugins.options.OptionsFile`
+        The options file instance to parse/validate options files with.
+    
+    Methods
+    -------
+    _make_widgets
+        Makes the widgets for this Frame
+    _make_label
+        Makes a label widget with text being the name of the options_file
+        attribute.
+    _make_button
+        Makes the load button.
+    load_from_file
+        Load a configuration file from disk. 
+    apply_to_options
+        Applies a loaded a configuration file from disk. Handles the cases 
+        where unknown options have been found that do not match any options
+        in `options_frame`, parsed options could not be validated, or there
+        are missing options from the file that are in the `options_frame`.
+    options_file_incomplete
+        Returns a list of missing options from a configuration file
+        that exist in the linked options frame.
+    update_option_frame : 
+        Given a dictionary of option varname-value pairs, attempts to update
+        the options and tk-variables in the linked `options_frame`.
+    get_option_cfg
+        Returns the configuration loaded previously from a config file.
+    link_to_options_frame
+        Links this instance to an existing options frame.
+    
+    See Also
+    --------
+    :py:class:`~OptionsFrame`
+    :py:class:`~tkinter.ttk.Frame`
+    """
+    def __init__(self, parent, options_file=None, **config):
         super().__init__(parent, **config)
         self.row = 0
         self.active_cfg = {}
@@ -226,21 +497,34 @@ class OptionsFileFrame(Frame):
             self.columnconfigure(1, weight=3)
 
     def _make_widgets(self):
+        """
+        Makes the widgets for this Frame.
+        """
         self._make_label()
         self._make_button()
         self.rowconfigure(self.row, weight=1)
         self.row += 1
 
     def _make_label(self):
+        """
+        Makes a label widget with text being the name of the options_file
+        attribute.
+        """
         label_text = "{}: ".format(self.options_file.name)
         label = Label(self, text=label_text, justify=LEFT)
         label.grid(row=self.row, column=0, sticky=EW)
 
     def _make_button(self):
+        """
+        Makes the load button.
+        """
         button = Button(self, text='Load...', command=self.load_from_file)
         button.grid(row=self.row, column=1, sticky=E)
 
     def load_from_file(self):
+        """
+        Load a configuration file from disk. 
+        """
         file_path = askopenfilename()
         if not file_path:
             return
@@ -274,6 +558,12 @@ class OptionsFileFrame(Frame):
         self.apply_to_options()
 
     def apply_to_options(self):
+        """
+        Applies a loaded a configuration file from disk. Handles the cases 
+        where unknown options have been found that do not match any options
+        in `options_frame`, parsed options could not be validated, or there
+        are missing options from the file that are in the `options_frame`.
+        """
         success = 'Successfully applied configuration file to plugin options.'
         if not self.options_frame:
             messagebox.showwarning(
@@ -321,6 +611,10 @@ class OptionsFileFrame(Frame):
         return
 
     def options_file_incomplete(self):
+        """
+        Returns a list of missing options from a configuration file
+        that exist in the linked options frame.
+        """
         missing = []
         if self.options_frame and self.active_cfg:
             missing = options_not_in_config(
@@ -331,6 +625,16 @@ class OptionsFileFrame(Frame):
         return missing
 
     def update_option_frame(self, cfg):
+        """
+        Given a dictionary of option varname-value pairs, attempts to update
+        the options and tk-variables in the linked `options_frame`.
+        
+        Parameters
+        ----------
+        cfg : `dict`
+            Dictionary of option `varname`-value pairs to update the 
+            options_frame with
+        """
         current = []
         for varname, value in cfg.items():
             bad_input_msg = "The following error occured when validating" \
@@ -377,9 +681,25 @@ class OptionsFileFrame(Frame):
         return True
 
     def get_option_cfg(self):
+        """
+        Returns the configuration loaded previously from a config file.
+        
+        Returns
+        -------
+        `dict`
+            Loaded configuration dictionary.
+        """
         return self.active_cfg
 
     def link_to_options_frame(self, options_frame: OptionsFrame):
+        """
+        Links this instance to an existing options frame.
+        
+        Parameters
+        ----------
+        options_frame : :py:class:`~OptionsFrame`
+            Options frame to link this instance to.
+        """
         self.options_frame = options_frame
 
 
@@ -400,7 +720,80 @@ class ScorerScriptsDropDown(LabelFrame):
         Tkinter object which is the master of this frame 
     scripts_dir : `str`
         Directory for containing Enrich2 plugins.
-                
+        
+    Attributes
+    ----------
+    row : `int`
+        The row number used for grid/packing.
+    current_view : `str`
+        The name of the current selected plugin.
+    btn_frame : :py:class:`~tkinter.ttk.Frame`
+        The frame housing the buttons of this GUI widget.
+    drop_menu_tkvar : :py:class:`~tkinter.StringVar`
+        Tk variable linked to the drop-down plugin menu.
+    drop_menu : :py:class:`tkinter.ttk.OptionMenu`
+    plugins : `dict`
+        A dictionary of plugins objects indexed by their name attribute.
+    
+    Methods
+    -------
+    load_from_cfg_file
+        Load a plugin which has been specified in a configuration file.
+        If a plugin already exists, the plugin view will be updated otherwise
+        a new plugin view will be created.
+    _parse_directory
+        Parses a directory into plugins stored in the plugins dictionary.
+    parse_file
+        Parse a plugin file located at path into 
+        :py:class:`~enrich2.plugins.scoring.BaseScorerPlugin`,
+        :py:class:`~enrich2.plugins.options.Options` and 
+        :py:class:`~enrich2.plugins.options.OptionsFile` objects.    
+    plugin_hash
+        Generate a hash key based on name, authors, version and path.
+    plugin_exists
+        Check if a plugin exist based on name, authors, version and path.
+    get_plugin_gui_name
+        Returns the name the GUI uses to render the plugin in the drop down.
+    add_plugin
+        Add a plugin to the plugins dictionary. Creates a unique name
+        for the GUI if there are name collisions using the name defined in
+        the class being added.
+    make_options_frames
+        Creates the :py:class: `~OptionsFrame` and 
+        :py:class: `~OptionsFileFrame` from 
+        :py:class: `~enrich2.plugins.options.Options` and 
+        :py:class: `~enrich2.plugins.options.OptionsFile`         
+    make_widgets
+        Make the drop-down menu and label.
+    make_drop_down_widget
+        Make the drop-down menu.    
+    make_buttons
+        Make the print to log and save as buttons for interacting with a 
+        plugin.
+    increment_row
+        Increment the row for grid packing.     
+    update_options_view
+        Updates the current plugin view
+    get_plugin_by_tkname
+       Get a plugin tuple in plugins dictionary by its tkname 
+    get_views
+        Get the current possible views able to be rendered by the GUI.
+    hide_current_view
+        Hide the current view and forget the current grid packing structure
+    show_new_view
+        Updates the plugin frame to render the view specified by next_view
+    get_scorer_class_attrs_path
+        Returns the current scorer class, attributes and path
+    save_config
+        Saves the scorer portion of the current plugin to a config JSON file.
+    log_parameters
+        Prints the current plugin's parameters to the current log handler(s).
+    show_plugin_details
+        Create a messagebox displaying the current plugin
+    
+    See Also
+    --------
+    :py:class:`~tkinter.ttk.LabelFrame`
     """
     def __init__(self, parent=None, scripts_dir=plugins_folder, **config):
         super().__init__(parent, **config)
@@ -507,9 +900,9 @@ class ScorerScriptsDropDown(LabelFrame):
     def parse_file(self, path):
         """
         Parse a plugin file located at path into 
-        :py:class: `~enrich2.plugins.scoring.BaseScorerPlugin`,
-        :py:class: `~enrich2.plugins.options.Options` and 
-        :py:class: `~enrich2.plugins.options.OptionsFile`
+        :py:class:`~enrich2.plugins.scoring.BaseScorerPlugin`,
+        :py:class:`~enrich2.plugins.options.Options` and 
+        :py:class:`~enrich2.plugins.options.OptionsFile`
         
         Parameters
         ----------

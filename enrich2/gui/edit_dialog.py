@@ -236,7 +236,7 @@ class EditDialog(CustomDialog):
         Is the object containing the config tree and associated Treeview
     parent_window : `TopLevel` or `Tk`
         Parent Tk window managing this dialog
-    element : :py:class:`~enrich2.base.storemanager.StoreManager`
+    element : A subclass of a store manager object.
         Root element object to edit.
     title : `str`: default: 'Configure Object'
         The title of the dialog window.
@@ -245,7 +245,7 @@ class EditDialog(CustomDialog):
     ----------
     tree : `enrich2.gui.configurator.Configurator`
         A parent window (the application window)
-    element : :py:class:`~enrich2.base.storemanager.StoreManager`
+    element : A subclass of a store manager object.
         Root element object to edit.
     element_cfg : `dict`
         Configuration dictionary relating to element containing cfg

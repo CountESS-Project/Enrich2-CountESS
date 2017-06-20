@@ -189,9 +189,9 @@ class Option(BaseOption):
     
     Parameters
     ----------
-    name : str 
+    name : `str` 
         GUI name of the option.
-    varname : str
+    varname : `str`
         Variable name used by the script it is defined in.
     dtype : 
         Data-type of the option value.
@@ -207,13 +207,29 @@ class Option(BaseOption):
     Methods
     -------
     keytransform
+        Transforms a key that appears in choices values into its corresponding
+        key. Throws ValueError if value is neither a key or value.
     validate
+        Validate a potential value that will be set as in the config for this
+        option.
     get_value
+        Returns the value of this option. If this option has choices
+        then it will return the current value selected in *choices*.
     set_value
+        Set the value of this option. Should also make a call to the 
+        inherited classes _validate function.
     get_choice_key
+        The choice key is the current selected key in the *choices* attribute.
+        This method get the choice key that is currently selected.
     set_choice_key
+        The choice key is the current selected key in the *choices* attribute.
+        This method sets the choice key. *key* must be either a valid
+        value in *choices* or a valid key in *choices*.
     get_default_value
+        Return default value of this option. If this option has choices
+        then it will return the current value selected in *choices*.
     is_default
+        Returns a bool if the current value is the default
     
     See Also
     --------
@@ -354,7 +370,7 @@ class Option(BaseOption):
 
         Parameters
         ----------
-        key : str
+        key : `str`
             Value to set the choice key to.
         """
         if self.choices:
@@ -405,16 +421,32 @@ class BaseOptions(Mapping):
     Methods
     -------
     put
+        Insert a varname: option item into the mapping.
     to_dict
+        Builds a new mapping of :py:class:`~enrich2.plugins.options.Option` 
+        *varname* to *value* key-value pairs.
     has_options
+        Indicates if the instance is currently populated with any options.
     option_varnames
+        Returns a KeysView of the object
     option_names
+        Returns a list of option names.
     set_option_by_varname
+        Set an option by its *varname*
     get_option_by_varname
+        Get an option by its *varname*
     validate_option_by_varname
+        Validate an option by its *varname*
     get_visible_options
+        Return a `list` of :py:class:`~enrich2.plugins.options.Option` that
+        are not hidden.
     get_hidden_options
+        Return a `list` of :py:class:`~enrich2.plugins.options.Option` that
+        are hidden.
     to_dict_with_default_indicator
+        Builds a new mapping of :py:class:`~enrich2.plugins.options.Option` 
+        *varname* to tuple key-value pairs. Tuple is a (*value*, bool)
+        to indicate if the value is the same as the specified default.
     
     See Also
     --------
@@ -490,7 +522,7 @@ class BaseOptions(Mapping):
         """
         Returns a KeysView of the object
         """
-        return self._options.keys()
+        return list(self._options.keys())
 
     def option_names(self):
         """
@@ -500,7 +532,7 @@ class BaseOptions(Mapping):
 
     def set_option_by_varname(self, varname, value):
         """
-        Set an option by it's *varname*
+        Set an option by its *varname*
         
         Parameters
         ----------
@@ -516,7 +548,7 @@ class BaseOptions(Mapping):
 
     def validate_option_by_varname(self, varname, value):
         """
-        Validate an option by it's *varname*
+        Validate an option by its *varname*
 
         Parameters
         ----------
@@ -532,7 +564,7 @@ class BaseOptions(Mapping):
 
     def get_option_by_varname(self, varname):
         """
-        Get an option by it's *varname*
+        Get an option by its *varname*
 
         Parameters
         ----------
@@ -586,11 +618,15 @@ class Options(BaseOptions):
     to their scoring script. Subclasses 
     :py:class:`~enrich2.plugins.options.BaseOptions`
     
+    Methods
+    -------
+    add_option
+        Adds an option.
+    
     See Also
     --------
     :py:class:`~enrich2.plugins.options.BaseOptions`
     """
-
     def __init__(self):
         super().__init__()
 
@@ -710,7 +746,10 @@ class OptionsFile(object):
     Methods
     -------
     parse_to_dict
+        Parse a configuration file into an options attributes dictionary
+        with *varname* : *vale* pairs required by a plugin.
     validate_cfg
+        Validate a parsed config.
     """
 
     @staticmethod

@@ -1,4 +1,4 @@
-#  Copyright 2016 Alan F Rubin
+#  Copyright 2016-2017 Alan F Rubin, Daniel C Esposito
 #
 #  This file is part of Enrich2.
 #
@@ -13,7 +13,8 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
+#  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
+
 
 import tkinter
 import tkinter.messagebox
@@ -25,6 +26,7 @@ from tkinter import E
 from collections import OrderedDict
 from .dialog import CustomDialog
 
+# Ensure all the classes are in globals dictionary.
 from ..libraries.basic import BasicSeqLib
 from ..libraries.barcodevariant import BcvSeqLib
 from ..libraries.barcodeid import BcidSeqLib
@@ -46,6 +48,33 @@ seqlib_label_text = OrderedDict([
 class CreateSeqLibDialog(CustomDialog):
     """
     Dialog box for creating a new SeqLib.
+    
+    Parameters
+    ----------
+    parent_window : `Tk` or `TopLevel`
+        The managing window. Usually the main Enrich2 app configurator.
+    title : `str`
+        The title of the dialog window.
+    
+    Attributes
+    ----------
+    element_tkstring : :py:class:`~tkinter.StringVar`
+        The tk string variable linked to the button box.
+    element_type : A subclass of StoreManager.
+        The constructor of the currently selected class.
+    
+    Methods
+    -------
+    body
+        Creates the body of the dialog.
+    buttonbox
+        Creates and grid packs the button boxes.
+    apply
+        Handles the 'Ok' button press event.
+    
+    See Also
+    --------
+    :py:class:`~CustomDialog`
     """
     def __init__(self, parent_window, title="New SeqLib"):
         self.element_tkstring = tkinter.StringVar()
@@ -53,6 +82,15 @@ class CreateSeqLibDialog(CustomDialog):
         CustomDialog.__init__(self, parent_window, title, "SeqLib Type")
 
     def body(self, master):
+        """
+        Creates a radiobutton for each SeqLib option and links these to the 
+        string tk variable.
+        
+        Parameters
+        ----------
+        master : `Tk` or `TopLevel`
+            The managing window. Usually the main Enrich2 app configurator.
+        """
         for i, k in enumerate(seqlib_label_text.keys()):
             rb = Radiobutton(
                 master, text=seqlib_label_text[k],
@@ -64,7 +102,8 @@ class CreateSeqLibDialog(CustomDialog):
 
     def buttonbox(self):
         """
-        Display only one button.
+        Grid places the button box and places an 'OK' button in the same
+        frame. Display only one button.
         """
         box = self.button_box
         w = Button(box, text="OK", width=10, command=self.ok)
@@ -72,6 +111,10 @@ class CreateSeqLibDialog(CustomDialog):
         self.bind("<Return>", self.ok)
 
     def apply(self):
+        """
+        Gets the element string from the selected radio-button and uses this
+        to index ``globals`` to set the corresponding class constructor.
+        """
         try:
             self.element_type = globals()[self.element_tkstring.get()]
         except KeyError:

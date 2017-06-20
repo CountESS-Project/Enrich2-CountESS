@@ -102,7 +102,10 @@ class CreateRootDialog(CustomDialog):
 
     def body(self, master):
         """
-        Creates the body for rendering.
+        Creates and grid-packs the body for rendering. 
+        
+        Creates a radiobutton for each SeqLib option and links these to the 
+        string tk variable.
         
         Parameters
         ----------
