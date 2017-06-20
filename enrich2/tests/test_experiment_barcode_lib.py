@@ -30,8 +30,8 @@ RESULT_DIR = "data/result/experiment/"
 
 DRIVER = "runTest"
 LIBTYPE = 'barcode'
-FILE_EXT = 'pkl'
-FILE_SEP = ""
+FILE_EXT = 'tsv'
+FILE_SEP = "\t"
 
 
 class TestExperimentBarocdeLibWLSScoringCompleteNorm(unittest.TestCase):

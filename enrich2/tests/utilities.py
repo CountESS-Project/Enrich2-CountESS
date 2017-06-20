@@ -30,6 +30,7 @@ import pandas as pd
 from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
 from ..base.config_constants import FORCE_RECALCULATE, COMPONENT_OUTLIERS
 from ..base.config_constants import TSV_REQUESTED, OUTPUT_DIR_OVERRIDE
+from ..base.utils import multi_index_tsv_to_dataframe
 
 
 TOP_LEVEL = os.path.dirname(__file__)
@@ -124,7 +125,7 @@ def load_df_from_txt(fname, direc='data/result/', sep='\t'):
     """
     path = create_file_path(fname, direc)
     try:
-        return pd.DataFrame.from_csv(path, sep=sep)
+        return multi_index_tsv_to_dataframe(path, sep, header_rows=None)
     except IOError:
         raise IOError("Failed to open '{}".format(path))
 
@@ -164,8 +165,6 @@ def save_result_to_txt(test_obj, direc, sep='\t'):
         HDFStore object to save to delimited text files.
     direc : `str`
         Directory to save the file.
-    prefix : `str`
-        Prefix to add to each key in the store to use as a filename.
     sep : `str`
         Delimiter to use between columns.
 
@@ -182,7 +181,7 @@ def save_result_to_txt(test_obj, direc, sep='\t'):
         )
         path = create_file_path(name, direc="")
         print("saving {} to {}".format(key, path))
-        test_obj.store[key].to_csv(path, sep=sep, index=True)
+        test_obj.store[key].to_csv(path, sep=sep, index=True, na_rep='NaN')
     return
 
 
@@ -198,8 +197,6 @@ def save_result_to_pkl(test_obj, direc):
         HDFStore object to save to pickle files.
     direc : `str`
         Directory to save the file.
-    prefix : `str`
-        Prefix to add to each key in the store to use as a filename,
 
     Returns
     -------

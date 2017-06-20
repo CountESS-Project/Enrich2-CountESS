@@ -79,7 +79,7 @@ class TestBcvSeqLibCountsIntegrated(unittest.TestCase):
             libtype=prefix, scoring_method='', logr_method='', coding='coding'
         )
         self.test_component.setUp()
-    
+
     def tearDown(self):
         self.test_component.tearDown()
 
@@ -107,7 +107,7 @@ class TestBcvSeqLibCountsBarcodesMinCountFilter(unittest.TestCase):
 
         # Set barcode parameters
         cfg['barcodes']['min count'] = 2
-        
+
         self.test_component = HDF5TestComponent(
             store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
             file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
@@ -132,7 +132,7 @@ class TestBcvSeqLibCountsCountsOnlyMode(unittest.TestCase):
     Test counts only mode correctly reads barcodes in from a tsv with
     count values column.
     """
- 
+
     def setUp(self):
         prefix = 'counts_only'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -204,7 +204,7 @@ class TestBcvSeqLibCountsMinQFQFilter(unittest.TestCase):
     Test that the FQ Filter average quality setting works at removing
     barcodes with containing any base qualities less than 39 (H)
     """
-    
+
     def setUp(self):
         prefix = 'filter_minq'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -240,7 +240,7 @@ class TestBcvSeqLibCountsMaxNFQFilter(unittest.TestCase):
     Test that the FQ Filter average quality setting works at removing
     barcodes with more than 0 N bases.
     """
- 
+
     def setUp(self):
         prefix = 'filter_maxn'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -276,7 +276,7 @@ class TestBcvSeqLibCountsNotChasteFQFilter(unittest.TestCase):
     Test that the FQ Filter average quality setting works at removing
     barcodes that are not chaste.
     """
-   
+
     def setUp(self):
         prefix = 'filter_chastity'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -475,7 +475,7 @@ class TestBcvSeqLibWithTrimStartAt4(unittest.TestCase):
 
     def test_all_hdf5_dataframes(self):
         self.test_component.runTest()
-        
+
 # -------------------------------------------------------------------------- #
 #
 #                          Synonymous Test

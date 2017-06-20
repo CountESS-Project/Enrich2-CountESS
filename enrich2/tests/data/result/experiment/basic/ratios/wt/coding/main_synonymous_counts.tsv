@@ -1,0 +1,6 @@
+condition	Condition_1	Condition_1	Condition_1	Condition_1	Condition_1	Condition_1
+selection	Selection_1_C1	Selection_1_C1	Selection_1_C1	Selection_2_C1	Selection_2_C1	Selection_2_C1
+timepoint	c_0	c_1	c_2	c_0	c_1	c_2
+_sy	1.0	2.0	3.0	1.0	2.0	4.0
+_wt	1.0	1.0	1.0	1.0	1.0	1.0
+p.Lys2Gln	1.0	1.0	1.0	1.0	2.0	2.0

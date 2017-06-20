@@ -31,8 +31,8 @@ RESULT_DIR = "data/result/experiment/"
 DRIVER = "runTest"
 LIBTYPE = 'barcodevariant'
 CODING_STR = "n"
-FILE_EXT = 'pkl'
-FILE_SEP = ''
+FILE_EXT = 'tsv'
+FILE_SEP = '\t'
 
 
 class TestExperimentBcvLibWLSScoringCompleteNormNC(unittest.TestCase):

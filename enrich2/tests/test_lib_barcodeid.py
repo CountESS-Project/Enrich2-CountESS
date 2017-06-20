@@ -66,7 +66,7 @@ class TestBcidSeqLibCountsIntegratedFilters(unittest.TestCase):
 
     def tearDown(self):
         self.test_component.tearDown()
-        
+
     def test_all_hdf5_dataframes(self):
         self.test_component.runTest()
 
@@ -114,7 +114,7 @@ class TestBcidSeqLibCountsCountsOnlyMode(unittest.TestCase):
             READS_DIR , '{}.tsv'.format(prefix))
         cfg['barcodes']['map file'] = "{}/{}".format(
             READS_DIR, 'barcode_map.txt')
-        
+
         self.test_component = HDF5TestComponent(
             store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
             file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
@@ -136,7 +136,7 @@ class TestBcidSeqLibCountsCountsOnlyMode(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBcidSeqLibCountsAvgQualFQFilter(unittest.TestCase):
 
-    
+
     def setUp(self):
         prefix = 'filter_avgq'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -145,7 +145,7 @@ class TestBcidSeqLibCountsAvgQualFQFilter(unittest.TestCase):
         cfg['barcodes']['map file'] = "{}/{}".format(
             READS_DIR, 'barcode_map.txt')
         cfg['fastq']['filters']['avg quality'] = 38
-        
+
         self.test_component = HDF5TestComponent(
             store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
             file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
@@ -166,7 +166,7 @@ class TestBcidSeqLibCountsAvgQualFQFilter(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBcidSeqLibCountsMaxNFQFilter(unittest.TestCase):
 
-    
+
     def setUp(self):
         prefix = 'filter_maxn'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -175,7 +175,7 @@ class TestBcidSeqLibCountsMaxNFQFilter(unittest.TestCase):
         cfg['barcodes']['map file'] = "{}/{}".format(
             READS_DIR, 'barcode_map.txt')
         cfg['fastq']['filters']['max N'] = 0
-        
+
         self.test_component = HDF5TestComponent(
             store_constructor=BcidSeqLib, cfg=cfg, result_dir=RESULT_DIR,
             file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
@@ -197,7 +197,7 @@ class TestBcidSeqLibCountsMaxNFQFilter(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBcidSeqLibCountsMinQualFQFilter(unittest.TestCase):
 
-    
+
     def setUp(self):
         prefix = 'filter_minq'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -228,7 +228,7 @@ class TestBcidSeqLibCountsMinQualFQFilter(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBcidSeqLibCountsNotChasteFQFilter(unittest.TestCase):
 
-    
+
     def setUp(self):
         prefix = 'filter_not_chaste'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -260,7 +260,7 @@ class TestBcidSeqLibCountsNotChasteFQFilter(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBcidSeqLibCountsWithIdentifiersMinCountFilter(unittest.TestCase):
 
-    
+
     def setUp(self):
         prefix = 'identifiers_mincount'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -292,7 +292,7 @@ class TestBcidSeqLibCountsWithIdentifiersMinCountFilter(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBcidSeqLibCountsWithRevCompSetting(unittest.TestCase):
 
-    
+
     def setUp(self):
         prefix = 'revcomp'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -323,7 +323,7 @@ class TestBcidSeqLibCountsWithRevCompSetting(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBcidSeqLibCountsWithTrimLengthSetting(unittest.TestCase):
 
-    
+
     def setUp(self):
         prefix = 'trim_len'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
@@ -354,7 +354,7 @@ class TestBcidSeqLibCountsWithTrimLengthSetting(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBcidSeqLibCountsWithTrimStartSetting(unittest.TestCase):
 
-    
+
     def setUp(self):
         prefix = 'trim_start'
         cfg = load_config_data(CFG_FILE, CFG_DIR)
