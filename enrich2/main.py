@@ -35,6 +35,7 @@ from .libraries.barcodevariant import BcvSeqLib
 from .libraries.basic import BasicSeqLib
 from .libraries.idonly import IdOnlySeqLib
 
+
 __author__ = "Alan F Rubin, Daniel C Esposito"
 __copyright__ = "Copyright 2016-2017, Alan F Rubin, Daniel C Esposito"
 __license__ = "GPLv3"

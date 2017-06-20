@@ -693,14 +693,14 @@ def parse(file_path, backend=json):
         else:
             raise ValueError("Unrecognised config file, couldn't find "
                              "expected keys. File requires the nested key"
-                             "'scorer/scorer_options'.")
+                             "'{}/{}'.".format(SCORER, SCORER_OPTIONS))
     elif SCORER_OPTIONS in cfg:
         return cfg[SCORER_OPTIONS]
     else:
         raise ValueError("Unrecognised config file, couldn't find "
                          "expected keys. File requires the nested key"
-                         "'scorer/scorer_options' or the key 'scorer_options'")
-
+                         "'{}/{}' or the key "
+                         "'{}'".format(SCORER, SCORER_OPTIONS, SCORER_OPTIONS))
 
 def validate(cfg_dict):
     """

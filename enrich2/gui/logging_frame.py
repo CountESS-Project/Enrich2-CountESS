@@ -79,16 +79,6 @@ class ScrolledText(Frame):
         self.menu.add_command(label="Copy", command=self.copy_text)
         self.parent.bind_class("Text", "<Button-2>", self.show_menu)
 
-        # make platform-specific keybinds
-        if platform.system() == "Darwin":
-            accel_bind = "Command-"
-        else:
-            accel_bind = "Control-"
-        self.parent.bind_class(
-            "Text", "<{}-c>".format(accel_bind), self.copy_text)
-        self.parent.bind_class(
-            "Text", "<{}-a>".format(accel_bind), self.get_text)
-
     def _make_scrolling_text(self):
         """
         Makes the scrolling text widget and grid-packs it into this Frame.
