@@ -24,7 +24,6 @@ Contains various utility functions used through-out enrich2
 """
 
 
-import numpy as np
 import pandas as pd
 from queue import Queue
 import hashlib
@@ -32,17 +31,15 @@ import os
 import logging
 import traceback
 
-from .config_constants import BARCODE_MAP_FILE, READS, COUNTS_FILE, SCORER_PATH
 from ..base.constants import CALLBACK, MESSAGE, KWARGS
+
 
 __all__ = [
     "nested_format",
-    "count_nans",
-    "generate_selector",
     "fix_filename",
     "multi_index_tsv_to_dataframe",
-    "file_md5s_equal",
-    "recursive_dict_equal",
+    'infer_multiindex_header_rows',
+    'is_number',
     'compute_md5',
     'init_logging_queue',
     'get_logging_queue',
@@ -178,47 +175,7 @@ def nested_format(data, default, tab_level=1):
     return msg
 
 
-def count_nans(data, axis):
-    """
-    Sums the number of NaN values along an axis of data.
-
-    Parameters
-    ----------
-    data : :py:class:`~np.ndarray`
-        The data to count NaNs along *axis*
-    axis : `int` {0, 1}
-        1 for row-wise sum and 0 for column-wise sum
-
-    Returns
-    -------
-    :py:class:`~np.ndarray`
-        The number of NaN appearing in each column
-    """
-    return np.sum(np.isnan(data), axis=axis)
-
-
-def generate_selector(data, threshold):
-    """
-    Generates a truthy selector array for elements in data greater than
-    *threshold*
-    
-    Parameters
-    ----------
-    data : :py:class:`~np.ndarray`
-        The numpy array to turn into a boolean numpy array.
-    threshold : `int` or `float`
-        An integer or floating point value to compare each element
-        in *data* to.
-        
-    Returns
-    -------
-    :py:class:`~np.ndarray`
-        A boolean numpy array for each element greater than *threshold*
-    """
-    return data > threshold
-
-
-def multi_index_tsv_to_dataframe(filepath, header_rows):
+def multi_index_tsv_to_dataframe(filepath, sep='\t', header_rows=None):
     """
     Loads a multi-header tsv file into a :py:class:`pd.DataFrame`.
     
@@ -226,23 +183,103 @@ def multi_index_tsv_to_dataframe(filepath, header_rows):
     ----------
     filepath : `str`
         Path pointing to the tsv file.
-    header_rows : `list`
+    sep : `str`, optional, default: '\t'
+        Character to use as the delimiter. 
+    header_rows : `list`, optional, default: None
         0-based indicies corresponding to the row locations to use as the 
         multi-index column names in the dataframe. Example:
         
         condition	E3	E3
         value	pvalue_raw	z
         _sy	8.6e-05	3.92
-        p.Ala16Arg	0.0	3.76
+        p.Ala16Arg	0.0	3.76raw_barcodes_counts.tsv
         
         The *header_rows* for this instance will be [0, 1]
+        
+        If not supplied, `header_rows` will be inferred from the file.
 
     Returns
-    -------
+    ------- 
     :py:class:`~pd.DataFrame`
         A :py:class:`pd.MultiIndex` dataframe.
     """
-    return pd.read_table(filepath, index_col=0, header=header_rows)
+    if header_rows is None:
+        header_rows = infer_multiindex_header_rows(filepath)
+
+    if header_rows == [0] or not header_rows:
+        return pd.read_table(filepath, index_col=0, sep=sep)
+    else:
+        try:
+            return pd.read_table(
+                filepath, index_col=0, sep=sep, header=header_rows)
+        except IndexError:
+            return pd.read_table(filepath, index_col=0, sep=sep)
+
+
+def infer_multiindex_header_rows(filepath):
+    """
+    Infers which columns from a tsv file should be used as a header when
+    loading a multi-index or single-index tsv. NaN values in the tsv
+    must be encoded with the string 'NaN' for this function to correctly
+    infer header columns.
+
+    Parameters
+    ----------
+    filepath : `str`
+        Path pointing to the tsv file.
+
+    Returns
+    -------
+    `list`
+        0-based indicies corresponding to the row locations to use as the 
+        multi-index column names in the dataframe. Example:
+
+        condition	E3	E3
+        value	pvalue_raw	z
+        _sy	8.6e-05	3.92
+        p.Ala16Arg	0.0	3.76
+
+        The *header_rows* for this instance will be [0, 1]
+    """
+    header_rows = []
+    with open(filepath, 'rt') as fp:
+        for i, line in enumerate(fp):
+            xs = line.split('\t')
+            has_numbers = any([is_number(s) for s in xs])
+            if has_numbers:
+                break
+            else:
+                header_rows.append(i)
+    return header_rows
+
+
+def is_number(s):
+    """
+    Check if a string s represents a number
+
+    Parameters
+    ----------
+    s : `str`
+        String to check
+        
+    Returns
+    -------
+    `bool`
+        ``True`` if a string represents an integer or floating point number
+    """
+    try:
+        int(s)
+        is_int = True
+    except ValueError:
+        is_int = False
+
+    try:
+        float(s)
+        is_float = True
+    except ValueError:
+        is_float = False
+
+    return is_float | is_int
 
 
 def fix_filename(s):
@@ -263,29 +300,6 @@ def fix_filename(s):
     fname = "".join(c for c in s if c.isalnum() or c in (' ._~'))
     fname = fname.replace(' ', '_')
     return fname
-
-
-def file_md5s_equal(f1, f2):
-    """
-    Compared the MD5 hashes of two files.
-    
-    Parameters
-    ----------
-    f1 : `str`
-        File path for the first file.
-    f2 : `str`
-        File path for the second file.
-
-    Returns
-    -------
-    `bool`
-        ``True`` if both files have the same MD5 sum. 
-    """
-    with open(f1, 'rb') as fp:
-        f1_md5 = hashlib.md5(fp.read()).hexdigest()
-    with open(f2, 'rb') as fp:
-        f2_md5 = hashlib.md5(fp.read()).hexdigest()
-    return f1_md5 == f2_md5
 
 
 def compute_md5(fname):
@@ -311,61 +325,3 @@ def compute_md5(fname):
         md5 = hashlib.md5(fp.read()).hexdigest()
         fp.close()
     return md5
-
-
-def recursive_dict_equal(d1, d2, md5_on_file=True):
-    """
-    Compares two Enrich2 configuration files recursively. Will check
-    md5s for keys that point to files if requested, other wise a basic 
-    string comparison on filenames is performed.
-    
-    Parameters
-    ----------
-    d1 : `dict`
-        Configuraion dictionary A.
-    d2 : `dict`
-        Configuraion dictionary B.
-    md5_on_file : `bool`
-        Use MD5 sum comparison for filenames.
-
-    Returns
-    -------
-    `bool`
-        ``True`` if all elements in the configuration are equal.
-    """
-    for key, value in d1.items():
-        other_value = d2.get(key, None)
-        if other_value is None:
-            return False
-        if type(value) != type(other_value):
-            return False
-        if isinstance(value, dict):
-            return recursive_dict_equal(value, other_value)
-        if isinstance(value, list):
-            if len(value) != len(other_value):
-                return False
-            else:
-                for ls_value, other_ls_value in zip(value, other_value):
-                    return recursive_dict_equal(ls_value, other_ls_value)
-
-        # Compare md5 of the files for relevant keys.
-        file_path_keys = {BARCODE_MAP_FILE, COUNTS_FILE, SCORER_PATH, READS}
-        file_path_md5_keys = ["{} md5".format(k) for k in file_path_keys]
-
-        if key in file_path_md5_keys and md5_on_file:
-            same_md5 = (value == other_value)
-            if not same_md5:
-                d1_file_name = d1[key[:-5]]
-                d2_file_name = d1[key[:-5]]
-                if d1_file_name == d2_file_name:
-                    log_message(
-                        logging_callback=logging.warning,
-                        msg="File '{}' found in both configurations was "
-                        "found to have the MD5 sum {} for this configuration "
-                        "but MD5 sum {} for the previous configuration."
-                        "".format(d1_file_name, value, other_value),
-                        extra={'oname': 'Utilities'}
-                    )
-                return same_md5
-        else:
-            return value == other_value
