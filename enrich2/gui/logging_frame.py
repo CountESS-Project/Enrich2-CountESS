@@ -16,7 +16,6 @@
 #  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 
-import platform
 from tkinter import *
 from tkinter.messagebox import askokcancel
 from tkinter.filedialog import asksaveasfile
@@ -197,6 +196,7 @@ class WindowLoggingHandler(logging.Handler):
     def __init__(self, window=None, level=logging.NOTSET):
         logging.Handler.__init__(self, level)
         self.window = window
+        self.visible = False
         if window is None:
             self.window = Tk()
 
@@ -204,19 +204,20 @@ class WindowLoggingHandler(logging.Handler):
         self.scrolling_text.set_text_widget_state("disabled")
         self.scrolling_text.pack(side=TOP, expand=YES, fill=BOTH)
 
+        button_frame = Frame(self.window)
         save_btn = Button(
-            master=self.window,
+            master=button_frame,
             text='Save As...',
             command=self.scrolling_text.save_text
         )
         save_btn.pack(side=RIGHT, anchor=S, padx=5, pady=5)
-
         close_btn = Button(
-            master=self.window,
+            master=button_frame,
             text='Hide',
             command=self.hide
         )
         close_btn.pack(side=RIGHT, anchor=S, padx=5, pady=5)
+        button_frame.pack(side=BOTTOM, expand=YES, fill=BOTH)
         self.window.protocol("WM_DELETE_WINDOW", self.hide)
 
     def close_window(self):
@@ -240,12 +241,16 @@ class WindowLoggingHandler(logging.Handler):
         self.window.update()
         self.window.deiconify()
         self.window.lift()
+        self.window.attributes('-topmost', True)
+        self.window.after_idle(self.window.attributes, '-topmost', False)
+        self.visible = True
 
     def hide(self):
         """
         Hides the window
         """
         self.window.withdraw()
+        self.visible = False
 
     def emit(self, record):
         """
@@ -306,5 +311,7 @@ def show_log_window():
         logging.info("Starting new log...", extra={'oname': 'Main'})
     else:
         log_win = log_windows[0]
-        log_win.show()
-
+        if not log_win.visible:
+            log_win.show()
+        else:
+            log_win.hide()

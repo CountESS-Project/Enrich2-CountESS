@@ -53,7 +53,7 @@ from ..libraries.seqlib import SeqLib
 from ..experiment.experiment import Experiment
 from .options_frame import ScorerScriptsDropDown
 from .logging_frame import show_log_window
-
+from .plugin_source_window import SourceWindow
 
 __all__ = [
     "write_json",
@@ -167,6 +167,7 @@ class Configurator(tk.Tk):
         self.root_element = None
         self.analysis_thread = None
         self.queue = queue.Queue()
+        self.plugin_source_window = None
 
         # Treeview variables
         self.treeview = None
@@ -415,6 +416,11 @@ class Configurator(tk.Tk):
             accelerator="{}L".format(accel_string),
             command=show_log_window
         )
+        filemenu.add_command(
+            label="Plugin Sources",
+            accelerator="{}P".format(accel_string),
+            command=self.show_plugin_source_window
+        )
         menubar.add_cascade(label="Tools", menu=filemenu)
 
         # add the menubar
@@ -433,6 +439,8 @@ class Configurator(tk.Tk):
         # add show log menu keybinds
         # add edit menu keybinds
         self.bind("<{}l>".format(accel_bind), lambda event: show_log_window())
+        self.bind("<{}p>".format(accel_bind),
+                  lambda event: self.show_plugin_source_window())
 
     # ---------------------------------------------------------------------- #
     #                          Treeview Methods
@@ -821,6 +829,12 @@ class Configurator(tk.Tk):
         """
         for k in self.element_dict.keys():
             self.treeview.selection_add(k)
+
+    def show_plugin_source_window(self):
+        if not self.plugin_source_window:
+            self.plugin_source_window = SourceWindow(master=self)
+        else:
+            self.plugin_source_window.toggle_show()
 
     # ---------------------------------------------------------------------- #
     #                         Run Analysis Methods

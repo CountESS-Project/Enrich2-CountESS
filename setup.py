@@ -44,6 +44,8 @@ plugins_folder = os.path.join(os.path.expanduser('~'), '.enrich2/')
 os.makedirs(plugins_folder, exist_ok=True)
 for file in glob.glob("plugins/*.py"):
     shutil.copy(file, plugins_folder)
+for file in glob.glob("plugins/*.txt"):
+    shutil.copy(file, plugins_folder)
 
 setup(
     name="Enrich2",
