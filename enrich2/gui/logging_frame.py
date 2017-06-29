@@ -17,6 +17,7 @@
 
 
 from tkinter import *
+from tkinter.ttk import *
 from tkinter.messagebox import askokcancel
 from tkinter.filedialog import asksaveasfile
 import logging
@@ -202,7 +203,9 @@ class WindowLoggingHandler(logging.Handler):
 
         self.scrolling_text = ScrolledText(parent=self.window)
         self.scrolling_text.set_text_widget_state("disabled")
-        self.scrolling_text.pack(side=TOP, expand=YES, fill=BOTH)
+        self.scrolling_text.pack(
+            side=TOP, expand=YES, fill=BOTH, padx=(2, 2), pady=(2, 2)
+        )
 
         button_frame = Frame(self.window)
         save_btn = Button(
@@ -217,7 +220,8 @@ class WindowLoggingHandler(logging.Handler):
             command=self.hide
         )
         close_btn.pack(side=RIGHT, anchor=S, padx=5, pady=5)
-        button_frame.pack(side=BOTTOM, expand=YES, fill=BOTH)
+        button_frame.pack(
+            side=BOTTOM, expand=NO, fill=BOTH, padx=(2, 2), pady=(2, 2))
         self.window.protocol("WM_DELETE_WINDOW", self.hide)
 
     def close_window(self):
