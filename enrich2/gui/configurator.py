@@ -35,7 +35,7 @@ import tkinter.messagebox
 import tkinter.simpledialog
 
 from tkinter.ttk import Frame, Button, Checkbutton, Treeview, LabelFrame
-from tkinter.messagebox import askyesno, showinfo, showwarning
+from tkinter.messagebox import askyesno, showinfo, showwarning, askokcancel
 
 from ..base.config_constants import SCORER, SCORER_OPTIONS, SCORER_PATH
 from ..base.constants import CALLBACK, MESSAGE, KWARGS
@@ -106,7 +106,7 @@ class Configurator(tk.Tk):
         The ``new``, ``edit`` and ``delete`` buttons.
     go_button : :py:class`~tkinter.ttk.Button`
         The button that begins the analysis
-    scorer_plugin : :py:class:`~enrich2.gui.options_frame.ScorerScriptsDropDown`
+    scorer_widget : :py:class:`~enrich2.gui.options_frame.ScorerScriptsDropDown`
         The ScorerScriptsDropDown instance associated with this app.
     scorer : :py:class:`~enrich2.plugins.scoring.BaseScorerPlugin`
         The scorer class loaded from a plugin
@@ -166,8 +166,8 @@ class Configurator(tk.Tk):
         self.element_dict = dict()
         self.root_element = None
         self.analysis_thread = None
-        self.queue = queue.Queue()
         self.plugin_source_window = None
+        self.queue = queue.Queue()
 
         # Treeview variables
         self.treeview = None
@@ -186,7 +186,7 @@ class Configurator(tk.Tk):
         # create UI elements
         self.treeview_buttons = []
         self.go_button = None
-        self.scorer_plugin = None
+        self.scorer_widget = None
         self.scorer = None
         self.scorer_attrs = None
         self.scorer_path = None
@@ -194,6 +194,10 @@ class Configurator(tk.Tk):
         self.create_menubar()
         self.create_treeview_context_menu()
         self.after(10, self.poll_logging_queue)
+
+        self.plugin_source_window = SourceWindow(master=self)
+        self.plugin_source_window.hide()
+        self.refresh_plugins()
 
     # ---------------------------------------------------------------------- #
     #                           Creation Methods
@@ -286,7 +290,7 @@ class Configurator(tk.Tk):
         scoring_plugin = ScorerScriptsDropDown(
             right_frame, text='Scoring Options', padding=(3, 3, 12, 12))
         scoring_plugin.grid(row=0, column=0, sticky="new")
-        self.scorer_plugin = scoring_plugin
+        self.scorer_widget = scoring_plugin
 
         # ------------------------------------------------------- #
         # LabelFrame for Analysis Options
@@ -421,6 +425,11 @@ class Configurator(tk.Tk):
             accelerator="{}P".format(accel_string),
             command=self.show_plugin_source_window
         )
+        filemenu.add_command(
+            label="Refresh Plugins",
+            accelerator="{}R".format(accel_string),
+            command=self.refresh_plugins
+        )
         menubar.add_cascade(label="Tools", menu=filemenu)
 
         # add the menubar
@@ -441,6 +450,8 @@ class Configurator(tk.Tk):
         self.bind("<{}l>".format(accel_bind), lambda event: show_log_window())
         self.bind("<{}p>".format(accel_bind),
                   lambda event: self.show_plugin_source_window())
+        self.bind("<{}r>".format(accel_bind),
+                  lambda event: self.refresh_plugins())
 
     # ---------------------------------------------------------------------- #
     #                          Treeview Methods
@@ -732,7 +743,7 @@ class Configurator(tk.Tk):
                     scorer_path = cfg.get(SCORER, {}).get(SCORER_PATH, "")
                     scorer_attrs = cfg.get(SCORER, {}).get(SCORER_OPTIONS, {})
                     if scorer_path:
-                        self.scorer_plugin.load_from_cfg_file(
+                        self.scorer_widget.load_from_cfg_file(
                             scorer_path, scorer_attrs)
                     else:
                         log_message(
@@ -774,7 +785,7 @@ class Configurator(tk.Tk):
                     if not isinstance(self.root_element, SeqLib) and not \
                             isinstance(self.root_element, Condition):
                         _, attrs, scorer_path = \
-                            self.scorer_plugin.get_scorer_class_attrs_path()
+                            self.scorer_widget.get_scorer_class_attrs_path()
                         cfg[SCORER] = {
                             SCORER_PATH: scorer_path,
                             SCORER_OPTIONS: attrs
@@ -807,7 +818,7 @@ class Configurator(tk.Tk):
                         if not isinstance(self.root_element, SeqLib) and not \
                                 isinstance(self.root_element, Condition):
                             _, attrs, scorer_path = \
-                                self.scorer_plugin.get_scorer_class_attrs_path()
+                                self.scorer_widget.get_scorer_class_attrs_path()
                             cfg[SCORER] = {
                                 SCORER_PATH: scorer_path,
                                 SCORER_OPTIONS: attrs
@@ -831,6 +842,9 @@ class Configurator(tk.Tk):
             self.treeview.selection_add(k)
 
     def show_plugin_source_window(self):
+        """
+        Show the pop-up window to modify plugin sources
+        """
         if not self.plugin_source_window:
             self.plugin_source_window = SourceWindow(master=self)
         else:
@@ -846,7 +860,7 @@ class Configurator(tk.Tk):
         to prevent the analysis breaking.
         """
         self.scorer, self.scorer_attrs, self.scorer_path = \
-            self.scorer_plugin.get_scorer_class_attrs_path()
+            self.scorer_widget.get_scorer_class_attrs_path()
 
         if self.scorer is None or self.scorer_attrs is None:
             tkinter.messagebox.showwarning(
@@ -857,6 +871,16 @@ class Configurator(tk.Tk):
                 "Incomplete Configuration", "No experimental design specified."
             )
         else:
+            plugin, *_ = self.scorer_widget.get_selected_plugin()
+            if plugin.md5_has_changed():
+                proceed = askokcancel(
+                    "Selected plugin has been modified.",
+                    "The selected plugin has been modified on disk. Do you "
+                    "want to proceed with the current version? To see changes "
+                    "click 'Cancel' and refresh plugins before proceeding."
+                )
+                if not proceed:
+                    return
             if askyesno("Save Configuration?",
                         "Would you like to save the confiugration "
                         "file before proceeding?"):
@@ -875,7 +899,6 @@ class Configurator(tk.Tk):
                 self.analysis_thread = thread
                 self.analysis_thread.start()
                 self.after(100, self.poll_analysis_thread)
-                # self.run_analysis()
 
     def poll_logging_queue(self):
         """
@@ -963,24 +986,6 @@ class Configurator(tk.Tk):
         finally:
             return
 
-    def set_gui_state(self, state):
-        """
-        Sets the state of the `go_button`, `treeview` and `treeview_buttons`.
-        
-        Parameters
-        ----------
-        state : `str`
-            State to set, usually ``'normal'`` or ``'disabled'``
-
-        """
-        for btn in self.treeview_buttons:
-            btn.config(state=state)
-        self.go_button.config(state=state)
-        if state == 'normal':
-            self.treeview.bind("<Button-2>", self.treeview_context_menu)
-        else:
-            self.treeview.bind("<Button-2>", lambda event: event)
-
     def configure_analysis(self):
         """
         Configures the attributes of the root_element by querying the GUI
@@ -1011,3 +1016,32 @@ class Configurator(tk.Tk):
                 msg=e,
                 extra={"oname": self.root_element.name}
             )
+
+    # ---------------------------------------------------------------------- #
+    #                         GUI Modifications
+    # ---------------------------------------------------------------------- #
+    def set_gui_state(self, state):
+        """
+        Sets the state of the `go_button`, `treeview` and `treeview_buttons`.
+
+        Parameters
+        ----------
+        state : `str`
+            State to set, usually ``'normal'`` or ``'disabled'``
+
+        """
+        for btn in self.treeview_buttons:
+            btn.config(state=state)
+        self.go_button.config(state=state)
+        if state == 'normal':
+            self.treeview.bind("<Button-2>", self.treeview_context_menu)
+        else:
+            self.treeview.bind("<Button-2>", lambda event: event)
+
+    def refresh_plugins(self):
+        """
+        Refresh the plugins by re-checking the sources file.
+        """
+        if self.plugin_source_window:
+            sources = self.plugin_source_window.sources
+            self.scorer_widget.refresh_sources(sources)
