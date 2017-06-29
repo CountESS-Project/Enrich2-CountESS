@@ -794,6 +794,18 @@ class ScorerScriptsDropDown(LabelFrame):
         Prints the current plugin's parameters to the current log handler(s).
     show_plugin_details
         Create a messagebox displaying the current plugin
+    refresh_sources
+        Parses each directory in `'~/.enrich2/sources.txt'`
+    remove_plugin
+        Deletes a plugin from the drop-down menu.
+    update_plugin
+        Updates an existing plugin from the drop-down menu. This will spawn a 
+        pop-up box asking to confirm if file contents have changed.
+    get_selected_plugin
+        Returns the currently selected plugin object.
+    refresh_menu
+        Utility function to refresh the choices that the drop-down menu
+        displays. Call this after deleting or updating plugins.
     
     See Also
     --------

@@ -151,6 +151,9 @@ class Configurator(tk.Tk):
     run_analysis
     set_gui_state
     configure_analysis
+    
+    refresh_plugins
+    show_plugin_source_window
 
     See Also
     --------

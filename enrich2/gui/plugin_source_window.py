@@ -102,6 +102,81 @@ def parse_sources(file=SOURCES, include_default=False):
 
 
 class SourceWindow(Toplevel):
+    """
+    This is a :py:class:`Toplevel` subclass to represent a pop-out window
+    to add/remove plugin sources for Enrich2.
+    
+    Parameters
+    ----------
+    master : `object`, optional
+        Tkinter object which is the master of this window. Usually a Tk object. 
+    sources_file: `str`, optional
+        Load sources from the specified file.
+    kwargs : `dict`
+        Keyword arguments for Toplevel.
+    
+    Attributes
+    ----------
+    row : `int`
+        Row for grid-packing book-keeping.
+    visible : `bool`
+        Indicates if the widget is visible. Used by hide/show/toggle_show
+    sources_file: `str`
+        Sources file that the widget is modifying. Will be created in the 
+        default home directory ('~/.enrich2/sources.txt') if no file was 
+        passed at initialisation time.
+    sources: `set`
+        Set of plugin directories currently being used.
+    current_stamp : `str`
+        Current MD5 hexdigest of ``sources_file``
+    session_start_sources: `set`
+        Sources being used when this window was shown.
+    init_sources : `set`
+        Sources being used when this window was created.
+    listbox: `Listbox`
+        Lisbox widget from tkinter module inside this window.
+    
+    Methods
+    -------
+    _setup_scrollbar_and_listbox
+        Setup the Listbox widget.
+    _setup_buttons
+        Setup the window button layout.
+    toggle_show
+        Toggles between hide/show.
+    hide
+        Hide the window.
+    show
+        Show the window.
+    restore
+        Restores ``sources`` to the sources present when the window was
+        opened from the ``tools`` menu.
+    absolute_restore
+        Restores ``sources`` to the sources loaded when ``__init__`` 
+        was first called.
+    ask_save_and_quit
+        For use when clicking the `x` button. Asks if changes should be saved
+        since opening the window. Otherwise, reverts back to whatever sources
+        were present when the window was first opened.
+    save_and_quit
+        Saves the current set of sources in `sources` to ``sources.txt`` in
+        the home directory. Overwrites existing data.
+    poll_file_changes
+        Polls ``sources.txt`` for changes and updates the widget accordingly. 
+        Uses a simple md5 hash on the file to determine if there have been
+        any changes.
+    update_listbox
+        Updates the text items in the Listbox object according to the 
+        items in `sources.txt`
+    remove_item
+        Remove a directory into the current list of sources.
+    add_item
+        Add a directory into the current list of sources.
+    
+    See Also
+    --------
+    :py:class:`Toplevel`
+    """
 
     def __init__(self, master=None, sources_file=SOURCES, **kwargs):
         Toplevel.__init__(self, master, **kwargs)
@@ -121,6 +196,9 @@ class SourceWindow(Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.ask_save_and_quit)
 
     def _setup_scrollbar_and_listbox(self):
+        """
+        Setup the Listbox widget.
+        """
         list_box_frame = Frame(self)
         list_box_frame.rowconfigure(0, weight=1)
         list_box_frame.columnconfigure(0, weight=1)
@@ -150,6 +228,9 @@ class SourceWindow(Toplevel):
             self.listbox.insert(END, source)
 
     def _setup_buttons(self):
+        """
+        Setup the window button layout.
+        """
         buttons = Frame(self)
         insert = Button(buttons, text="Add", command=self.insert_item)
         insert.grid(sticky=W, row=0, column=0, padx=5, pady=5)
@@ -168,16 +249,25 @@ class SourceWindow(Toplevel):
         self.row += 1
 
     def toggle_show(self):
+        """
+        Toggles between hide/show.
+        """
         if not self.visible:
             self.show()
         else:
             self.hide()
 
     def hide(self):
+        """
+        Hide the window.
+        """
         self.visible = False
         self.withdraw()
 
     def show(self):
+        """
+        Show the window and poll file for changes.
+        """
         self.session_start_sources = self.sources
         self.visible = True
         self.poll_file_changes()
@@ -188,18 +278,31 @@ class SourceWindow(Toplevel):
         self.after_idle(self.attributes, '-topmost', False)
 
     def restore(self):
+        """
+        Restores ``sources`` to the sources present when the window was
+        opened from the ``tools`` menu.
+        """
         self.sources = self.session_start_sources
         self.listbox.delete(0, END)
         for source in self.sources:
             self.listbox.insert(END, source)
 
     def absolute_restore(self):
+        """
+        Restores ``sources`` to the sources loaded when ``__init__`` 
+        was first called.
+        """
         self.sources = self.init_sources
         self.listbox.delete(0, END)
         for source in self.sources:
             self.listbox.insert(END, source)
 
     def ask_save_and_quit(self):
+        """
+        For use when clicking the `x` button. Asks if changes should be saved
+        since opening the window. Otherwise, reverts back to whatever sources
+        were present when the window was first opened.
+        """
         save = askyesno(
             'Save changes?',
             'Would you like to save your changes?')
@@ -210,6 +313,10 @@ class SourceWindow(Toplevel):
             self.hide()
 
     def save_and_quit(self):
+        """
+        Saves the current set of sources in `sources` to ``sources.txt`` in
+        the home directory. Overwrites existing data.
+        """
         with open(self.sources_file, 'wt') as fp:
             for source in self.sources:
                 fp.write('{}\n'.format(source))
@@ -217,6 +324,11 @@ class SourceWindow(Toplevel):
         self.hide()
 
     def poll_file_changes(self):
+        """
+        Polls ``sources.txt`` for changes and updates the widget accordingly. 
+        Uses a simple md5 hash on the file to determine if there have been
+        any changes.
+        """
         _ensure_sources_file_exists(self.sources_file)
         stamp = md5(open(self.sources_file, 'rb').read()).hexdigest()
         if stamp != self.current_stamp:
@@ -224,12 +336,19 @@ class SourceWindow(Toplevel):
             self.current_stamp = stamp
 
     def update_listbox(self):
+        """
+        Updates the text items in the Listbox object according to the 
+        items in `sources.txt`
+        """
         sources = parse_sources(file=self.sources_file)
         self.listbox.delete(0, END)
         for source in sources:
             self.listbox.insert(END, source)
 
     def remove_item(self):
+        """
+        Remove a directory into the current list of sources.
+        """
         if self.listbox.curselection():
             item_idx = self.listbox.curselection()[0]
             item = self.listbox.get(item_idx)
@@ -248,6 +367,9 @@ class SourceWindow(Toplevel):
                 self.sources = set([x for x in self.sources if x != item])
 
     def insert_item(self):
+        """
+        Insert a directory into the current list of sources.
+        """
         source_folder = askdirectory()
         if source_folder:
             source_folder = os.path.normpath(source_folder)
