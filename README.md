@@ -30,4 +30,4 @@ Questions?
 
 Please use the [GitHub Issue Tracker](https://github.com/FowlerLab/Enrich2/issues) to file bug reports or request features. 
 
-Enrich2 was written by [Alan F Rubin](mailto:alan.rubin@wehi.edu.au).
+Enrich2 was written by [Alan F Rubin](mailto:alan.rubin@wehi.edu.au) and [Daniel C Esposito](mailto:esposito.d@wehi.edu.au).
