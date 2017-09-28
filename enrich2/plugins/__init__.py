@@ -176,6 +176,9 @@ def load_scorer_class_and_options(path):
         options_file = OptionsFile.default_json_options_file()
 
     scorer_class = scorers[-1]
+    if options_ is None:
+        options_ = Options()
+
     return scorer_class, options_, options_file
 
 

@@ -615,11 +615,12 @@ class Experiment(StoreManager):
 
                 # multiple replicates
                 else:
-                    betaML, sigma2ML, eps, reps = \
+                    betaML, var_betaML, eps, reps = \
                         partitioned_rml_estimator(y, sigma2i)
                     data.loc[:, idx[cnd, 'score']] = betaML
-                    data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2ML)
+                    data.loc[:, idx[cnd, 'SE']] = np.sqrt(var_betaML)
                     data.loc[:, idx[cnd, 'epsilon']] = eps
+
                     # TODO: uncomment these
                     # data.loc[:, idx[cnd, 'nreps']] = reps
 

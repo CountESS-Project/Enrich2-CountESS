@@ -871,19 +871,26 @@ class ScorerScriptsDropDown(LabelFrame):
                 options_frame,
                 options_file_frame,
             )
+
             _, _, _, tkname = self.plugins[hash(plugin)]
             self.drop_menu.set_menu(tkname, *self.get_views())
             self.drop_menu_tkvar.set(tkname)
             self.update_options_view(tkname)
+
             log_message(
                 logging_callback=logging.info,
-                msg="Loaded plugin from path {}.".format(script_path),
+                msg="Loaded new plugin from path {}.".format(script_path),
                 extra={'oname': self.__class__.__name__}
             )
         else:
             self.update_plugin(plugin)
             _, _, options_file_frame, tkname = self.plugins[hash(plugin)]
             options_file_frame.update_option_frame(scorer_cfg)
+
+            self.drop_menu.set_menu(tkname, *self.get_views())
+            self.drop_menu_tkvar.set(tkname)
+            self.update_options_view(tkname)
+
             log_message(
                 logging_callback=logging.info,
                 msg="Plugin from path {} updated.".format(script_path),
@@ -1156,7 +1163,7 @@ class ScorerScriptsDropDown(LabelFrame):
         return None
 
     # ---------------------------------------------------------------------- #
-    #                        Griding/Widget Methods
+    #                        Packing/Widget Methods
     # ---------------------------------------------------------------------- #
     def make_drop_down_widget(self, default, choices):
         """
