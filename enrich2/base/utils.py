@@ -244,9 +244,9 @@ def infer_multiindex_header_rows(filepath):
     header_rows = []
     with open(filepath, 'rt') as fp:
         for i, line in enumerate(fp):
-            xs = line.split('\t')
-            has_numbers = any([is_number(s) for s in xs])
-            if has_numbers:
+            xs = [x.strip() for x in line.split('\t') if x.strip()]
+            skip_line = (not xs) or any([is_number(s) for s in xs])
+            if skip_line:
                 break
             else:
                 header_rows.append(i)
