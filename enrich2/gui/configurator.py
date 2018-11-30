@@ -747,7 +747,8 @@ class Configurator(tk.Tk):
                     scorer_attrs = cfg.get(SCORER, {}).get(SCORER_OPTIONS, {})
                     if scorer_path:
                         self.scorer_widget.load_from_cfg_file(
-                            scorer_path, scorer_attrs)
+                            scorer_path, scorer_attrs
+                        )
                     else:
                         log_message(
                             logging_callback=logging.warning,

@@ -51,7 +51,7 @@ def rml_estimator(y, sigma2i, iterations=50):
     -------
     `tuple`
         Tuple of :py:class:`~numpy.ndarray` objects, corresponding to
-        ``betaML``, ``sigma2ML``, ``eps``.
+        ``betaML``, ``var_betaML``, ``eps``.
 
     Notes
     -----
@@ -77,7 +77,9 @@ def rml_estimator(y, sigma2i, iterations=50):
                                          axis=0) / (sw - (sw2 / sw))
         eps = np.abs(sigma2ML - sigma2ML_new)
         sigma2ML = sigma2ML_new
-    return betaML, sigma2ML, eps
+
+    var_betaML = 1 / np.sum(1 / (sigma2i + sigma2ML), axis=0)
+    return betaML, var_betaML, eps
 
 
 def nan_filter_generator(data):
@@ -125,7 +127,7 @@ def partitioned_rml_estimator(y, sigma2i, iterations=50):
     -------
     `tuple`
         Tuple of :py:class:`~numpy.ndarray` objects, corresponding to
-        ``betaML``, ``sigma2ML``, ``eps``.
+        ``betaML``, ``var_betaML``, ``eps``.
 
     Notes
     -----
@@ -140,7 +142,7 @@ def partitioned_rml_estimator(y, sigma2i, iterations=50):
     # Initialize each array to be have len number of variants
     max_replicates = y.shape[0]
     betaML = np.zeros(shape=(y.shape[1],)) * np.nan
-    sigma2ML = np.zeros(shape=(y.shape[1],)) * np.nan
+    var_betaML = np.zeros(shape=(y.shape[1],)) * np.nan
     eps = np.zeros(shape=(y.shape[1],)) * np.nan
     nreps = np.zeros(shape=(y.shape[1],)) * np.nan
     y_num_nans = np.sum(np.isnan(y), axis=0)
@@ -158,17 +160,17 @@ def partitioned_rml_estimator(y, sigma2i, iterations=50):
         sigma2i_k = np.apply_along_axis(
             lambda col: col[~np.isnan(col)], 0, sigma2i[:, selector])
 
-        betaML_k, sigma2ML_k, eps_k = rml_estimator(y_k, sigma2i_k, iterations)
+        betaML_k, var_betaML_k, eps_k = rml_estimator(y_k, sigma2i_k, iterations)
 
         # Handles the case when SE is 0 resulting in NaN values.
         betaML_k[np.isnan(betaML_k)] = 0.
-        sigma2ML_k[np.isnan(sigma2ML_k)] = 0.
+        var_betaML_k[np.isnan(var_betaML_k)] = 0.
         eps_k[np.isnan(eps_k)] = 0.
 
         betaML[selector] = betaML_k
-        sigma2ML[selector] = sigma2ML_k
+        var_betaML[selector] = var_betaML_k
         eps[selector] = eps_k
         nreps[selector] = max_replicates - k
 
-    return betaML, sigma2ML, eps, nreps
+    return betaML, var_betaML, eps, nreps
 

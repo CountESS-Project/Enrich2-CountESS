@@ -160,3 +160,9 @@ class Plugin(object):
         self.options_file = options_file
         self.md5_stamp = md5(open(self.path, 'rb').read()).hexdigest()
         return self
+
+    def has_options(self):
+        return self.options is not None
+
+    def has_options_files(self):
+        return self.options_file is not None
