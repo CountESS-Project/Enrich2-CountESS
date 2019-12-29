@@ -34,7 +34,7 @@ FILE_EXT = "tsv"
 FILE_SEP = "\t"
 
 
-class TestExperimentBarocdeLibWLSScoringCompleteNorm(unittest.TestCase):
+class TestExperimentBarcodeLibWLSScoringCompleteNorm(unittest.TestCase):
     def setUp(self):
         scoring = "WLS"
         logr = "complete"
@@ -66,7 +66,7 @@ class TestExperimentBarocdeLibWLSScoringCompleteNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibWLSScoringFullNorm(unittest.TestCase):
+class TestExperimentBarcodeLibWLSScoringFullNorm(unittest.TestCase):
     def setUp(self):
         scoring = "WLS"
         logr = "full"
@@ -97,7 +97,7 @@ class TestExperimentBarocdeLibWLSScoringFullNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibOLSScoringCompleteNorm(unittest.TestCase):
+class TestExperimentBarcodeLibOLSScoringCompleteNorm(unittest.TestCase):
     def setUp(self):
         scoring = "OLS"
         logr = "complete"
@@ -128,7 +128,7 @@ class TestExperimentBarocdeLibOLSScoringCompleteNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibOLSScoringFullNorm(unittest.TestCase):
+class TestExperimentBarcodeLibOLSScoringFullNorm(unittest.TestCase):
     def setUp(self):
         scoring = "OLS"
         logr = "full"
@@ -159,7 +159,7 @@ class TestExperimentBarocdeLibOLSScoringFullNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibRatiosScoringCompleteNorm(unittest.TestCase):
+class TestExperimentBarcodeLibRatiosScoringCompleteNorm(unittest.TestCase):
     def setUp(self):
         scoring = "ratios"
         logr = "complete"
@@ -190,7 +190,7 @@ class TestExperimentBarocdeLibRatiosScoringCompleteNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibRatiosScoringFullNorm(unittest.TestCase):
+class TestExperimentBarcodeLibRatiosScoringFullNorm(unittest.TestCase):
     def setUp(self):
         scoring = "ratios"
         logr = "full"
@@ -221,7 +221,7 @@ class TestExperimentBarocdeLibRatiosScoringFullNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibCountsScoringCompleteNorm(unittest.TestCase):
+class TestExperimentBarcodeLibCountsScoringCompleteNorm(unittest.TestCase):
     def setUp(self):
         scoring = "counts"
         logr = "complete"
@@ -252,7 +252,7 @@ class TestExperimentBarocdeLibCountsScoringCompleteNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibCountsScoringFullNorm(unittest.TestCase):
+class TestExperimentBarcodeLibCountsScoringFullNorm(unittest.TestCase):
     def setUp(self):
         scoring = "counts"
         logr = "full"
@@ -283,7 +283,7 @@ class TestExperimentBarocdeLibCountsScoringFullNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibSimpleScoringCompleteNorm(unittest.TestCase):
+class TestExperimentBarcodeLibSimpleScoringCompleteNorm(unittest.TestCase):
     def setUp(self):
         scoring = "simple"
         logr = "complete"
@@ -314,7 +314,7 @@ class TestExperimentBarocdeLibSimpleScoringCompleteNorm(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBarocdeLibSimpleScoringFullNorm(unittest.TestCase):
+class TestExperimentBarcodeLibSimpleScoringFullNorm(unittest.TestCase):
     def setUp(self):
         scoring = "simple"
         logr = "full"
