@@ -16,7 +16,6 @@
 #  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 
-
 import logging
 from hashlib import md5
 from tkinter.messagebox import askyesno
@@ -67,6 +66,7 @@ class Plugin(object):
         Reloads the plugin from ``path`` and creates a new MD5 checksum.
     
     """
+
     def __init__(self, path):
         result = load_scorer_class_and_options(path)
         klass, options, options_file = result
@@ -75,7 +75,7 @@ class Plugin(object):
         self.options = options
         self.options_file = options_file
         self.path = path
-        self.md5_stamp = md5(open(path, 'rb').read()).hexdigest()
+        self.md5_stamp = md5(open(path, "rb").read()).hexdigest()
 
     def __hash__(self):
         return hash(repr(self))
@@ -84,8 +84,7 @@ class Plugin(object):
         return str(self.metadata())
 
     def __eq__(self, other):
-        return hash(self) == hash(other) and \
-               self.md5_stamp == other.md5_stamp
+        return hash(self) == hash(other) and self.md5_stamp == other.md5_stamp
 
     def metadata(self):
         """
@@ -96,8 +95,7 @@ class Plugin(object):
         `tuple`
             (name, version, author, path)
         """
-        return self.klass.name, self.klass.version, \
-               self.klass.author, self.path
+        return self.klass.name, self.klass.version, self.klass.author, self.path
 
     def md5_has_changed(self):
         """
@@ -109,21 +107,25 @@ class Plugin(object):
             ``True`` if MD5 of file at ``path`` has changed.
         """
         new_plugin = Plugin(self.path)
-        if self.metadata() == new_plugin.metadata() and \
-                        self.md5_stamp != new_plugin.md5_stamp:
+        if (
+            self.metadata() == new_plugin.metadata()
+            and self.md5_stamp != new_plugin.md5_stamp
+        ):
             log_message(
                 logging_callback=logging.info,
-                msg='Plugin at path {} has the same metadata but different '
-                    'file contents.'.format(self.path),
-                extra={'oname': self.__class__.__name__}
+                msg="Plugin at path {} has the same metadata but different "
+                "file contents.".format(self.path),
+                extra={"oname": self.__class__.__name__},
             )
             return True
-        elif self.metadata() != new_plugin.metadata() and \
-                        self.md5_stamp != new_plugin.md5_stamp:
+        elif (
+            self.metadata() != new_plugin.metadata()
+            and self.md5_stamp != new_plugin.md5_stamp
+        ):
             log_message(
                 logging_callback=logging.info,
-                msg='Plugin at path {} has does not match.'.format(self.path),
-                extra={'oname': self.__class__.__name__}
+                msg="Plugin at path {} has does not match.".format(self.path),
+                extra={"oname": self.__class__.__name__},
             )
             return True
         else:
@@ -143,7 +145,7 @@ class Plugin(object):
             yes = askyesno(
                 "Reload plugin?",
                 "The plugin located at '{}' has been modified. Do "
-                "you want to reload this plugin?".format(self.path)
+                "you want to reload this plugin?".format(self.path),
             )
             if yes:
                 self._reload()
@@ -158,7 +160,7 @@ class Plugin(object):
         self.klass = klass
         self.options = options
         self.options_file = options_file
-        self.md5_stamp = md5(open(self.path, 'rb').read()).hexdigest()
+        self.md5_stamp = md5(open(self.path, "rb").read()).hexdigest()
         return self
 
     def has_options(self):

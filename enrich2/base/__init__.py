@@ -24,10 +24,4 @@ other Enrich2 classes and methods.
 """
 
 
-__all__ = [
-    "config_constants",
-    "constants",
-    "dataframe",
-    "storemanager",
-    "utils"
-]
+__all__ = ["config_constants", "constants", "dataframe", "storemanager", "utils"]

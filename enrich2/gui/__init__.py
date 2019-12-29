@@ -35,5 +35,5 @@ __all__ = [
     "logging_frame",
     "options_frame",
     "runner_window",
-    "seqlib_apply_dialog"
+    "seqlib_apply_dialog",
 ]

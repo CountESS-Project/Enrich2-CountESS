@@ -42,9 +42,7 @@ from ..statistics.random_effects import nan_filter_generator
 from .condition import Condition
 
 
-__all__ = [
-    "Experiment"
-]
+__all__ = ["Experiment"]
 
 
 class Experiment(StoreManager):
@@ -110,6 +108,7 @@ class Experiment(StoreManager):
     :py:class:`~enrich2.selection.selection.Selection`
     
     """
+
     store_suffix = "exp"
     treeview_class_name = "Experiment"
 
@@ -135,8 +134,10 @@ class Experiment(StoreManager):
             return self._wt
         else:
             if self._wt is not None:
-                raise ValueError("Experiment should not contain wild type "
-                                 "sequence [{}]".format(self.name))
+                raise ValueError(
+                    "Experiment should not contain wild type "
+                    "sequence [{}]".format(self.name)
+                )
             else:
                 return None
 
@@ -156,17 +157,19 @@ class Experiment(StoreManager):
             
         """
         from ..config.types import ExperimentConfiguration
+
         if isinstance(cfg, dict):
             cfg = ExperimentConfiguration(cfg, init_from_gui)
         elif not isinstance(cfg, ExperimentConfiguration):
-            raise TypeError("`cfg` was neither a "
-                            "ExperimentConfiguration or dict.")
+            raise TypeError("`cfg` was neither a " "ExperimentConfiguration or dict.")
 
         StoreManager.configure(self, cfg.store_cfg)
         if configure_children:
             if len(cfg.condition_cfgs) == 0:
-                raise KeyError("Missing required config value {} [{}]"
-                               "".format('conditions', self.name))
+                raise KeyError(
+                    "Missing required config value {} [{}]"
+                    "".format("conditions", self.name)
+                )
             for cnd_cfg in cfg.condition_cfgs:
                 cnd = Condition()
                 cnd.configure(cnd_cfg)
@@ -188,7 +191,7 @@ class Experiment(StoreManager):
             cfg[SCORER] = {
                 SCORER_PATH: self.get_root().scorer_path,
                 SCORER_OPTIONS: self.get_root().scorer_class_attrs,
-                SCORER_PATH + " md5": compute_md5(self.get_root().scorer_path)
+                SCORER_PATH + " md5": compute_md5(self.get_root().scorer_path),
             }
         return cfg
 
@@ -210,8 +213,9 @@ class Experiment(StoreManager):
         Add a condition to children conditions.
         """
         if child.name in self.child_names():
-            raise ValueError("Non-unique condition name '{}' [{}]"
-                             "".format(child.name, self.name))
+            raise ValueError(
+                "Non-unique condition name '{}' [{}]" "".format(child.name, self.name)
+            )
         child.parent = self
         self.conditions.append(child)
 
@@ -221,8 +225,7 @@ class Experiment(StoreManager):
         :py:class:`~enrich2.experiment.condition.Condition` 
         with Treeview id *tree_id*.
         """
-        self.conditions = [x for x in self.conditions if
-                           x.treeview_id != tree_id]
+        self.conditions = [x for x in self.conditions if x.treeview_id != tree_id]
 
     def selection_list(self):
         """
@@ -251,7 +254,7 @@ class Experiment(StoreManager):
                     log_message(
                         logging_callback=logging.warning,
                         msg="Inconsistent wild type sequences",
-                        extra={'oname': self.name}
+                        extra={"oname": self.name},
                     )
                     break
 
@@ -296,14 +299,15 @@ class Experiment(StoreManager):
         score statistics.
         """
         if len(self.labels) == 0:
-            raise ValueError("No data present across all conditions [{}]"
-                             "".format(self.name))
+            raise ValueError(
+                "No data present across all conditions [{}]" "".format(self.name)
+            )
         for s in self.selection_list():
             s.calculate()
         self.combine_barcode_maps()
         for label in self.labels:
             self.calc_counts(label)
-            if self.get_root().scorer_class.name != 'Counts Only':
+            if self.get_root().scorer_class.name != "Counts Only":
                 self.calc_shared_full(label)
                 self.calc_shared(label)
                 self.calc_scores(label)
@@ -328,14 +332,15 @@ class Experiment(StoreManager):
 
         bcm = None
         for sel in self.selection_list():
-            if '/main/barcodemap' in list(sel.store.keys()):
+            if "/main/barcodemap" in list(sel.store.keys()):
                 if bcm is None:
-                    bcm = sel.store['/main/barcodemap']
+                    bcm = sel.store["/main/barcodemap"]
                 else:
-                    bcm = bcm.join(sel.store['/main/barcodemap'],
-                                   rsuffix=".drop", how="outer")
-                    new = bcm.loc[pd.isnull(bcm)['value']]
-                    bcm.loc[new.index, 'value'] = new['value.drop']
+                    bcm = bcm.join(
+                        sel.store["/main/barcodemap"], rsuffix=".drop", how="outer"
+                    )
+                    new = bcm.loc[pd.isnull(bcm)["value"]]
+                    bcm.loc[new.index, "value"] = new["value.drop"]
                     bcm.drop("value.drop", axis="columns", inplace=True)
         if bcm is not None:
             bcm.sort_values("value", inplace=True)
@@ -364,7 +369,7 @@ class Experiment(StoreManager):
         log_message(
             logging_callback=logging.info,
             msg="Creating column multi-index for counts ({})".format(label),
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
         conditions_index = list()
         selections_index = list()
@@ -374,41 +379,40 @@ class Experiment(StoreManager):
             for sel in cnd.children:
                 conditions_index.extend([cnd.name] * len(sel.timepoints))
                 selections_index.extend([sel.name] * len(sel.timepoints))
-                values_index.extend(["c_{}".format(x) for x in
-                                     sorted(sel.timepoints)])
-        columns = pd.MultiIndex.from_tuples(list(zip(conditions_index,
-                                                selections_index,
-                                                values_index)),
-                                            names=["condition", "selection",
-                                                   "timepoint"])
+                values_index.extend(["c_{}".format(x) for x in sorted(sel.timepoints)])
+        columns = pd.MultiIndex.from_tuples(
+            list(zip(conditions_index, selections_index, values_index)),
+            names=["condition", "selection", "timepoint"],
+        )
 
         # create union index
         log_message(
             logging_callback=logging.info,
             msg="Creating row index for counts ({})".format(label),
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
         combined = None
         first = True
         for s in self.selection_list():
             if first:
                 combined = s.store.select(
-                    key="/main/{}/counts_unfiltered".format(label),
-                    columns=['index']
+                    key="/main/{}/counts_unfiltered".format(label), columns=["index"]
                 ).index
                 first = False
             else:
-                combined = combined.join(s.store.select(
-                    key="/main/{}/counts_unfiltered".format(label),
-                    columns=['index']
-                ).index, how="outer")
+                combined = combined.join(
+                    s.store.select(
+                        key="/main/{}/counts_unfiltered".format(label),
+                        columns=["index"],
+                    ).index,
+                    how="outer",
+                )
 
         # create and fill the data frames
         log_message(
             logging_callback=logging.info,
-            msg="Populating Experiment data frame with "
-                "counts ({})".format(label),
-            extra={'oname': self.name}
+            msg="Populating Experiment data frame with " "counts ({})".format(label),
+            extra={"oname": self.name},
         )
         data = pd.DataFrame(index=combined, columns=columns)
         for cnd in self.children:
@@ -417,8 +421,9 @@ class Experiment(StoreManager):
                     key="/main/{}/counts_unfiltered".format(label)
                 )
                 for tp in sel.timepoints:
-                    data.loc[:][cnd.name, sel.name, "c_{}".format(tp)] = \
-                        sel_data["c_{}".format(tp)]
+                    data.loc[:][cnd.name, sel.name, "c_{}".format(tp)] = sel_data[
+                        "c_{}".format(tp)
+                    ]
         self.store.put("/main/{}/counts".format(label), data)
 
     def calc_shared_full(self, label):
@@ -443,7 +448,7 @@ class Experiment(StoreManager):
         log_message(
             logging_callback=logging.info,
             msg="Creating column multi-index for scores ({})".format(label),
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
         conditions_index = list()
         selections_index = list()
@@ -459,39 +464,37 @@ class Experiment(StoreManager):
                 conditions_index.extend([cnd.name] * len(values_list))
                 selections_index.extend([sel.name] * len(values_list))
                 values_index.extend(sorted(values_list))
-        columns = pd.MultiIndex.from_tuples(list(zip(conditions_index,
-                                                selections_index,
-                                                values_index)),
-                                            names=["condition", "selection",
-                                                   "value"])
+        columns = pd.MultiIndex.from_tuples(
+            list(zip(conditions_index, selections_index, values_index)),
+            names=["condition", "selection", "value"],
+        )
         # create union index
         log_message(
             logging_callback=logging.info,
             msg="Creating row index for scores ({})".format(label),
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
         combined = None
         first = True
         for s in self.selection_list():
             if first:
                 combined = s.store.select(
-                    key="/main/{}/scores".format(label),
-                    columns=["index"]
+                    key="/main/{}/scores".format(label), columns=["index"]
                 ).index
                 first = False
             else:
-                combined = combined.join(s.store.select(
-                    key="/main/{}/scores".format(label),
-                    columns=["index"]
-                ).index,
-                    how="outer")
+                combined = combined.join(
+                    s.store.select(
+                        key="/main/{}/scores".format(label), columns=["index"]
+                    ).index,
+                    how="outer",
+                )
 
         # create and fill the data frames
         log_message(
             logging_callback=logging.info,
-            msg="Populating Experiment data frame with "
-                "scores ({})".format(label),
-            extra={'oname': self.name}
+            msg="Populating Experiment data frame with " "scores ({})".format(label),
+            extra={"oname": self.name},
         )
         data = pd.DataFrame(index=combined, columns=columns)
         for cnd in self.children:
@@ -521,20 +524,18 @@ class Experiment(StoreManager):
 
         log_message(
             logging_callback=logging.info,
-            msg="Identifying subset shared across all "
-                "Selections ({})".format(label),
-            extra={'oname': self.name}
+            msg="Identifying subset shared across all " "Selections ({})".format(label),
+            extra={"oname": self.name},
         )
 
-        data = self.store.select(
-            "/main/{}/scores_shared_full".format(label))
+        data = self.store.select("/main/{}/scores_shared_full".format(label))
 
         # identify variants found in all selections in at least two conditions
         idx = pd.IndexSlice
         complete = np.full(len(data.index), False, dtype=bool)
         for cnd in data.columns.levels[0]:
-            mask_score = (data.loc[:, idx[cnd, :, 'score']].notnull().sum(
-                axis='columns') >= 2
+            mask_score = (
+                data.loc[:, idx[cnd, :, "score"]].notnull().sum(axis="columns") >= 2
             )
             complete = np.logical_or(complete, mask_score)
 
@@ -569,19 +570,17 @@ class Experiment(StoreManager):
         log_message(
             logging_callback=logging.info,
             msg="Calculating per-condition scores ({})".format(label),
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
 
         # set up new data frame
         shared_index = self.store.select(
-            key="/main/{}/scores_shared".format(label),
-            columns=["index"]
+            key="/main/{}/scores_shared".format(label), columns=["index"]
         ).index
 
         columns = pd.MultiIndex.from_product(
-            [sorted(self.child_names()),
-             sorted(["score", "SE", "epsilon"])],
-            names=["condition", "value"]
+            [sorted(self.child_names()), sorted(["score", "SE", "epsilon"])],
+            names=["condition", "value"],
         )
 
         data = pd.DataFrame(np.nan, index=shared_index, columns=columns)
@@ -596,42 +595,40 @@ class Experiment(StoreManager):
             # special case for simple ratios that have no SE
             # calculates the average score
             for cnd in score_df.columns.levels[0]:
-                y = np.array(score_df.loc[:, idx[cnd, :, 'score']].values).T
+                y = np.array(score_df.loc[:, idx[cnd, :, "score"]].values).T
                 for y_k, num_reps in nan_filter_generator(y):
-                    data.loc[:, idx[cnd, 'score']] = y_k.mean(axis=0)
+                    data.loc[:, idx[cnd, "score"]] = y_k.mean(axis=0)
                     # data.loc[:, idx[cnd, 'nreps']] = num_reps
         else:
             for cnd in score_df.columns.levels[0]:
-                y = np.array(score_df.loc[:, idx[cnd, :, 'score']].values).T
-                sigma2i = \
-                    np.array(score_df.loc[:, idx[cnd, :, 'SE']].values ** 2).T
+                y = np.array(score_df.loc[:, idx[cnd, :, "score"]].values).T
+                sigma2i = np.array(score_df.loc[:, idx[cnd, :, "SE"]].values ** 2).T
 
                 # single replicate of the condition
                 if y.shape[0] == 1:
-                    data.loc[:, idx[cnd, 'score']] = y.ravel()
-                    data.loc[:, idx[cnd, 'SE']] = np.sqrt(sigma2i).ravel()
-                    data.loc[:, idx[cnd, 'epsilon']] = 0.
+                    data.loc[:, idx[cnd, "score"]] = y.ravel()
+                    data.loc[:, idx[cnd, "SE"]] = np.sqrt(sigma2i).ravel()
+                    data.loc[:, idx[cnd, "epsilon"]] = 0.0
                     # data.loc[:, idx[cnd, 'nreps']] = 1
 
                 # multiple replicates
                 else:
-                    betaML, var_betaML, eps, reps = \
-                        partitioned_rml_estimator(y, sigma2i)
-                    data.loc[:, idx[cnd, 'score']] = betaML
-                    data.loc[:, idx[cnd, 'SE']] = np.sqrt(var_betaML)
-                    data.loc[:, idx[cnd, 'epsilon']] = eps
+                    betaML, var_betaML, eps, reps = partitioned_rml_estimator(
+                        y, sigma2i
+                    )
+                    data.loc[:, idx[cnd, "score"]] = betaML
+                    data.loc[:, idx[cnd, "SE"]] = np.sqrt(var_betaML)
+                    data.loc[:, idx[cnd, "epsilon"]] = eps
 
                     # TODO: uncomment these
                     # data.loc[:, idx[cnd, 'nreps']] = reps
 
                 # special case for normalized wild type variant
-                logr_method = self.get_root().scorer_class_attrs.get(
-                    'logr_method', '')
-                if logr_method == "wt" and WILD_TYPE_VARIANT in \
-                        data.index:
-                    data.loc[WILD_TYPE_VARIANT, idx[:, 'SE']] = 0.
-                    data.loc[WILD_TYPE_VARIANT, idx[:, 'score']] = 0.
-                    data.loc[WILD_TYPE_VARIANT, idx[:, 'epsilon']] = 0.
+                logr_method = self.get_root().scorer_class_attrs.get("logr_method", "")
+                if logr_method == "wt" and WILD_TYPE_VARIANT in data.index:
+                    data.loc[WILD_TYPE_VARIANT, idx[:, "SE"]] = 0.0
+                    data.loc[WILD_TYPE_VARIANT, idx[:, "score"]] = 0.0
+                    data.loc[WILD_TYPE_VARIANT, idx[:, "epsilon"]] = 0.0
 
         # store the data
         if data.empty:
@@ -659,36 +656,39 @@ class Experiment(StoreManager):
 
         wt = self.store.select(
             key="/main/{}/scores".format(label),
-            where="index={}".format(WILD_TYPE_VARIANT)
+            where="index={}".format(WILD_TYPE_VARIANT),
         )
-        if len(wt) == 0:    # no wild type score
+        if len(wt) == 0:  # no wild type score
             log_message(
                 logging_callback=logging.info,
                 msg="Failed to find wild type score, skipping wild type "
-                    "p-value calculations",
-                extra={'oname': self.name}
+                "p-value calculations",
+                extra={"oname": self.name},
             )
             return
         data = self.store.select(
             key="/main/{}/scores".format(label),
-            where="index!={}".format(WILD_TYPE_VARIANT)
+            where="index!={}".format(WILD_TYPE_VARIANT),
         )
 
         columns = pd.MultiIndex.from_product(
             [sorted(self.child_names()), sorted(["z", "pvalue_raw"])],
-            names=["condition", "value"]
+            names=["condition", "value"],
         )
         result_df = pd.DataFrame(index=data.index, columns=columns)
 
         condition_labels = data.columns.levels[0]
         for cnd in condition_labels:
-            result_df.loc[:, idx[cnd, 'z']] = \
-                np.absolute(wt.loc[WILD_TYPE_VARIANT, idx[cnd, 'score']] -
-                            data.loc[:, idx[cnd, 'score']]) / \
-                np.sqrt(wt.loc[WILD_TYPE_VARIANT, idx[cnd, 'SE']] ** 2 +
-                        data.loc[:, idx[cnd, 'SE']] ** 2)
-            result_df.loc[:, idx[cnd, 'pvalue_raw']] = \
-                2 * stats.norm.sf(result_df.loc[:, idx[cnd, 'z']])
+            result_df.loc[:, idx[cnd, "z"]] = np.absolute(
+                wt.loc[WILD_TYPE_VARIANT, idx[cnd, "score"]]
+                - data.loc[:, idx[cnd, "score"]]
+            ) / np.sqrt(
+                wt.loc[WILD_TYPE_VARIANT, idx[cnd, "SE"]] ** 2
+                + data.loc[:, idx[cnd, "SE"]] ** 2
+            )
+            result_df.loc[:, idx[cnd, "pvalue_raw"]] = 2 * stats.norm.sf(
+                result_df.loc[:, idx[cnd, "z"]]
+            )
 
         self.store.put("/main/{}/scores_pvalues_wt".format(label), result_df)
 
@@ -709,7 +709,7 @@ class Experiment(StoreManager):
         if self.check_store("/main/{}/scores_pvalues".format(label)):
             return
 
-        data = self.store['/main/{}/scores'.format(label)]
+        data = self.store["/main/{}/scores".format(label)]
 
         cnd1_index = list()
         cnd2_index = list()
@@ -719,26 +719,28 @@ class Experiment(StoreManager):
 
         condition_labels = data.columns.levels[0]
         for i, cnd1 in enumerate(condition_labels):
-            for cnd2 in condition_labels[i + 1:]:
+            for cnd2 in condition_labels[i + 1 :]:
                 cnd1_index.extend([cnd1] * len(values_list))
                 cnd2_index.extend([cnd2] * len(values_list))
                 values_index.extend(sorted(values_list))
         columns = pd.MultiIndex.from_tuples(
             list(zip(cnd1_index, cnd2_index, values_index)),
-            names=["condition1", "condition2", "value"]
+            names=["condition1", "condition2", "value"],
         )
 
         idx = pd.IndexSlice
         result_df = pd.DataFrame(np.nan, index=data.index, columns=columns)
         for i, cnd1 in enumerate(condition_labels):
-            for cnd2 in condition_labels[i + 1:]:
-                result_df.loc[:, idx[cnd1, cnd2, 'z']] = \
-                    np.absolute(data.loc[:, idx[cnd1, 'score']] -
-                                data.loc[:, idx[cnd2, 'score']]) / \
-                    np.sqrt(data.loc[:, idx[cnd1, 'SE']] ** 2 +
-                            data.loc[:, idx[cnd2, 'SE']] ** 2)
-                result_df.loc[:, idx[cnd1, cnd2, 'pvalue_raw']] = \
-                    2 * stats.norm.sf(result_df.loc[:, idx[cnd1, cnd2, 'z']])
+            for cnd2 in condition_labels[i + 1 :]:
+                result_df.loc[:, idx[cnd1, cnd2, "z"]] = np.absolute(
+                    data.loc[:, idx[cnd1, "score"]] - data.loc[:, idx[cnd2, "score"]]
+                ) / np.sqrt(
+                    data.loc[:, idx[cnd1, "SE"]] ** 2
+                    + data.loc[:, idx[cnd2, "SE"]] ** 2
+                )
+                result_df.loc[:, idx[cnd1, cnd2, "pvalue_raw"]] = 2 * stats.norm.sf(
+                    result_df.loc[:, idx[cnd1, cnd2, "z"]]
+                )
 
         self.store.put("/main/{}/scores_pvalues".format(label), result_df)
 
@@ -754,7 +756,7 @@ class Experiment(StoreManager):
             log_message(
                 logging_callback=logging.info,
                 msg="Generating tab-separated output files",
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
             for k in list(self.store.keys()):
                 self.write_table_tsv(k)

@@ -74,12 +74,14 @@ class BaseScorerPlugin(ABC):
     store_default_chunksize
     """
 
-    _base_name = 'BaseScorerPlugin'
+    _base_name = "BaseScorerPlugin"
 
     def __init__(self, store_manager, options):
         if not isinstance(store_manager, Selection):
-            raise TypeError("`store` parameter must be of type Selection"
-                            "[{}].".format(self.__class__.__name__))
+            raise TypeError(
+                "`store` parameter must be of type Selection"
+                "[{}].".format(self.__class__.__name__)
+            )
         self.name = self.__class__.__name__
         self._store_manager = store_manager
         self._load_scoring_options(options)
@@ -103,8 +105,10 @@ class BaseScorerPlugin(ABC):
         try:
             self.compute_scores()
         except BaseException as err:
-            raise Exception("The following error occured when trying to run "
-                            "plugin '{}': {}.".format(self.name, err))
+            raise Exception(
+                "The following error occured when trying to run "
+                "plugin '{}': {}.".format(self.name, err)
+            )
 
     @classmethod
     def validate(cls):
@@ -116,15 +120,12 @@ class BaseScorerPlugin(ABC):
         AttributeError
             If *name*, *version* or *author* are not strings.
         """
-        if not hasattr(cls, 'name'):
-            raise AttributeError("All plugins "
-                                 "require 'name' to be specified.")
-        if hasattr(cls, 'version'):
-            raise AttributeError("All plugins "
-                                 "require 'version' to be specified.")
-        if hasattr(cls, 'author'):
-            raise AttributeError("All plugins "
-                                 "require 'author' to be specified.")
+        if not hasattr(cls, "name"):
+            raise AttributeError("All plugins " "require 'name' to be specified.")
+        if hasattr(cls, "version"):
+            raise AttributeError("All plugins " "require 'version' to be specified.")
+        if hasattr(cls, "author"):
+            raise AttributeError("All plugins " "require 'author' to be specified.")
 
     def _load_scoring_options(self, options):
         """
@@ -141,9 +142,9 @@ class BaseScorerPlugin(ABC):
             If *options* is not a `dict`
         """
         if not isinstance(options, dict):
-            raise TypeError("Options must be a dictionary [{}].".format(
-                self.__class__.__name__
-            ))
+            raise TypeError(
+                "Options must be a dictionary [{}].".format(self.__class__.__name__)
+            )
         for k, v in options.items():
             setattr(self, k, v)
 
@@ -271,7 +272,7 @@ class BaseScorerPlugin(ABC):
         `set`
             A set of root group keys.
         """
-        return set([k.split('/')[0] for k in self._store_manager.store])
+        return set([k.split("/")[0] for k in self._store_manager.store])
 
     def store_keys(self):
         """
@@ -298,7 +299,7 @@ class BaseScorerPlugin(ABC):
             List of timepoints defined in the experiment selection, defined
             at runtime in the provided configuration file.
         """
-        if hasattr(self._store_manager, 'timepoints'):
+        if hasattr(self._store_manager, "timepoints"):
             return self._store_manager.timepoints
         else:
             return []
@@ -314,8 +315,8 @@ class BaseScorerPlugin(ABC):
         `list`
             List of timepoints keys defined as 'c_{}'
         """
-        if hasattr(self._store_manager, 'timepoints'):
-            return ['c_{}'.format(t) for t in self._store_manager.timepoints]
+        if hasattr(self._store_manager, "timepoints"):
+            return ["c_{}".format(t) for t in self._store_manager.timepoints]
         else:
             return []
 

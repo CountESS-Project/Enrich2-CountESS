@@ -23,7 +23,6 @@ from .utilities import create_file_path
 
 
 class TestFQReaderFormatting(unittest.TestCase):
-
     def run_read_fq(self, fname):
         return list(read_fastq(fname))
 

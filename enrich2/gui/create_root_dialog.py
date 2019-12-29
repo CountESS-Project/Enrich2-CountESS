@@ -33,14 +33,14 @@ from ..libraries.barcodevariant import BcvSeqLib
 from ..libraries.basic import BasicSeqLib
 from ..libraries.idonly import IdOnlySeqLib
 
-globals()['Selection'] = Selection
-globals()['Condition'] = Condition
-globals()['Experiment'] = Experiment
-globals()['BarcodeSeqLib'] = BarcodeSeqLib
-globals()['BcidSeqLib'] = BcidSeqLib
-globals()['BcvSeqLib'] = BcvSeqLib
-globals()['BasicSeqLib'] = BasicSeqLib
-globals()['IdOnlySeqLib'] = IdOnlySeqLib
+globals()["Selection"] = Selection
+globals()["Condition"] = Condition
+globals()["Experiment"] = Experiment
+globals()["BarcodeSeqLib"] = BarcodeSeqLib
+globals()["BcidSeqLib"] = BcidSeqLib
+globals()["BcvSeqLib"] = BcvSeqLib
+globals()["BasicSeqLib"] = BasicSeqLib
+globals()["IdOnlySeqLib"] = IdOnlySeqLib
 
 
 class CreateRootDialog(CustomDialog):
@@ -87,16 +87,18 @@ class CreateRootDialog(CustomDialog):
     --------
     :py:class:`~enrich2.gui.dialog.CustomDialog`
     """
+
     def __init__(self, parent_window, title="Create Root Object"):
         self.element_tkstring = StringVar()
         self.cfg_dict = dict()
         self.output_directory_tk = FileEntry(
-            "Output Directory", self.cfg_dict,
-            'output directory', optional=False, directory=True
+            "Output Directory",
+            self.cfg_dict,
+            "output directory",
+            optional=False,
+            directory=True,
         )
-        self.name_tk = StringEntry(
-            "Name", self.cfg_dict, 'name', optional=False
-        )
+        self.name_tk = StringEntry("Name", self.cfg_dict, "name", optional=False)
         self.element = None
         CustomDialog.__init__(self, parent_window, title)
 
@@ -118,35 +120,45 @@ class CreateRootDialog(CustomDialog):
         self.name_tk.body(config_frame, 0)
         self.output_directory_tk.body(config_frame, 1)
         config_frame.grid(
-            column=0, row=row_no, sticky="nsew", columnspan=DEFAULT_COLUMNS)
+            column=0, row=row_no, sticky="nsew", columnspan=DEFAULT_COLUMNS
+        )
 
         row_no += 1
-        element_types = LabelFrame(
-            master, padding=(3, 3, 12, 12), text="Root Type")
+        element_types = LabelFrame(master, padding=(3, 3, 12, 12), text="Root Type")
         element_types.grid(
-            column=0, row=row_no, sticky="nsew", columnspan=DEFAULT_COLUMNS)
+            column=0, row=row_no, sticky="nsew", columnspan=DEFAULT_COLUMNS
+        )
 
         label = Label(element_types, text="Experiment")
         label.grid(column=0, row=1, sticky="w")
         rb = Radiobutton(
-            element_types, text="Experiment",
-            variable=self.element_tkstring, value="Experiment")
+            element_types,
+            text="Experiment",
+            variable=self.element_tkstring,
+            value="Experiment",
+        )
         rb.grid(column=0, row=2, sticky="w")
         rb.invoke()
 
         label = Label(element_types, text="Selection")
         label.grid(column=0, row=3, sticky="w")
         rb = Radiobutton(
-            element_types, text="Selection",
-            variable=self.element_tkstring, value="Selection")
+            element_types,
+            text="Selection",
+            variable=self.element_tkstring,
+            value="Selection",
+        )
         rb.grid(column=0, row=4, sticky="w")
 
         label = Label(element_types, text="Sequence Library")
         label.grid(column=0, row=5, sticky="w")
         for i, k in enumerate(seqlib_label_text.keys()):
             rb = Radiobutton(
-                element_types, text=seqlib_label_text[k],
-                variable=self.element_tkstring, value=k)
+                element_types,
+                text=seqlib_label_text[k],
+                variable=self.element_tkstring,
+                value=k,
+            )
             rb.grid(column=0, row=(i + 6), sticky="w")
 
     def buttonbox(self):
@@ -182,14 +194,14 @@ class CreateRootDialog(CustomDialog):
 
         # create the object
         try:
-            print('Selection' in globals())
+            print("Selection" in globals())
             self.element = globals()[self.element_tkstring.get()]()
         except KeyError:
-            raise KeyError("Unrecognized element type '{}'".format(
-                self.element_tkstring.get()))
+            raise KeyError(
+                "Unrecognized element type '{}'".format(self.element_tkstring.get())
+            )
 
         # set the properties from this dialog
         self.element.output_dir_override = False
-        self.element.output_dir = self.cfg_dict['output directory']
-        self.element.name = self.cfg_dict['name']
-
+        self.element.output_dir = self.cfg_dict["output directory"]
+        self.element.name = self.cfg_dict["name"]

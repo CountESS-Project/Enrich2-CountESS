@@ -28,7 +28,4 @@ This module contains core classes and methods for parsing and validating
 """
 
 
-__all__ = [
-    "config_check",
-    "types"
-]
+__all__ = ["config_check", "types"]

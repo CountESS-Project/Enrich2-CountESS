@@ -73,8 +73,11 @@ def rml_estimator(y, sigma2i, iterations=50):
         sw = np.sum(w, axis=0)
         sw2 = np.sum(w ** 2, axis=0)
         betaML = np.sum(y * w, axis=0) / sw
-        sigma2ML_new = sigma2ML * np.sum(((y - betaML) ** 2) * (w ** 2),
-                                         axis=0) / (sw - (sw2 / sw))
+        sigma2ML_new = (
+            sigma2ML
+            * np.sum(((y - betaML) ** 2) * (w ** 2), axis=0)
+            / (sw - (sw2 / sw))
+        )
         eps = np.abs(sigma2ML - sigma2ML_new)
         sigma2ML = sigma2ML_new
 
@@ -100,12 +103,13 @@ def nan_filter_generator(data):
     """
     max_replicates = data.shape[0]
     data_num_nans = np.sum(np.isnan(data), axis=0)
-    for k in range(0, max_replicates-1, 1):
+    for k in range(0, max_replicates - 1, 1):
         selector = data_num_nans == k
         if np.sum(selector) == 0:
             continue
         data_k = np.apply_along_axis(
-            lambda col: col[~np.isnan(col)], 0, data[:, selector])
+            lambda col: col[~np.isnan(col)], 0, data[:, selector]
+        )
         rep_num = max_replicates - k
         yield data_k, rep_num
 
@@ -147,7 +151,7 @@ def partitioned_rml_estimator(y, sigma2i, iterations=50):
     nreps = np.zeros(shape=(y.shape[1],)) * np.nan
     y_num_nans = np.sum(np.isnan(y), axis=0)
 
-    for k in range(0, max_replicates-1, 1):
+    for k in range(0, max_replicates - 1, 1):
         # Partition y based on the number of NaNs a column has,
         # corresponding to the number of replicates a variant has
         # across selections.
@@ -155,17 +159,17 @@ def partitioned_rml_estimator(y, sigma2i, iterations=50):
         if np.sum(selector) == 0:
             continue
 
-        y_k = np.apply_along_axis(
-            lambda col: col[~np.isnan(col)], 0, y[:, selector])
+        y_k = np.apply_along_axis(lambda col: col[~np.isnan(col)], 0, y[:, selector])
         sigma2i_k = np.apply_along_axis(
-            lambda col: col[~np.isnan(col)], 0, sigma2i[:, selector])
+            lambda col: col[~np.isnan(col)], 0, sigma2i[:, selector]
+        )
 
         betaML_k, var_betaML_k, eps_k = rml_estimator(y_k, sigma2i_k, iterations)
 
         # Handles the case when SE is 0 resulting in NaN values.
-        betaML_k[np.isnan(betaML_k)] = 0.
-        var_betaML_k[np.isnan(var_betaML_k)] = 0.
-        eps_k[np.isnan(eps_k)] = 0.
+        betaML_k[np.isnan(betaML_k)] = 0.0
+        var_betaML_k[np.isnan(var_betaML_k)] = 0.0
+        eps_k[np.isnan(eps_k)] = 0.0
 
         betaML[selector] = betaML_k
         var_betaML[selector] = var_betaML_k
@@ -173,4 +177,3 @@ def partitioned_rml_estimator(y, sigma2i, iterations=50):
         nreps[selector] = max_replicates - k
 
     return betaML, var_betaML, eps, nreps
-

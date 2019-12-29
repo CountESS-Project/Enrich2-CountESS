@@ -29,27 +29,35 @@ READS_DIR = "data/reads/experiment/"
 RESULT_DIR = "data/result/experiment/"
 
 DRIVER = "runTest"
-LIBTYPE = 'idonly'
-FILE_EXT = 'tsv'
-FILE_SEP = '\t'
+LIBTYPE = "idonly"
+FILE_EXT = "tsv"
+FILE_SEP = "\t"
 
 SAVE = False
 VERBOSE = False
 
 
 class TestExperimentIdOnlyLibWLSScoringCompleteNorm(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'WLS'
-        logr = 'complete'
+        scoring = "WLS"
+        logr = "complete"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -60,18 +68,26 @@ class TestExperimentIdOnlyLibWLSScoringCompleteNorm(unittest.TestCase):
 
 
 class TestExperimentIdOnlyLibWLSScoringFullNorm(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'WLS'
-        logr = 'full'
+        scoring = "WLS"
+        logr = "full"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -82,18 +98,26 @@ class TestExperimentIdOnlyLibWLSScoringFullNorm(unittest.TestCase):
 
 
 class TestExperimentIdOnlyLibOLSScoringCompleteNorm(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'OLS'
-        logr = 'complete'
+        scoring = "OLS"
+        logr = "complete"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -104,18 +128,26 @@ class TestExperimentIdOnlyLibOLSScoringCompleteNorm(unittest.TestCase):
 
 
 class TestExperimentIdOnlyLibOLSScoringFullNorm(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'OLS'
-        logr = 'full'
+        scoring = "OLS"
+        logr = "full"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -126,18 +158,26 @@ class TestExperimentIdOnlyLibOLSScoringFullNorm(unittest.TestCase):
 
 
 class TestExperimentIdOnlyLibRatiosScoringCompleteNorm(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'ratios'
-        logr = 'complete'
+        scoring = "ratios"
+        logr = "complete"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -148,18 +188,26 @@ class TestExperimentIdOnlyLibRatiosScoringCompleteNorm(unittest.TestCase):
 
 
 class TestExperimentIdOnlyLibRatiosScoringFullNorm(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'ratios'
-        logr = 'full'
+        scoring = "ratios"
+        logr = "full"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -170,18 +218,26 @@ class TestExperimentIdOnlyLibRatiosScoringFullNorm(unittest.TestCase):
 
 
 class TestExperimentIdOnlyLibCountsScoringCompleteNorm(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'counts'
-        logr = 'complete'
+        scoring = "counts"
+        logr = "complete"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -192,18 +248,26 @@ class TestExperimentIdOnlyLibCountsScoringCompleteNorm(unittest.TestCase):
 
 
 class TestExperimentIdOnlyLibCountsScoringFullNorm(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'counts'
-        logr = 'full'
+        scoring = "counts"
+        logr = "full"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -215,16 +279,25 @@ class TestExperimentIdOnlyLibCountsScoringFullNorm(unittest.TestCase):
 
 class TestExperimentIdOnlyLibSimpleScoringCompleteNorm(unittest.TestCase):
     def setUp(self):
-        scoring = 'simple'
-        logr = 'complete'
+        scoring = "simple"
+        logr = "complete"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):
@@ -236,16 +309,25 @@ class TestExperimentIdOnlyLibSimpleScoringCompleteNorm(unittest.TestCase):
 
 class TestExperimentIdOnlyLibSimpleScoringFullNorm(unittest.TestCase):
     def setUp(self):
-        scoring = 'simple'
-        logr = 'full'
+        scoring = "simple"
+        logr = "full"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Experiment, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE, scoring_method=scoring,
-            logr_method=logr, coding='')
+            store_constructor=Experiment,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method=scoring,
+            logr_method=logr,
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):

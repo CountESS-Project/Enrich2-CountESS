@@ -25,8 +25,4 @@ Needleman-Wunsch and an optimized FASTQ file reader.
 """
 
 
-__all__ = [
-    "aligner",
-    "fqread",
-    "wildtype"
-]
+__all__ = ["aligner", "fqread", "wildtype"]

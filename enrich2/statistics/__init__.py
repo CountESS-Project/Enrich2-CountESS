@@ -25,7 +25,4 @@ score statistics, and for performing z-tests between dataframes.
 """
 
 
-__all__ = [
-    "random_effects",
-    "ztest"
-]
+__all__ = ["random_effects", "ztest"]

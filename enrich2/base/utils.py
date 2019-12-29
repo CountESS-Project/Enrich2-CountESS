@@ -38,12 +38,12 @@ __all__ = [
     "nested_format",
     "fix_filename",
     "multi_index_tsv_to_dataframe",
-    'infer_multiindex_header_rows',
-    'is_number',
-    'compute_md5',
-    'init_logging_queue',
-    'get_logging_queue',
-    'log_message'
+    "infer_multiindex_header_rows",
+    "is_number",
+    "compute_md5",
+    "init_logging_queue",
+    "get_logging_queue",
+    "log_message",
 ]
 
 
@@ -59,8 +59,8 @@ def init_logging_queue():
         LOG_QUEUE = Queue()
         log_message(
             logging.info,
-            'Logging Queue has been initialized.',
-            extra={'oname': 'Utilities'}
+            "Logging Queue has been initialized.",
+            extra={"oname": "Utilities"},
         )
 
 
@@ -101,15 +101,15 @@ def log_message(logging_callback, msg, **kwargs):
         logging_callback(msg, **kwargs)
         if isinstance(msg, Exception):
             tb = msg.__traceback__
-            logging.exception(''.join(traceback.format_tb(tb)), **kwargs)
+            logging.exception("".join(traceback.format_tb(tb)), **kwargs)
     else:
         queue.put(log)
         if isinstance(msg, Exception):
             tb = msg.__traceback__
             error = {
                 CALLBACK: logging.exception,
-                MESSAGE: ''.join(traceback.format_tb(tb)),
-                KWARGS: kwargs
+                MESSAGE: "".join(traceback.format_tb(tb)),
+                KWARGS: kwargs,
             }
             queue.put(error)
 
@@ -135,34 +135,34 @@ def nested_format(data, default, tab_level=1):
     msg = ""
     if isinstance(data, list) or isinstance(data, tuple):
         if not data:
-            msg += 'Empty Iterable'
+            msg += "Empty Iterable"
         else:
             msg += "-> Iterable"
             if default:
                 msg += "-> Iterable [Default]"
             try:
                 for i, (value, default) in enumerate(data):
-                    msg += '\n' + '\t' * tab_level + '@index {}: '.format(i)
+                    msg += "\n" + "\t" * tab_level + "@index {}: ".format(i)
                     msg += nested_format(value, default, tab_level)
             except (TypeError, ValueError):
                 for i, value in enumerate(data):
-                    msg += '\n' + '\t' * tab_level + '@index {}: '.format(i)
+                    msg += "\n" + "\t" * tab_level + "@index {}: ".format(i)
                     msg += nested_format(value, False, tab_level)
-            msg += '\n' + '\t' * tab_level + '@end of list'
+            msg += "\n" + "\t" * tab_level + "@end of list"
     elif isinstance(data, dict):
         if not data:
-            msg += 'Empty Dictionary'
+            msg += "Empty Dictionary"
         else:
             msg += "-> Dictionary"
             if default:
                 msg += "-> Dictionary [Default]"
             try:
                 for key, (value, default) in data.items():
-                    msg += '\n' + "\t" * tab_level + "{}: ".format(key)
+                    msg += "\n" + "\t" * tab_level + "{}: ".format(key)
                     msg += nested_format(value, default, tab_level + 1)
             except (TypeError, ValueError):
                 for key, value in data.items():
-                    msg += '\n' + "\t" * tab_level + "{}: ".format(key)
+                    msg += "\n" + "\t" * tab_level + "{}: ".format(key)
                     msg += nested_format(value, False, tab_level + 1)
     else:
         if isinstance(data, str):
@@ -175,7 +175,7 @@ def nested_format(data, default, tab_level=1):
     return msg
 
 
-def multi_index_tsv_to_dataframe(filepath, sep='\t', header_rows=None):
+def multi_index_tsv_to_dataframe(filepath, sep="\t", header_rows=None):
     """
     Loads a multi-header tsv file into a :py:class:`pd.DataFrame`.
     
@@ -210,8 +210,7 @@ def multi_index_tsv_to_dataframe(filepath, sep='\t', header_rows=None):
         return pd.read_table(filepath, index_col=0, sep=sep)
     else:
         try:
-            return pd.read_table(
-                filepath, index_col=0, sep=sep, header=header_rows)
+            return pd.read_table(filepath, index_col=0, sep=sep, header=header_rows)
         except IndexError:
             return pd.read_table(filepath, index_col=0, sep=sep)
 
@@ -242,9 +241,9 @@ def infer_multiindex_header_rows(filepath):
         The *header_rows* for this instance will be [0, 1]
     """
     header_rows = []
-    with open(filepath, 'rt') as fp:
+    with open(filepath, "rt") as fp:
         for i, line in enumerate(fp):
-            xs = [x.strip() for x in line.split('\t') if x.strip()]
+            xs = [x.strip() for x in line.split("\t") if x.strip()]
             skip_line = (not xs) or any([is_number(s) for s in xs])
             if skip_line:
                 break
@@ -297,8 +296,8 @@ def fix_filename(s):
     `str`
         Cleaned file name
     """
-    fname = "".join(c for c in s if c.isalnum() or c in (' ._~'))
-    fname = fname.replace(' ', '_')
+    fname = "".join(c for c in s if c.isalnum() or c in (" ._~"))
+    fname = fname.replace(" ", "_")
     return fname
 
 
@@ -321,7 +320,7 @@ def compute_md5(fname):
     if fname is None:
         return md5
     if os.path.isfile(fname):
-        fp = open(fname, 'rb')
+        fp = open(fname, "rb")
         md5 = hashlib.md5(fp.read()).hexdigest()
         fp.close()
     return md5

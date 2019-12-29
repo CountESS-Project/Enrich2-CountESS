@@ -18,7 +18,7 @@
 
 import unittest
 from ..libraries.variant import mutation_count, has_indel
-from ..libraries.variant import protein_variant,get_variant_type
+from ..libraries.variant import protein_variant, get_variant_type
 from ..libraries.variant import hgvs2single, single2hgvs
 from ..libraries.variant import valid_variant, has_unresolvable
 from ..base.constants import WILD_TYPE_VARIANT, SYNONYMOUS_VARIANT
@@ -38,9 +38,9 @@ class TestUtilitiesVariant(unittest.TestCase):
         synonymous = "_sy"
 
         one_mutation = mutation_count(mutation_1)
-        two_mutations = mutation_count(', '.join([mutation_1, mutation_2]))
+        two_mutations = mutation_count(", ".join([mutation_1, mutation_2]))
         three_mutations = mutation_count(
-            ', '.join([mutation_1, mutation_2, mutation_3])
+            ", ".join([mutation_1, mutation_2, mutation_3])
         )
         zero_mutations_wt = mutation_count(wild_type)
         zero_mutations_sy = mutation_count(synonymous)
@@ -168,24 +168,24 @@ class TestUtilitiesVariant(unittest.TestCase):
             protein_variant("")
 
     def test_get_variant_type(self):
-        self.assertEqual(get_variant_type("p.Ile26Leu"), 'protein')
-        self.assertEqual(get_variant_type("p.Ile26Leu, p.Ile26Val"), 'protein')
+        self.assertEqual(get_variant_type("p.Ile26Leu"), "protein")
+        self.assertEqual(get_variant_type("p.Ile26Leu, p.Ile26Val"), "protein")
         self.assertEqual(get_variant_type("c.76A>C"), None)
-        self.assertEqual(get_variant_type("c.76A>C (p.Ile76Leu)"), 'coding')
+        self.assertEqual(get_variant_type("c.76A>C (p.Ile76Leu)"), "coding")
         self.assertEqual(get_variant_type("n.76>C"), None)
-        self.assertEqual(get_variant_type("n.76A>C"), 'noncoding')
-        self.assertEqual(get_variant_type("n.76A>C (p.Ile26Leu)"), 'noncoding')
+        self.assertEqual(get_variant_type("n.76A>C"), "noncoding")
+        self.assertEqual(get_variant_type("n.76A>C (p.Ile26Leu)"), "noncoding")
 
     def test_hgvs2single_output(self):
-        self.assertEqual(hgvs2single("p.Ile26Leu"), ['I26L'])
+        self.assertEqual(hgvs2single("p.Ile26Leu"), ["I26L"])
         self.assertEqual(hgvs2single("p.IleSerLeu"), [])
-        self.assertEqual(hgvs2single("p.Ter26Leu"), ['*26L'])
+        self.assertEqual(hgvs2single("p.Ter26Leu"), ["*26L"])
         self.assertEqual(hgvs2single("p.Ter26???"), [])
 
     def test_single2hgvs_output(self):
-        self.assertEqual(single2hgvs("I26L"), ['p.Ile26Leu'])
+        self.assertEqual(single2hgvs("I26L"), ["p.Ile26Leu"])
         self.assertEqual(single2hgvs("?26L"), [])
-        self.assertEqual(single2hgvs("I2626L"), ['p.Ile2626Leu'])
+        self.assertEqual(single2hgvs("I2626L"), ["p.Ile2626Leu"])
 
     def test_valid_variant(self):
         self.assertTrue(valid_variant("c.76A>C (p.Ile26Leu)", is_coding=True))

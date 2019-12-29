@@ -32,11 +32,7 @@ import importlib
 from .options import Options, OptionsFile
 
 
-__all__ = [
-    'ModuleLoader',
-    'load_scorer_class_and_options',
-    'implements_methods'
-]
+__all__ = ["ModuleLoader", "load_scorer_class_and_options", "implements_methods"]
 
 
 class ModuleLoader(object):
@@ -72,17 +68,18 @@ class ModuleLoader(object):
     AttributeError
         Raises ``AttributeError`` if a non-existent attribute is requested.
     """
+
     def __init__(self, path):
         if not isinstance(path, str):
             raise TypeError("Argument `path` needs to be a string.")
         if not os.path.exists(path):
             raise IOError("Invalid plugin path {}.".format(path))
 
-        path = os.path.join(path, '')[:-1]
-        path_to_module_folder = '/'.join(path.split('/')[:-1])
-        module_folder = path_to_module_folder.split('/')[-1]
-        module_name, ext = os.path.splitext(path.split('/')[-1])
-        if ext != '.py':
+        path = os.path.join(path, "")[:-1]
+        path_to_module_folder = "/".join(path.split("/")[:-1])
+        module_folder = path_to_module_folder.split("/")[-1]
+        module_name, ext = os.path.splitext(path.split("/")[-1])
+        if ext != ".py":
             raise IOError("Plugin must be a python file.")
 
         try:
@@ -119,8 +116,10 @@ class ModuleLoader(object):
             Returns the object under the *name* key.
         """
         if not hasattr(self.module, name):
-            raise AttributeError("Module {} does not have attribute "
-                                 "{}.".format(self.module_name, name))
+            raise AttributeError(
+                "Module {} does not have attribute "
+                "{}.".format(self.module_name, name)
+            )
         return getattr(self.module, name)
 
 
@@ -155,19 +154,24 @@ def load_scorer_class_and_options(path):
         if implements_methods(attr):
             scorers.append(attr)
     if len(scorers) < 1:
-        raise ImportError("Could not find any classes implementing "
-                          "the required BaseScorerPlugin interface.")
+        raise ImportError(
+            "Could not find any classes implementing "
+            "the required BaseScorerPlugin interface."
+        )
     if len(scorers) > 1:
-        raise ImportError("Found Multiple classes implementing "
-                          "the required BaseScorerPlugin interface.")
+        raise ImportError(
+            "Found Multiple classes implementing "
+            "the required BaseScorerPlugin interface."
+        )
 
     options_ = None
     options_file = None
     for attr_name, attr in loader.get_module_attrs():
         if isinstance(attr, Options):
             if options_ is not None:
-                raise ImportError("Two Options classes found. Expecting only"
-                                  "one instantiation.")
+                raise ImportError(
+                    "Two Options classes found. Expecting only" "one instantiation."
+                )
             if not attr.has_options():
                 raise ImportError("Options class must contain options.")
             options_ = attr
@@ -199,11 +203,10 @@ def implements_methods(class_):
     """
     if not hasattr(class_, "_base_name"):
         return False
-    if not getattr(class_, "_base_name") == 'BaseScorerPlugin':
+    if not getattr(class_, "_base_name") == "BaseScorerPlugin":
         return False
     if not hasattr(class_, "compute_scores"):
         return False
-    if hasattr(getattr(class_, "compute_scores"), '__isabstractmethod__'):
+    if hasattr(getattr(class_, "compute_scores"), "__isabstractmethod__"):
         return False
     return True
-

@@ -31,12 +31,7 @@ import gzip
 import os.path
 
 
-__all__ = [
-    "re_barcode",
-    "re_variant_dna",
-    "re_identifier",
-    "BarcodeMap"
-]
+__all__ = ["re_barcode", "re_variant_dna", "re_identifier", "BarcodeMap"]
 
 
 re_barcode = re.compile("^[ACGT]+$")
@@ -74,6 +69,7 @@ class BarcodeMap(dict):
         variant DNA sequences, or ``False`` if the barcodes are assigned to
         arbitrary identifiers
     """
+
     def __init__(self, mapfile, is_variant=False):
         super(BarcodeMap, self).__init__()
         self.name = "barcodemap_{}".format(os.path.basename(mapfile))
@@ -91,44 +87,53 @@ class BarcodeMap(dict):
                 handle = open(mapfile, "rt")
         except IOError:
             raise IOError(
-                "Could not open barcode map file '{}' [{}]".format(
-                    mapfile, self.name))
+                "Could not open barcode map file '{}' [{}]".format(mapfile, self.name)
+            )
 
         # handle each line
         for line in handle:
             # skip comments and whitespace-only lines
-            if len(line.strip()) == 0 or line[0] == '#':
+            if len(line.strip()) == 0 or line[0] == "#":
                 continue
 
             try:
                 barcode, value = line.strip().split()
             except ValueError:
-                raise ValueError("Unexpected barcode map line format "
-                                 "[{}]".format(self.name))
+                raise ValueError(
+                    "Unexpected barcode map line format " "[{}]".format(self.name)
+                )
 
             if len(value) == 0 or len(barcode) == 0:
-                raise ValueError("Missing either the barcode or map value."
-                                 " [{}]".format(self.name))
+                raise ValueError(
+                    "Missing either the barcode or map value." " [{}]".format(self.name)
+                )
 
             barcode = barcode.upper()
             if not re_barcode.match(barcode):
-                raise ValueError("Barcode DNA sequence contains unexpected "
-                                 "characters [{}]".format(self.name))
+                raise ValueError(
+                    "Barcode DNA sequence contains unexpected "
+                    "characters [{}]".format(self.name)
+                )
             if self.is_variant:
                 value = value.upper()
                 if not re_variant_dna.match(value):
-                    raise ValueError("Variant DNA sequence contains unexpected"
-                                     " characters [{}]".format(self.name))
+                    raise ValueError(
+                        "Variant DNA sequence contains unexpected"
+                        " characters [{}]".format(self.name)
+                    )
             else:
                 if not re_identifier.match(value):
-                    raise ValueError("Identifier contains unexpected "
-                                     "characters [{}]".format(self.name))
+                    raise ValueError(
+                        "Identifier contains unexpected "
+                        "characters [{}]".format(self.name)
+                    )
 
             if barcode in self:
                 if self[barcode] != value:
-                    raise ValueError("Barcode '{}' assigned to multiple "
-                                     "unique values".format(barcode,
-                                                            self.name))
+                    raise ValueError(
+                        "Barcode '{}' assigned to multiple "
+                        "unique values".format(barcode, self.name)
+                    )
             else:
                 self[barcode] = value
 

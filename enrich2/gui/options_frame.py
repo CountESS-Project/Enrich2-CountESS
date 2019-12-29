@@ -119,6 +119,7 @@ class OptionsFrame(Frame, Iterable):
     :py:class:`~tkinter.ttk.Frame`
     :py:class:`~collections.Iterable`
     """
+
     def __init__(self, parent, options, **kw):
         Frame.__init__(self, parent, **kw)
         Iterable.__init__(self)
@@ -173,17 +174,18 @@ class OptionsFrame(Frame, Iterable):
         """
         if option.choices:
             self.make_choice_menu_widget(option)
-        elif option.dtype in (str, 'string', 'char', 'chr'):
+        elif option.dtype in (str, "string", "char", "chr"):
             self.make_string_entry_widget(option)
-        elif option.dtype in ('integer', 'int', int):
+        elif option.dtype in ("integer", "int", int):
             self.make_int_entry_widget(option)
-        elif option.dtype in ('float', float):
+        elif option.dtype in ("float", float):
             self.make_float_entry_widget(option)
-        elif option.dtype in ('bool', bool, 'boolean'):
+        elif option.dtype in ("bool", bool, "boolean"):
             self.make_bool_entry_widget(option)
         else:
-            raise ValueError("Unrecognised attribute in option "
-                             "dtype {}.".format(option.dtype))
+            raise ValueError(
+                "Unrecognised attribute in option " "dtype {}.".format(option.dtype)
+            )
 
     def make_choice_menu_widget(self, option):
         """
@@ -207,8 +209,7 @@ class OptionsFrame(Frame, Iterable):
         vname = option.varname
         set_func = lambda _, y=variable, x=vname: self.set_validate(x, y.get())
         popup_menu = OptionMenu(
-            self, variable,
-            option.get_choice_key(), *choices, command=set_func
+            self, variable, option.get_choice_key(), *choices, command=set_func
         )
         popup_menu.grid(sticky=E, column=1, row=self.row)
         self.vname_tkvars_map[option.varname] = variable
@@ -240,14 +241,13 @@ class OptionsFrame(Frame, Iterable):
                 variable.set(option.dtype(option.get_value()))
                 messagebox.showwarning(
                     title="Error setting option '{}'".format(varname),
-                    message=bad_input_msg.format(varname, error)
+                    message=bad_input_msg.format(varname, error),
                 )
                 return False
             return True
 
         entry = Entry(
-            self, textvariable=variable,
-            validate="focusout", validatecommand=validate
+            self, textvariable=variable, validate="focusout", validatecommand=validate
         )
         entry.grid(sticky=EW, column=1, row=self.row)
         self.vname_tkvars_map[option.varname] = variable
@@ -341,7 +341,7 @@ class OptionsFrame(Frame, Iterable):
             self.set_variable(varname, option.get_value())
             messagebox.showwarning(
                 title="Error setting option!",
-                message=bad_input_msg.format(varname, error)
+                message=bad_input_msg.format(varname, error),
             )
             return False
         return True
@@ -357,8 +357,10 @@ class OptionsFrame(Frame, Iterable):
         """
         option = self.options.get(varname, None)
         if option is None:
-            raise KeyError("No option with the variable name '{}' could "
-                           "be found".format(varname))
+            raise KeyError(
+                "No option with the variable name '{}' could "
+                "be found".format(varname)
+            )
         return option
 
     def set_option(self, varname, value):
@@ -489,6 +491,7 @@ class OptionsFileFrame(Frame):
     :py:class:`~OptionsFrame`
     :py:class:`~tkinter.ttk.Frame`
     """
+
     def __init__(self, parent, options_file=None, **config):
         super().__init__(parent, **config)
         self.row = 0
@@ -522,7 +525,7 @@ class OptionsFileFrame(Frame):
         """
         Makes the load button.
         """
-        button = Button(self, text='Load...', command=self.load_from_file)
+        button = Button(self, text="Load...", command=self.load_from_file)
         button.grid(row=self.row, column=1, sticky=E)
 
     def load_from_file(self):
@@ -534,18 +537,22 @@ class OptionsFileFrame(Frame):
             return
 
         self.active_cfg = {}
-        cfg_error_msg = "There was an error parsing file {}. " \
-                        "\n\nPlease see log for details.".format(file_path)
-        validation_error_msg = "There was an error during validation. " \
-                               "\n\nPlease see log for details."
+        cfg_error_msg = (
+            "There was an error parsing file {}. "
+            "\n\nPlease see log for details.".format(file_path)
+        )
+        validation_error_msg = (
+            "There was an error during validation. " "\n\nPlease see log for details."
+        )
         try:
             cfg = self.options_file.parse_to_dict(file_path)
         except BaseException as error:
             log_message(
                 logging_callback=logging.exception,
-                msg=error, extra={'oname': self.__class__.__name__}
+                msg=error,
+                extra={"oname": self.__class__.__name__},
             )
-            messagebox.showerror('Parse Error', cfg_error_msg)
+            messagebox.showerror("Parse Error", cfg_error_msg)
             return
 
         try:
@@ -553,9 +560,10 @@ class OptionsFileFrame(Frame):
         except BaseException as error:
             log_message(
                 logging_callback=logging.exception,
-                msg=error, extra={'oname': self.__class__.__name__}
+                msg=error,
+                extra={"oname": self.__class__.__name__},
             )
-            messagebox.showerror('Validation Error', validation_error_msg)
+            messagebox.showerror("Validation Error", validation_error_msg)
             return
 
         self.active_cfg = cfg
@@ -568,50 +576,53 @@ class OptionsFileFrame(Frame):
         in `options_frame`, parsed options could not be validated, or there
         are missing options from the file that are in the `options_frame`.
         """
-        success = 'Successfully applied configuration file to plugin options.'
+        success = "Successfully applied configuration file to plugin options."
         if not self.options_frame:
             messagebox.showwarning(
-                'Apply Configuration Warning',
+                "Apply Configuration Warning",
                 "No options have been defined in this plugin. Cannot apply"
-                "loaded configuration."
+                "loaded configuration.",
             )
             return
 
         if not self.active_cfg:
             messagebox.showwarning(
-                'Apply Configuration Warning',
-                "No configuration file has been loaded. Please load one first."
+                "Apply Configuration Warning",
+                "No configuration file has been loaded. Please load one first.",
             )
             return
 
         warn_message = ""
-        unused_keys = get_unused_options(
-            self.active_cfg, self.options_frame.options)
+        unused_keys = get_unused_options(self.active_cfg, self.options_frame.options)
         incomplete = self.options_file_incomplete()
-        self.active_cfg = {k: v for (k, v) in self.active_cfg.items()
-                           if k not in unused_keys}
+        self.active_cfg = {
+            k: v for (k, v) in self.active_cfg.items() if k not in unused_keys
+        }
 
         if unused_keys:
-            unused = '\n'.join(["'{}'".format(n) for n in unused_keys])
-            warn_message += "The following options found in the configuration" \
-                            "file are not defined in the current plugin and " \
-                            "will not be used during analysis:\n\n{}\n\n"
+            unused = "\n".join(["'{}'".format(n) for n in unused_keys])
+            warn_message += (
+                "The following options found in the configuration"
+                "file are not defined in the current plugin and "
+                "will not be used during analysis:\n\n{}\n\n"
+            )
             warn_message = warn_message.format(unused)
 
         if incomplete:
-            incomplete = '\n'.join(["'{}'".format(n) for n in incomplete])
-            warn_message += "The following options defined in the plugin " \
-                            "could not be found in the configuration file:" \
-                            "\n\n{}\n\nThese options will not been altered."
+            incomplete = "\n".join(["'{}'".format(n) for n in incomplete])
+            warn_message += (
+                "The following options defined in the plugin "
+                "could not be found in the configuration file:"
+                "\n\n{}\n\nThese options will not been altered."
+            )
             warn_message = warn_message.format(incomplete)
 
         if warn_message:
-            messagebox.showwarning(
-                'Apply configuration to options.', warn_message)
+            messagebox.showwarning("Apply configuration to options.", warn_message)
 
         applied_successfully = self.update_option_frame(self.active_cfg)
         if applied_successfully and not warn_message:
-            messagebox.showinfo('Apply configuration to options.', success)
+            messagebox.showinfo("Apply configuration to options.", success)
         return
 
     def options_file_incomplete(self):
@@ -621,8 +632,7 @@ class OptionsFileFrame(Frame):
         """
         missing = []
         if self.options_frame and self.active_cfg:
-            missing = options_not_in_config(
-                self.active_cfg, self.options_frame.options)
+            missing = options_not_in_config(self.active_cfg, self.options_frame.options)
             if missing:
                 return [opt.varname for opt in missing]
             return missing
@@ -641,45 +651,40 @@ class OptionsFileFrame(Frame):
         """
         current = []
         for varname, value in cfg.items():
-            bad_input_msg = "The following error occured when validating" \
-                            " option with variable name '{}':\n\n{}\n\n" \
-                            "Loading the specified configuration has been " \
-                            "aborted. Please supply a correct configuration " \
-                            "file before proceeding. No changes " \
-                            "have been made."
+            bad_input_msg = (
+                "The following error occured when validating"
+                " option with variable name '{}':\n\n{}\n\n"
+                "Loading the specified configuration has been "
+                "aborted. Please supply a correct configuration "
+                "file before proceeding. No changes "
+                "have been made."
+            )
             try:
                 option = self.options_frame.get_option_by_varname(varname)
                 current.append((varname, option.get_value()))
                 self.options_frame.set_option(varname, value)
                 if option.choices:
-                    self.options_frame.set_variable(
-                        varname, option.get_choice_key()
-                    )
+                    self.options_frame.set_variable(varname, option.get_choice_key())
                 else:
-                    self.options_frame.set_variable(
-                        varname, option.get_value()
-                    )
+                    self.options_frame.set_variable(varname, option.get_value())
             except (KeyError, TclError, TypeError, ValueError) as error:
                 for varname, old_val in current:
                     self.options_frame.set_option(varname, old_val)
                     option = self.options_frame.get_option_by_varname(varname)
                     if option.choices:
                         self.options_frame.set_variable(
-                            varname,
-                            option.get_choice_key()
+                            varname, option.get_choice_key()
                         )
                     else:
-                        self.options_frame.set_variable(
-                            varname,
-                            option.get_value()
-                        )
+                        self.options_frame.set_variable(varname, option.get_value())
                 messagebox.showwarning(
                     title="Error setting option!",
-                    message=bad_input_msg.format(varname, error)
+                    message=bad_input_msg.format(varname, error),
                 )
                 log_message(
                     logging_callback=logging.exception,
-                    msg=error, extra={'oname': self.__class__.__name__}
+                    msg=error,
+                    extra={"oname": self.__class__.__name__},
                 )
                 return False
         return True
@@ -710,7 +715,7 @@ class OptionsFileFrame(Frame):
 # -------------------------------------------------------------------------- #
 #                           Main GUI Frame
 # -------------------------------------------------------------------------- #
-DUMMY_NAME = 'Choose a plugin...'
+DUMMY_NAME = "Choose a plugin..."
 
 
 class ScorerScriptsDropDown(LabelFrame):
@@ -811,6 +816,7 @@ class ScorerScriptsDropDown(LabelFrame):
     --------
     :py:class:`~tkinter.ttk.LabelFrame`
     """
+
     def __init__(self, parent=None, plugin_sources=None, **config):
         super().__init__(parent, **config)
         self.row = 0
@@ -850,7 +856,7 @@ class ScorerScriptsDropDown(LabelFrame):
             log_message(
                 logging_callback=logging.warning,
                 msg="Could not load plugin {}.".format(script_path),
-                extra={'oname': self.__class__.__name__}
+                extra={"oname": self.__class__.__name__},
             )
             return
 
@@ -867,9 +873,7 @@ class ScorerScriptsDropDown(LabelFrame):
             )
             options_file_frame.update_option_frame(scorer_cfg)
             self.add_plugin(
-                plugin,
-                options_frame,
-                options_file_frame,
+                plugin, options_frame, options_file_frame,
             )
 
             _, _, _, tkname = self.plugins[hash(plugin)]
@@ -880,7 +884,7 @@ class ScorerScriptsDropDown(LabelFrame):
             log_message(
                 logging_callback=logging.info,
                 msg="Loaded new plugin from path {}.".format(script_path),
-                extra={'oname': self.__class__.__name__}
+                extra={"oname": self.__class__.__name__},
             )
         else:
             self.update_plugin(plugin)
@@ -894,7 +898,7 @@ class ScorerScriptsDropDown(LabelFrame):
             log_message(
                 logging_callback=logging.info,
                 msg="Plugin from path {} updated.".format(script_path),
-                extra={'oname': self.__class__.__name__}
+                extra={"oname": self.__class__.__name__},
             )
 
     def _parse_directory(self, scripts_dir):
@@ -914,7 +918,7 @@ class ScorerScriptsDropDown(LabelFrame):
         added_views = []
         files = sorted(glob.glob("{}/*.py".format(scripts_dir)))
         for path in files:
-            path = path.replace("\\", '/')
+            path = path.replace("\\", "/")
             full_path = os.path.join(os.getcwd(), path)
 
             plugin = self.parse_file(full_path)
@@ -925,12 +929,9 @@ class ScorerScriptsDropDown(LabelFrame):
                 self.update_plugin(plugin)
             else:
                 options_frame, options_file_frame = self.make_options_frames(
-                    plugin.options, plugin.options_file)
-                self.add_plugin(
-                    plugin,
-                    options_frame,
-                    options_file_frame
+                    plugin.options, plugin.options_file
                 )
+                self.add_plugin(plugin, options_frame, options_file_frame)
             added_views.append(self.get_plugin_gui_name(plugin))
         return added_views
 
@@ -954,12 +955,14 @@ class ScorerScriptsDropDown(LabelFrame):
             return Plugin(path)
         except Exception as e:
             log_message(
-                logging_callback=logging.exception, msg=e,
-                extra={'oname': self.__class__.__name__})
+                logging_callback=logging.exception,
+                msg=e,
+                extra={"oname": self.__class__.__name__},
+            )
             messagebox.showerror(
                 "Error loading plugin...",
                 "There was an error loading the script:\n\n{}."
-                "\n\nSee log for details\n\n{}.".format(path, e)
+                "\n\nSee log for details\n\n{}.".format(path, e),
             )
             return None
 
@@ -977,13 +980,12 @@ class ScorerScriptsDropDown(LabelFrame):
         for directory in sources:
             log_message(
                 logging_callback=logging.info,
-                msg="Parsing plugin source directory '{}'.".format(
-                    directory),
-                extra={'oname': self.__class__.__name__}
+                msg="Parsing plugin source directory '{}'.".format(directory),
+                extra={"oname": self.__class__.__name__},
             )
             views_after |= set(self._parse_directory(directory))
 
-        for view in (views_before - views_after):
+        for view in views_before - views_after:
             plugin, *_ = self.get_plugin_by_tkname(view)
             self.remove_plugin(plugin)
         self.refresh_menu()
@@ -1041,8 +1043,7 @@ class ScorerScriptsDropDown(LabelFrame):
                     frame.destroy()
                 del self.plugins[hash(plugin)]
 
-                frames = self.make_options_frames(
-                    plugin.options, plugin.options_file)
+                frames = self.make_options_frames(plugin.options, plugin.options_file)
                 self.add_plugin(plugin, *frames)
                 new_view = self.get_plugin_gui_name(plugin)
 
@@ -1113,18 +1114,17 @@ class ScorerScriptsDropDown(LabelFrame):
         tkname = plugin.klass.name
         tknames = set(name for _, _, _, name in self.plugins.values())
         if tkname in tknames:
-            same_name = \
-                [n for n in tknames if n.split('[')[0].strip() == tkname]
+            same_name = [n for n in tknames if n.split("[")[0].strip() == tkname]
             num = len(same_name)
             tkname = "{} [{}]".format(tkname, num)
         log_message(
             logging_callback=logging.info,
             msg="Added plugin with name '{}' from path '{}'.".format(
-                tkname, plugin.path),
-            extra={'oname': self.__class__.__name__}
+                tkname, plugin.path
+            ),
+            extra={"oname": self.__class__.__name__},
         )
-        self.plugins[hash(plugin)] = \
-            (plugin, options_frame, options_file_frame, tkname)
+        self.plugins[hash(plugin)] = (plugin, options_frame, options_file_frame, tkname)
         return tkname
 
     def get_plugin_by_tkname(self, tkname):
@@ -1141,9 +1141,7 @@ class ScorerScriptsDropDown(LabelFrame):
         `tuple`
             Size 3 tuple with Plugin, OptionsFrame, OptionsFileFrame
         """
-        tkname_map = {
-            n: (a, b, c) for (a, b, c, n) in self.plugins.values()
-        }
+        tkname_map = {n: (a, b, c) for (a, b, c, n) in self.plugins.values()}
         return tkname_map[tkname]
 
     def get_selected_plugin(self):
@@ -1157,8 +1155,9 @@ class ScorerScriptsDropDown(LabelFrame):
             objects.
         """
         if self.current_view and self.current_view != DUMMY_NAME:
-            plugin, opt_frame, opt_file_frame = \
-                self.get_plugin_by_tkname(self.current_view)
+            plugin, opt_frame, opt_file_frame = self.get_plugin_by_tkname(
+                self.current_view
+            )
             return plugin, opt_frame, opt_file_frame
         return None
 
@@ -1173,8 +1172,7 @@ class ScorerScriptsDropDown(LabelFrame):
         self.drop_menu_tkvar = menu_var
 
         f = lambda v: self.update_options_view(v)
-        drop_menu = OptionMenu(
-            self, menu_var, default, *choices, command=f)
+        drop_menu = OptionMenu(self, menu_var, default, *choices, command=f)
         drop_menu.grid(sticky=E, column=1, row=self.row)
         self.drop_menu = drop_menu
         self.increment_row()
@@ -1184,7 +1182,7 @@ class ScorerScriptsDropDown(LabelFrame):
         Make the 'details' button.
         """
         f = lambda v=self.drop_menu_tkvar: self.show_plugin_details(v.get())
-        btn = Button(self, text='Plugin Details', command=f)
+        btn = Button(self, text="Plugin Details", command=f)
         btn.grid(sticky=E, column=1, row=self.row)
         self.details_btn = btn
         self.increment_row()
@@ -1195,10 +1193,8 @@ class ScorerScriptsDropDown(LabelFrame):
         plugin.
         """
         btn_frame = Frame(self)
-        log_btn = Button(btn_frame, text='Print to Log',
-                         command=self.log_parameters)
-        save_btn = Button(btn_frame, text='Save As...',
-                          command=self.save_config)
+        log_btn = Button(btn_frame, text="Print to Log", command=self.log_parameters)
+        save_btn = Button(btn_frame, text="Save As...", command=self.save_config)
         log_btn.grid(row=0, column=0, sticky=E)
         save_btn.grid(row=0, column=1, sticky=E)
         self.btn_frame = btn_frame
@@ -1295,8 +1291,9 @@ class ScorerScriptsDropDown(LabelFrame):
         Hide the current view and forget the current grid packing structure
         """
         if self.current_view != DUMMY_NAME:
-            _, options_frame, options_file_frame = \
-                self.get_plugin_by_tkname(self.current_view)
+            _, options_frame, options_file_frame = self.get_plugin_by_tkname(
+                self.current_view
+            )
             if options_frame.has_options():
                 options_frame.grid_forget()
                 self.row -= 1
@@ -1315,22 +1312,19 @@ class ScorerScriptsDropDown(LabelFrame):
             A string name used by :py:module: `tkinter` in the drop down menu.
         """
         if next_view != DUMMY_NAME:
-            _, options_frame, options_file_frame = \
-                self.get_plugin_by_tkname(next_view)
+            _, options_frame, options_file_frame = self.get_plugin_by_tkname(next_view)
             if options_frame.has_options():
                 options_frame.grid(
-                    sticky=NSEW, row=self.row,
-                    columnspan=2, pady=(12, 0))
+                    sticky=NSEW, row=self.row, columnspan=2, pady=(12, 0)
+                )
                 self.increment_row()
 
                 options_file_frame.grid(
-                    sticky=NSEW, row=self.row,
-                    columnspan=2, pady=(12, 0))
+                    sticky=NSEW, row=self.row, columnspan=2, pady=(12, 0)
+                )
                 self.increment_row()
 
-                self.btn_frame.grid(
-                    row=self.row, columnspan=2,
-                    sticky=E, pady=(12, 0))
+                self.btn_frame.grid(row=self.row, columnspan=2, sticky=E, pady=(12, 0))
                 self.increment_row()
 
     # ---------------------------------------------------------------------- #
@@ -1374,19 +1368,14 @@ class ScorerScriptsDropDown(LabelFrame):
         if fp:
             _, attrs, path = self.get_scorer_class_attrs_path()
             if attrs and path:
-                json_cfg = {
-                    SCORER_PATH: path,
-                    SCORER_OPTIONS: attrs
-                }
+                json_cfg = {SCORER_PATH: path, SCORER_OPTIONS: attrs}
                 json.dump(json_cfg, fp)
                 messagebox.showinfo(
-                    "Configuration Saved!",
-                    "Successfully saved plugin configuration!"
+                    "Configuration Saved!", "Successfully saved plugin configuration!"
                 )
             else:
                 messagebox.showwarning(
-                    "Nothing to save.",
-                    "No plugin loaded or no attributes to save."
+                    "Nothing to save.", "No plugin loaded or no attributes to save."
                 )
 
     def log_parameters(self):
@@ -1396,15 +1385,15 @@ class ScorerScriptsDropDown(LabelFrame):
         _, cfg, _ = self.get_scorer_class_attrs_path(keep_defult_bool=True)
         if not cfg or cfg is None:
             messagebox.showwarning(
-                "Nothing to log.",
-                "No plugin loaded or no attributes to log."
+                "Nothing to log.", "No plugin loaded or no attributes to log."
             )
             return
         msg = "Scorer Parameters "
         msg += nested_format(cfg, False, tab_level=0)
         log_message(
-            logging_callback=logging.info, msg=msg,
-            extra={'oname': self.__class__.__name__}
+            logging_callback=logging.info,
+            msg=msg,
+            extra={"oname": self.__class__.__name__},
         )
 
     def show_plugin_details(self, name):
@@ -1418,16 +1407,15 @@ class ScorerScriptsDropDown(LabelFrame):
         """
         if name == DUMMY_NAME:
             messagebox.showwarning(
-                'No plugin selected.\n\n'.format(name),
-                'Select a plugin from the drop down menu.'
+                "No plugin selected.\n\n".format(name),
+                "Select a plugin from the drop down menu.",
             )
         else:
             plugin, *_ = self.get_plugin_by_tkname(name)
             klass = plugin.klass
             path = plugin.path
             messagebox.showinfo(
-                '{} Information\n\n'.format(name),
-                'Name: {}\n\nVersion: {}\n\nAuthors: '
-                '{}\n\nPath: {}'.format(klass.name,
-                                        klass.version, klass.author, path)
+                "{} Information\n\n".format(name),
+                "Name: {}\n\nVersion: {}\n\nAuthors: "
+                "{}\n\nPath: {}".format(klass.name, klass.version, klass.author, path),
             )

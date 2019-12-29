@@ -37,19 +37,19 @@ from ..base.config_constants import SCORER, SCORER_OPTIONS
 
 
 __all__ = [
-    'BaseOption',
-    'Option',
-    'BaseOptions',
-    'Options',
-    'OptionsFile',
-    'parse',
-    'validate',
-    'get_unused_options',
-    'get_unused_options_ls',
-    'option_names_not_in_cfg',
-    'option_varnames_not_in_cfg',
-    'options_not_in_config',
-    'apply_cfg_to_options'
+    "BaseOption",
+    "Option",
+    "BaseOptions",
+    "Options",
+    "OptionsFile",
+    "parse",
+    "validate",
+    "get_unused_options",
+    "get_unused_options_ls",
+    "option_names_not_in_cfg",
+    "option_varnames_not_in_cfg",
+    "options_not_in_config",
+    "apply_cfg_to_options",
 ]
 
 
@@ -94,24 +94,32 @@ class BaseOption(object):
 
     def __init__(self, name, varname, dtype, default, hidden):
         if not isinstance(name, str):
-            raise TypeError("Parameter 'name' in option '{}' must be a "
-                            "string.".format(name))
+            raise TypeError(
+                "Parameter 'name' in option '{}' must be a " "string.".format(name)
+            )
         if not isinstance(varname, str):
-            raise TypeError("Parameter 'varname' in option '{}' must be a "
-                            "string.".format(name))
+            raise TypeError(
+                "Parameter 'varname' in option '{}' must be a " "string.".format(name)
+            )
         if not isinstance(hidden, bool):
-            raise TypeError("Parameter 'hidden' in option '{}' must be a "
-                            "boolean.".format(name))
+            raise TypeError(
+                "Parameter 'hidden' in option '{}' must be a " "boolean.".format(name)
+            )
 
         if not name:
-            raise ValueError("Parameter 'name' in option '{}' must be a "
-                             "non-empty string.".format(name))
+            raise ValueError(
+                "Parameter 'name' in option '{}' must be a "
+                "non-empty string.".format(name)
+            )
         if not varname:
-            raise ValueError("Parameter 'varname' in option '{}' must be a "
-                             "non-empty string.".format(name))
+            raise ValueError(
+                "Parameter 'varname' in option '{}' must be a "
+                "non-empty string.".format(name)
+            )
         if dtype is None:
-            raise TypeError("Parameter 'dtype' in option '{}' cannot be "
-                            "NoneType.".format(name))
+            raise TypeError(
+                "Parameter 'dtype' in option '{}' cannot be " "NoneType.".format(name)
+            )
 
         self.name = name
         self.varname = varname
@@ -129,8 +137,14 @@ class BaseOption(object):
         hidden_eq = self.hidden == other.hidden
         default_eq = self.get_default_value() == other.get_default_value()
         value_eq = self.get_value() == other.get_value()
-        return name_eq and varname_eq and dtype_eq and hidden_eq and \
-               default_eq and value_eq
+        return (
+            name_eq
+            and varname_eq
+            and dtype_eq
+            and hidden_eq
+            and default_eq
+            and value_eq
+        )
 
     def __ne__(self, other):
         return not self == other
@@ -146,10 +160,12 @@ class BaseOption(object):
             A value that must match the dtype attribute.
         """
         if not isinstance(value, self.dtype):
-            raise TypeError("Option '{}' with type {} does not match "
-                            "input type {}.".format(self.varname,
-                                                    self.dtype.__name__,
-                                                    type(value).__name__))
+            raise TypeError(
+                "Option '{}' with type {} does not match "
+                "input type {}.".format(
+                    self.varname, self.dtype.__name__, type(value).__name__
+                )
+            )
 
     def _set_value(self, value):
         """
@@ -236,8 +252,8 @@ class Option(BaseOption):
     :py:class:`~enrich2.plugins.options.BaseOption`
     
     """
-    def __init__(self, name, varname, dtype, default,
-                 choices=None, hidden=True):
+
+    def __init__(self, name, varname, dtype, default, choices=None, hidden=True):
         """
 
         """
@@ -245,8 +261,10 @@ class Option(BaseOption):
         self.choices = {} if choices is None else choices
         self._rev_choices = {} if choices is None else choices
         if not isinstance(self.choices, dict):
-            raise TypeError("Parameter 'choices' in option '{}' must be a "
-                            "dict.".format(self.name))
+            raise TypeError(
+                "Parameter 'choices' in option '{}' must be a "
+                "dict.".format(self.name)
+            )
 
         for key in self.choices.keys():
             if not isinstance(key, str):
@@ -254,8 +272,7 @@ class Option(BaseOption):
 
         for value in self.choices.values():
             if not isinstance(value, dtype):
-                raise TypeError("Choice values must be {}.".format(
-                    dtype.__name__))
+                raise TypeError("Choice values must be {}.".format(dtype.__name__))
 
         self._rev_choices = {v: k for (k, v) in self.choices.items()}
         if len(self._rev_choices) != len(self.choices):
@@ -283,9 +300,17 @@ class Option(BaseOption):
         choices_eq = self.choices == other.choices
         rev_choices_eq = self._rev_choices == other._rev_choices
         choice_key_eq = self.get_choice_key() == other.get_choice_key()
-        return name_eq and varname_eq and dtype_eq and hidden_eq and \
-               default_eq and value_eq and choices_eq and choice_key_eq and \
-               rev_choices_eq
+        return (
+            name_eq
+            and varname_eq
+            and dtype_eq
+            and hidden_eq
+            and default_eq
+            and value_eq
+            and choices_eq
+            and choice_key_eq
+            and rev_choices_eq
+        )
 
     def __ne__(self, other):
         return not self == other
@@ -314,8 +339,10 @@ class Option(BaseOption):
             elif value in self.choices:
                 return value
             else:
-                raise ValueError("Trying to set 'choices' with an undefined "
-                                 "value '{}'.".format(value))
+                raise ValueError(
+                    "Trying to set 'choices' with an undefined "
+                    "value '{}'.".format(value)
+                )
         else:
             super()._validate(value)
             return value
@@ -401,7 +428,6 @@ class Option(BaseOption):
             return self.choices[key]
         return self._default
 
-
     def is_default(self):
         """
         Returns a bool if the current value is the default
@@ -453,6 +479,7 @@ class BaseOptions(Mapping):
     :py:class:`Mapping`
     
     """
+
     def __init__(self):
         self._options = dict()
 
@@ -471,14 +498,8 @@ class BaseOptions(Mapping):
     def __eq__(self, other):
         if len(self) != len(other):
             return False
-        self_opts = sorted(
-            [o for o in self.values()],
-            key=lambda x: x.varname
-        )
-        other_opts = sorted(
-            [o for o in other.values()],
-            key=lambda x: x.varname
-        )
+        self_opts = sorted([o for o in self.values()], key=lambda x: x.varname)
+        other_opts = sorted([o for o in other.values()], key=lambda x: x.varname)
         return all([o1 == o2 for (o1, o2) in zip(self_opts, other_opts)])
 
     def __ne__(self, other):
@@ -505,8 +526,7 @@ class BaseOptions(Mapping):
         -------
         dict
         """
-        return {k: (o.get_value(), o.is_default())
-                for (k, o) in self._options.items()}
+        return {k: (o.get_value(), o.is_default()) for (k, o) in self._options.items()}
 
     def has_options(self):
         """
@@ -542,8 +562,9 @@ class BaseOptions(Mapping):
             Value to set option with.
         """
         if varname not in self._options:
-            raise KeyError("Key '{}' not found in {}.".format(
-                varname, self.__class__.__name__))
+            raise KeyError(
+                "Key '{}' not found in {}.".format(varname, self.__class__.__name__)
+            )
         self._options[varname].set_value(value)
 
     def validate_option_by_varname(self, varname, value):
@@ -558,8 +579,9 @@ class BaseOptions(Mapping):
             Value to validate option with.
         """
         if varname not in self._options:
-            raise KeyError("Key '{}' not found in {}.".format(
-                varname, self.__class__.__name__))
+            raise KeyError(
+                "Key '{}' not found in {}.".format(varname, self.__class__.__name__)
+            )
         self._options[varname].validate(value)
 
     def get_option_by_varname(self, varname):
@@ -572,8 +594,9 @@ class BaseOptions(Mapping):
             Varname of the option to be validated.
         """
         if varname not in self._options:
-            raise KeyError("Key '{}' not found in {}.".format(
-                varname, self.__class__.__name__))
+            raise KeyError(
+                "Key '{}' not found in {}.".format(varname, self.__class__.__name__)
+            )
         return self._options[varname]
 
     def put(self, varname, option):
@@ -593,8 +616,10 @@ class BaseOptions(Mapping):
             If trying to insert a key that already exists.
         """
         if varname in set(self._options.keys()):
-            raise ValueError("Cannot define two options with the same "
-                             "varname '{}'.".format(varname))
+            raise ValueError(
+                "Cannot define two options with the same "
+                "varname '{}'.".format(varname)
+            )
         self._options[varname] = option
 
     def get_visible_options(self):
@@ -627,11 +652,11 @@ class Options(BaseOptions):
     --------
     :py:class:`~enrich2.plugins.options.BaseOptions`
     """
+
     def __init__(self):
         super().__init__()
 
-    def add_option(self, name, varname, dtype, default, choices=None,
-                   hidden=True):
+    def add_option(self, name, varname, dtype, default, choices=None, hidden=True):
         """
         Adds an option.
 
@@ -658,7 +683,7 @@ class Options(BaseOptions):
             dtype=dtype,
             default=default,
             choices=choices,
-            hidden=hidden
+            hidden=hidden,
         )
         self.put(varname, option)
 
@@ -683,7 +708,7 @@ def parse(file_path, backend=json):
     dict
     """
     if isinstance(file_path, str):
-        cfg = backend.load(open(file_path, 'r'))
+        cfg = backend.load(open(file_path, "r"))
     else:
         cfg = backend.load(file_path)
 
@@ -691,16 +716,21 @@ def parse(file_path, backend=json):
         if SCORER_OPTIONS in cfg[SCORER]:
             return cfg[SCORER][SCORER_OPTIONS]
         else:
-            raise ValueError("Unrecognised config file, couldn't find "
-                             "expected keys. File requires the nested key"
-                             "'{}/{}'.".format(SCORER, SCORER_OPTIONS))
+            raise ValueError(
+                "Unrecognised config file, couldn't find "
+                "expected keys. File requires the nested key"
+                "'{}/{}'.".format(SCORER, SCORER_OPTIONS)
+            )
     elif SCORER_OPTIONS in cfg:
         return cfg[SCORER_OPTIONS]
     else:
-        raise ValueError("Unrecognised config file, couldn't find "
-                         "expected keys. File requires the nested key"
-                         "'{}/{}' or the key "
-                         "'{}'".format(SCORER, SCORER_OPTIONS, SCORER_OPTIONS))
+        raise ValueError(
+            "Unrecognised config file, couldn't find "
+            "expected keys. File requires the nested key"
+            "'{}/{}' or the key "
+            "'{}'".format(SCORER, SCORER_OPTIONS, SCORER_OPTIONS)
+        )
+
 
 def validate(cfg_dict):
     """
@@ -718,7 +748,8 @@ def validate(cfg_dict):
     if not isinstance(cfg_dict, dict):
         raise TypeError(
             "Expected parsed configuration to be type 'dict'"
-            " Found {}.".format(type(cfg_dict).__name__))
+            " Found {}.".format(type(cfg_dict).__name__)
+        )
 
 
 # -------------------------------------------------------------------------- #
@@ -771,9 +802,9 @@ class OptionsFile(object):
         options_file = OptionsFile(
             name=name,
             parsing_func=parse,
-            parsing_func_kwargs={'backend': json},
+            parsing_func_kwargs={"backend": json},
             validator_func=validate,
-            validator_func_kwargs={}
+            validator_func_kwargs={},
         )
         return options_file
 
@@ -796,14 +827,20 @@ class OptionsFile(object):
         options_file = OptionsFile(
             name=name,
             parsing_func=parse,
-            parsing_func_kwargs={'backend': yaml},
+            parsing_func_kwargs={"backend": yaml},
             validator_func=validate,
-            validator_func_kwargs={}
+            validator_func_kwargs={},
         )
         return options_file
 
-    def __init__(self, name, parsing_func, parsing_func_kwargs,
-                 validator_func, validator_func_kwargs):
+    def __init__(
+        self,
+        name,
+        parsing_func,
+        parsing_func_kwargs,
+        validator_func,
+        validator_func_kwargs,
+    ):
         self.name = name
         self._parser_func = parsing_func
         self.parse_kwargs = parsing_func_kwargs

@@ -55,11 +55,11 @@ __all__ = [
     "save_result_to_txt",
     "print_test_comparison",
     "SCORING_ATTRS",
-    "SCORING_PATHS"
+    "SCORING_PATHS",
 ]
 
 
-def create_file_path(fname, direc='data/result/'):
+def create_file_path(fname, direc="data/result/"):
     """
     Utility function to create an absolute path to data in the tests directory.
     
@@ -80,7 +80,7 @@ def create_file_path(fname, direc='data/result/'):
     return path
 
 
-def load_config_data(fname, direc='data/config/'):
+def load_config_data(fname, direc="data/config/"):
     """
     Utility function to load a configuration file.
     
@@ -105,7 +105,7 @@ def load_config_data(fname, direc='data/config/'):
         raise IOError("Failed to open '{}".format(path))
 
 
-def load_df_from_txt(fname, direc='data/result/', sep='\t'):
+def load_df_from_txt(fname, direc="data/result/", sep="\t"):
     """
     Utility function to load a table stored as txt with an arbitrary separator.
     
@@ -130,7 +130,7 @@ def load_df_from_txt(fname, direc='data/result/', sep='\t'):
         raise IOError("Failed to open '{}".format(path))
 
 
-def load_df_from_pkl(fname, direc='data/result/'):
+def load_df_from_pkl(fname, direc="data/result/"):
     """
     Utility function to load a table stored in py:module:`pickle` format.
     
@@ -153,7 +153,7 @@ def load_df_from_pkl(fname, direc='data/result/'):
         raise IOError("Failed to open '{}".format(path))
 
 
-def save_result_to_txt(test_obj, direc, sep='\t'):
+def save_result_to_txt(test_obj, direc, sep="\t"):
     """
     Utility function to save a :py:class:`~pd.HDFStore` as a series of 
     delimited tsv. One file is created for each :py:class:`~pd.DataFrame` in
@@ -175,13 +175,10 @@ def save_result_to_txt(test_obj, direc, sep='\t'):
 
     """
     for key in test_obj.store:
-        name = "{}/{}.tsv".format(
-            direc,
-            key[1:].replace("/", "_")
-        )
+        name = "{}/{}.tsv".format(direc, key[1:].replace("/", "_"))
         path = create_file_path(name, direc="")
         print("saving {} to {}".format(key, path))
-        test_obj.store[key].to_csv(path, sep=sep, index=True, na_rep='NaN')
+        test_obj.store[key].to_csv(path, sep=sep, index=True, na_rep="NaN")
     return
 
 
@@ -205,17 +202,14 @@ def save_result_to_pkl(test_obj, direc):
 
     """
     for key in test_obj.store:
-        name = "{}/{}.pkl".format(
-            direc,
-            key[1:].replace("/", "_")
-        )
+        name = "{}/{}.pkl".format(direc, key[1:].replace("/", "_"))
         path = create_file_path(name, direc="")
         print("saving {} to {}".format(key, path))
         test_obj.store[key].to_pickle(path)
     return
 
 
-def dispatch_loader(fname, direc, sep='\t'):
+def dispatch_loader(fname, direc, sep="\t"):
     """
     Utility function to load a filename based on the extension it has.
     
@@ -233,11 +227,11 @@ def dispatch_loader(fname, direc, sep='\t'):
     :py:class:`~pandas.DataFrame`
         DataFrame parsed from the file.
     """
-    ext = fname.split('.')[-1]
+    ext = fname.split(".")[-1]
     # print('Loading from: {}/{}'.format(direc, fname))
-    if ext in ('tsv' or 'txt'):
+    if ext in ("tsv" or "txt"):
         return load_df_from_txt(fname, direc, sep)
-    elif ext == 'pkl':
+    elif ext == "pkl":
         return load_df_from_pkl(fname, direc)
     else:
         raise IOError("Unexpected file extension {}.".format(ext))
@@ -261,17 +255,17 @@ def print_test_comparison(test_name, expected, result):
     `str`
         String object represeting a test.
     """
-    line = '\n'
-    line += "-" * 60 + '\n'
+    line = "\n"
+    line += "-" * 60 + "\n"
     line += "{}\n".format(test_name)
-    line += "-" * 60 + '\n'
-    line += "-" * 26 + "EXPECTED" + "-" * 26 + '\n'
+    line += "-" * 60 + "\n"
+    line += "-" * 26 + "EXPECTED" + "-" * 26 + "\n"
     line += "{}\n".format(expected)
-    line += "-" * 28 + "END" + "-" * 29 + '\n'
-    line += "-" * 27 + "RESULT" + "-" * 27 + '\n'
+    line += "-" * 28 + "END" + "-" * 29 + "\n"
+    line += "-" * 27 + "RESULT" + "-" * 27 + "\n"
     line += "{}\n".format(result)
-    line += "-" * 28 + "END" + "-" * 29 + '\n'
-    line += '\n'
+    line += "-" * 28 + "END" + "-" * 29 + "\n"
+    line += "\n"
     return line
 
 
@@ -302,39 +296,30 @@ def update_cfg_file(cfg, scoring, logr):
 
 
 SCORING_PATHS = {
-    'counts': create_file_path('counts_scorer.py', 'data/plugins'),
-    'ratios': create_file_path('ratios_scorer.py', 'data/plugins'),
-    'simple': create_file_path('simple_scorer.py', 'data/plugins'),
-    'WLS': create_file_path('regression_scorer.py', 'data/plugins'),
-    'OLS': create_file_path('regression_scorer.py', 'data/plugins')
+    "counts": create_file_path("counts_scorer.py", "data/plugins"),
+    "ratios": create_file_path("ratios_scorer.py", "data/plugins"),
+    "simple": create_file_path("simple_scorer.py", "data/plugins"),
+    "WLS": create_file_path("regression_scorer.py", "data/plugins"),
+    "OLS": create_file_path("regression_scorer.py", "data/plugins"),
 }
 
 
 SCORING_ATTRS = {
-    'WLS': {
-        'full': {'logr_method': 'full', 'weighted': True},
-        'complete': {'logr_method': 'complete', 'weighted': True},
-        'wt': {'logr_method': 'wt', 'weighted': True}
+    "WLS": {
+        "full": {"logr_method": "full", "weighted": True},
+        "complete": {"logr_method": "complete", "weighted": True},
+        "wt": {"logr_method": "wt", "weighted": True},
     },
-    'OLS': {
-        'full': {'logr_method': 'full', 'weighted': False},
-        'complete': {'logr_method': 'complete', 'weighted': False},
-        'wt': {'logr_method': 'wt', 'weighted': False}
+    "OLS": {
+        "full": {"logr_method": "full", "weighted": False},
+        "complete": {"logr_method": "complete", "weighted": False},
+        "wt": {"logr_method": "wt", "weighted": False},
     },
-    'ratios': {
-        'full': {'logr_method': 'full'},
-        'complete': {'logr_method': 'complete'},
-        'wt': {'logr_method': 'wt'}
+    "ratios": {
+        "full": {"logr_method": "full"},
+        "complete": {"logr_method": "complete"},
+        "wt": {"logr_method": "wt"},
     },
-    'counts': {
-        'full': {},
-        'complete': {},
-        'wt': {}
-    },
-    'simple': {
-        'full': {},
-        'complete': {},
-        'wt': {}
-    }
+    "counts": {"full": {}, "complete": {}, "wt": {}},
+    "simple": {"full": {}, "complete": {}, "wt": {}},
 }
-

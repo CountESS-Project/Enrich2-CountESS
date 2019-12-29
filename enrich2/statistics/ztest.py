@@ -29,10 +29,7 @@ import numpy as np
 import scipy.stats as stats
 
 
-__all__ = [
-    "ztest_pair",
-    "ztest_single"
-]
+__all__ = ["ztest_pair", "ztest_single"]
 
 
 def ztest_pair(df1, df2):
@@ -58,14 +55,17 @@ def ztest_pair(df1, df2):
         p-values (``'pvalue_raw'``) for each element found in both data frames.
 
     """
-    shared = df1.loc[:, ('score', 'SE')].merge(df2.loc[:, ('score', 'SE')],
-                                               how='inner',
-                                               left_index=True,
-                                               right_index=True,
-                                               suffixes=('1', '2'))
-    shared['z'] = np.abs(shared['score1'] - shared['score2']) / \
-        np.sqrt(shared['SE1'] ** 2 + shared['SE2'] ** 2)
-    shared['pvalue_raw'] = 2 * stats.norm.sf(shared['z'])
+    shared = df1.loc[:, ("score", "SE")].merge(
+        df2.loc[:, ("score", "SE")],
+        how="inner",
+        left_index=True,
+        right_index=True,
+        suffixes=("1", "2"),
+    )
+    shared["z"] = np.abs(shared["score1"] - shared["score2"]) / np.sqrt(
+        shared["SE1"] ** 2 + shared["SE2"] ** 2
+    )
+    shared["pvalue_raw"] = 2 * stats.norm.sf(shared["z"])
     return shared
 
 
@@ -93,8 +93,7 @@ def ztest_single(df, score, se):
         (``'SE'``), z-score (``'z'``), and p-value (``'pvalue_raw'``) for each
         element in the input data frame.
     """
-    result = df.loc[:, ('score', 'SE')]
-    result['z'] = np.abs(result['score'] - score) / \
-        np.sqrt(result['SE'] ** 2 + se ** 2)
-    result['pvalue_raw'] = 2 * stats.norm.sf(result['z'])
+    result = df.loc[:, ("score", "SE")]
+    result["z"] = np.abs(result["score"] - score) / np.sqrt(result["SE"] ** 2 + se ** 2)
+    result["pvalue_raw"] = 2 * stats.norm.sf(result["z"])
     return result

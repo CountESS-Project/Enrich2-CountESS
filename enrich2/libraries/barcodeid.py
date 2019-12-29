@@ -33,9 +33,7 @@ from .barcode import BarcodeSeqLib
 from ..base.utils import log_message
 
 
-__all__ = [
-    "BcidSeqLib"
-]
+__all__ = ["BcidSeqLib"]
 
 
 class BcidSeqLib(BarcodeSeqLib):
@@ -81,12 +79,12 @@ class BcidSeqLib(BarcodeSeqLib):
     """
 
     treeview_class_name = "Barcoded ID SeqLib"
-    
+
     def __init__(self):
         BarcodeSeqLib.__init__(self)
         self.barcode_map = None
         self.identifier_min_count = 0
-        self.add_label('identifiers')
+        self.add_label("identifiers")
 
     def configure(self, cfg, barcode_map=None):
         """
@@ -103,11 +101,10 @@ class BcidSeqLib(BarcodeSeqLib):
         from ..config.types import BcidSeqLibConfiguration
 
         if isinstance(cfg, dict):
-            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            init_fastq = bool(cfg.get("fastq", {}).get("reads", ""))
             cfg = BcidSeqLibConfiguration(cfg, init_fastq)
         elif not isinstance(cfg, BcidSeqLibConfiguration):
-            raise TypeError("`cfg` was neither a "
-                            "BcidSeqLibConfiguration or dict.")
+            raise TypeError("`cfg` was neither a " "BcidSeqLibConfiguration or dict.")
 
         BarcodeSeqLib.configure(self, cfg)
         self.identifier_min_count = cfg.identifers_cfg.min_count
@@ -116,13 +113,14 @@ class BcidSeqLib(BarcodeSeqLib):
             if barcode_map.filename == cfg.barcodes_cfg.map_file:
                 self.barcode_map = barcode_map
             else:
-                raise ValueError("Attempted to assign "
-                                 "non-matching "
-                                 "barcode map [{}]".format(self.name))
+                raise ValueError(
+                    "Attempted to assign "
+                    "non-matching "
+                    "barcode map [{}]".format(self.name)
+                )
         else:
             self.barcode_map = BarcodeMap(
-                mapfile=cfg.barcodes_cfg.map_file,
-                is_variant=False
+                mapfile=cfg.barcodes_cfg.map_file, is_variant=False
             )
 
     def serialize(self):
@@ -138,13 +136,13 @@ class BcidSeqLib(BarcodeSeqLib):
         """
         cfg = BarcodeSeqLib.serialize(self)
 
-        cfg['identifiers'] = dict()
+        cfg["identifiers"] = dict()
         if self.identifier_min_count > 0:
-            cfg['identifiers']['min count'] = self.identifier_min_count
+            cfg["identifiers"]["min count"] = self.identifier_min_count
 
         # required for creating new objects in GUI
         if self.barcode_map is not None:
-            cfg['barcodes']['map file'] = self.barcode_map.filename
+            cfg["barcodes"]["map file"] = self.barcode_map.filename
 
         return cfg
 
@@ -155,14 +153,14 @@ class BcidSeqLib(BarcodeSeqLib):
         :py:class:`~enrich2.libraries.barcodemap.BarcodeMap`
         """
         if not self.check_store("/main/identifiers/counts"):
-            BarcodeSeqLib.calculate(self) # count the barcodes
+            BarcodeSeqLib.calculate(self)  # count the barcodes
             df_dict = dict()
             barcode_identifiers = dict()
 
             log_message(
                 logging_callback=logging.info,
                 msg="Converting barcodes to identifiers",
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
 
             # store mapped barcodes
@@ -170,12 +168,12 @@ class BcidSeqLib(BarcodeSeqLib):
                 label="barcodes",
                 query="index in {} & count >= {}".format(
                     list(self.barcode_map.keys()), self.barcode_min_count
-                )
+                ),
             )
 
             # count identifiers associated with the barcodes
-            for bc, count in self.store['/main/barcodes/counts'].iterrows():
-                count = count['count']
+            for bc, count in self.store["/main/barcodes/counts"].iterrows():
+                count = count["count"]
                 identifier = self.barcode_map[bc]
                 try:
                     df_dict[identifier] += count
@@ -185,22 +183,21 @@ class BcidSeqLib(BarcodeSeqLib):
 
             # save counts, filtering based on the min count
             min_counts = {
-                k: v for k, v in df_dict.items()
-                if v >= self.identifier_min_count
+                k: v for k, v in df_dict.items() if v >= self.identifier_min_count
             }
-            self.save_counts('identifiers', min_counts, raw=False)
+            self.save_counts("identifiers", min_counts, raw=False)
             del df_dict
 
             # write the active subset of the BarcodeMap to the store
             barcodes = list(barcode_identifiers.keys())
-            data = {'value' : [barcode_identifiers[bc] for bc in barcodes]}
+            data = {"value": [barcode_identifiers[bc] for bc in barcodes]}
             barcode_identifiers = pd.DataFrame(data, index=barcodes)
             del barcodes
-            barcode_identifiers.sort_values('value', inplace=True)
+            barcode_identifiers.sort_values("value", inplace=True)
             self.store.put(
                 key="/raw/barcodemap",
                 value=barcode_identifiers,
-                data_columns=barcode_identifiers.columns
+                data_columns=barcode_identifiers.columns,
             )
             del barcode_identifiers
 

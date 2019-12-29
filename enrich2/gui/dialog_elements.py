@@ -55,6 +55,7 @@ class SectionLabel(object):
     disable
         disable method to be overriden
     """
+
     def __init__(self, text):
         self.text = text
 
@@ -141,6 +142,7 @@ class Checkbox(object):
     disable
         Disables the checkbox widget from interaction.
     """
+
     def __init__(self, text, cfg, key):
         self.checkbox = None
         self.enabled = True
@@ -155,7 +157,7 @@ class Checkbox(object):
             else:
                 self.value.set(self.cfg[self.key])
         except KeyError:
-            self.value.set(False)   # default to False
+            self.value.set(False)  # default to False
 
     def body(self, master, row, columns=DEFAULT_COLUMNS, **kwargs):
         """
@@ -177,8 +179,7 @@ class Checkbox(object):
         `int`
             Returns the number of rows taken by this element.
         """
-        self.checkbox = Checkbutton(
-            master, text=self.text, variable=self.value)
+        self.checkbox = Checkbutton(master, text=self.text, variable=self.value)
         self.checkbox.grid(row=row, column=0, columnspan=columns, sticky="w")
         return 1
 
@@ -262,6 +263,7 @@ class MyEntry(object):
     disable
         Disables the widget from interaction.
     """
+
     def __init__(self, text, cfg, key, optional=False):
         self.entry = None
         self.enabled = True
@@ -387,8 +389,10 @@ class FileEntry(MyEntry):
     disable
         Disables the widget from interaction.
     """
-    def __init__(self, text, cfg, key, optional=False, directory=False,
-                 extensions=None):
+
+    def __init__(
+        self, text, cfg, key, optional=False, directory=False, extensions=None
+    ):
         MyEntry.__init__(self, text, cfg, key, optional)
         self.choose = None
         self.clear = None
@@ -425,18 +429,23 @@ class FileEntry(MyEntry):
         self.entry.grid(row=row, column=1, columnspan=columns - 1, sticky="ew")
         if self.directory:
             self.choose = Button(
-                master, text="Choose...",
-                command=lambda: self.value.set(filedialog.askdirectory()))
+                master,
+                text="Choose...",
+                command=lambda: self.value.set(filedialog.askdirectory()),
+            )
         else:
             self.choose = Button(
-                master, text="Choose...",
-                command=lambda: self.value.set(filedialog.askopenfilename()))
+                master,
+                text="Choose...",
+                command=lambda: self.value.set(filedialog.askopenfilename()),
+            )
 
         self.choose.grid(row=row + 1, column=2, sticky="e")
 
         if self.optional:
             self.clear = Button(
-                master, text="Clear", command=lambda: self.value.set(""))
+                master, text="Clear", command=lambda: self.value.set("")
+            )
             self.clear.grid(row=row + 1, column=2, sticky="e")
 
         return 2
@@ -452,7 +461,8 @@ class FileEntry(MyEntry):
         elif len(self.value.get()) == 0:
             if not self.optional:
                 messagebox.showwarning(
-                    "File Error", "{} not specified.".format(self.text))
+                    "File Error", "{} not specified.".format(self.text)
+                )
                 return False
             else:
                 return True
@@ -461,21 +471,23 @@ class FileEntry(MyEntry):
             if os.path.exists(self.value.get()):
                 if self.extensions is not None:
                     valid_ext = any(
-                        self.value.get().lower().endswith(x)
-                        for x in self.extensions)
+                        self.value.get().lower().endswith(x) for x in self.extensions
+                    )
 
                     if valid_ext:
                         return True
                     else:
                         messagebox.showwarning(
                             "File Error",
-                            "Invalid file extension for {}.".format(self.text))
+                            "Invalid file extension for {}.".format(self.text),
+                        )
                         return False
                 else:  # no extension restriction
                     return True
             else:
                 messagebox.showwarning(
-                    "File Error", "{} file does not exist.".format(self.text))
+                    "File Error", "{} file does not exist.".format(self.text)
+                )
                 return False
 
     def enable(self):
@@ -521,6 +533,7 @@ class StringEntry(MyEntry):
         Place the required elements using the grid layout method.
         Returns the number of rows taken by this element.
     """
+
     def __init__(self, text, cfg, key, optional=False):
         MyEntry.__init__(self, text, cfg, key, optional)
 
@@ -547,7 +560,7 @@ class StringEntry(MyEntry):
         label = Label(master, text=self.text, justify=LEFT)
         label.grid(row=row, column=0, columnspan=1, sticky="w")
         self.entry = Entry(master, textvariable=self.value)
-        self.entry.grid(row=row, column=1, columnspan=columns-1, sticky="ew")
+        self.entry.grid(row=row, column=1, columnspan=columns - 1, sticky="ew")
         return 1
 
 
@@ -586,12 +599,12 @@ class IntegerEntry(MyEntry):
         If enabled, sets the configuration at `key` as the current
         entry text stored in the tkvar.    
     """
+
     def __init__(self, text, cfg, key, optional=False, minvalue=0):
         MyEntry.__init__(self, text, cfg, key, optional)
         self.minvalue = minvalue
 
-    def body(self, master, row, columns=DEFAULT_COLUMNS, width=4, left=False,
-             **kwargs):
+    def body(self, master, row, columns=DEFAULT_COLUMNS, width=4, left=False, **kwargs):
         """
         Add the labeled entry to the Frame *master* using grid at *row*.
         Returns the number of rows taken by this element.
@@ -632,11 +645,12 @@ class IntegerEntry(MyEntry):
 
         label = Label(master, text=self.text, justify=LEFT)
         label.grid(
-            row=row, column=label_column,
-            columnspan=label_width, sticky=label_sticky)
+            row=row, column=label_column, columnspan=label_width, sticky=label_sticky
+        )
         self.entry = Entry(master, textvariable=self.value, width=width)
-        self.entry.grid(row=row, column=entry_column, columnspan=entry_width,
-                        sticky=entry_sticky)
+        self.entry.grid(
+            row=row, column=entry_column, columnspan=entry_width, sticky=entry_sticky
+        )
         return 1
 
     def validate(self):
@@ -655,22 +669,23 @@ class IntegerEntry(MyEntry):
                 if len(self.value.get()) == 0:
                     if not self.optional:
                         messagebox.showwarning(
-                            "Validation Error",
-                            "{} not specified.".format(self.text))
+                            "Validation Error", "{} not specified.".format(self.text)
+                        )
                         return False
                     else:
                         return True
                 else:
                     messagebox.showwarning(
-                        "Validation Error",
-                        "{} is not an integer.".format(self.text))
+                        "Validation Error", "{} is not an integer.".format(self.text)
+                    )
                     return False
             else:
                 if intvalue < self.minvalue:
                     messagebox.showwarning(
                         "",
                         "{} lower than minimum "
-                        "value ({}).".format(self.text, self.minvalue))
+                        "value ({}).".format(self.text, self.minvalue),
+                    )
                     return False
                 else:
                     return True

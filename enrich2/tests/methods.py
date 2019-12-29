@@ -33,13 +33,10 @@ from types import MethodType
 
 from .utilities import DEFAULT_STORE_PARAMS, save_result_to_txt
 from .utilities import dispatch_loader, save_result_to_pkl
-from .utilities import print_test_comparison, create_file_path   
+from .utilities import print_test_comparison, create_file_path
 
 
-__all__ = [
-    "HDF5TestComponent",
-    "TEST_METHODS"
-]
+__all__ = ["HDF5TestComponent", "TEST_METHODS"]
 
 
 # -------------------------------------------------------------------------- #
@@ -47,6 +44,7 @@ __all__ = [
 #                             TEST CLASS
 #
 # -------------------------------------------------------------------------- #
+
 
 @unittest.skip("GenerealTestCase should not be run directly.")
 class HDF5TestComponent(unittest.TestCase):
@@ -94,10 +92,21 @@ class HDF5TestComponent(unittest.TestCase):
         tests incorrect.
     """
 
-    def __init__(self, store_constructor=None, cfg=None, result_dir="",
-                 file_ext="", file_sep='\t', save=False,
-                 params=DEFAULT_STORE_PARAMS, verbose=False, libtype='',
-                 scoring_method='', logr_method='', coding=''):
+    def __init__(
+        self,
+        store_constructor=None,
+        cfg=None,
+        result_dir="",
+        file_ext="",
+        file_sep="\t",
+        save=False,
+        params=DEFAULT_STORE_PARAMS,
+        verbose=False,
+        libtype="",
+        scoring_method="",
+        logr_method="",
+        coding="",
+    ):
         super(HDF5TestComponent, self).__init__("runTest")
 
         self.file_ext = file_ext
@@ -111,13 +120,13 @@ class HDF5TestComponent(unittest.TestCase):
 
         self.result_dir = result_dir
         if libtype:
-            self.result_dir += '/{}/'.format(libtype)
+            self.result_dir += "/{}/".format(libtype)
         if scoring_method:
-            self.result_dir += '/{}/'.format(scoring_method)
+            self.result_dir += "/{}/".format(scoring_method)
         if logr_method:
-            self.result_dir += '/{}/'.format(logr_method)
+            self.result_dir += "/{}/".format(logr_method)
         if coding:
-            self.result_dir += '/{}/'.format(coding)
+            self.result_dir += "/{}/".format(coding)
 
         if verbose:
             print("Working directory is: {}".format(self.result_dir))
@@ -136,10 +145,10 @@ class HDF5TestComponent(unittest.TestCase):
         None
         """
         obj = self.store_constructor()
-        obj.force_recalculate = self.params['force_recalculate']
-        obj.component_outliers = self.params['component_outliers']
-        obj.tsv_requested = self.params['tsv_requested']
-        obj.output_dir_override = self.params['output_dir_override']
+        obj.force_recalculate = self.params["force_recalculate"]
+        obj.component_outliers = self.params["component_outliers"]
+        obj.tsv_requested = self.params["tsv_requested"]
+        obj.output_dir_override = self.params["output_dir_override"]
 
         obj.configure(self.cfg)
         obj.validate()
@@ -203,8 +212,8 @@ class HDF5TestComponent(unittest.TestCase):
         None
 
         """
-        os.makedirs(create_file_path(self.result_dir, ''), exist_ok=True)
-        if self.file_ext == 'pkl':
+        os.makedirs(create_file_path(self.result_dir, ""), exist_ok=True)
+        if self.file_ext == "pkl":
             save_result_to_pkl(self.obj, self.result_dir)
         else:
             save_result_to_txt(self.obj, self.result_dir, self.file_sep)
@@ -219,8 +228,7 @@ def test_main_variants_scores_shared_full(self):
     key = "/main/variants/scores_shared_full"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -232,8 +240,7 @@ def test_main_variants_scores_shared(self):
     key = "/main/variants/scores_shared"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -245,8 +252,7 @@ def test_main_variants_scores_pvalues_wt(self):
     key = "/main/variants/scores_pvalues_wt"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -258,8 +264,7 @@ def test_main_variants_scores(self):
     key = "/main/variants/scores"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -271,8 +276,7 @@ def test_main_variants_weights(self):
     key = "/main/variants/weights"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -284,8 +288,7 @@ def test_main_variants_log_ratios(self):
     key = "/main/variants/log_ratios"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -297,8 +300,7 @@ def test_main_variants_counts(self):
     key = "/main/variants/counts"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -310,8 +312,7 @@ def test_main_variants_counts_unfiltered(self):
     key = "/main/variants/counts_unfiltered"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -323,8 +324,7 @@ def test_raw_variants_counts(self):
     key = "/raw/variants/counts"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
 
     if self.verbose:
@@ -342,8 +342,7 @@ def test_main_synonymous_scores_shared_full(self):
     key = "/main/synonymous/scores_shared_full"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -355,8 +354,7 @@ def test_main_synonymous_scores_shared(self):
     key = "/main/synonymous/scores_shared"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -368,8 +366,7 @@ def test_main_synonymous_scores_pvalues_wt(self):
     key = "/main/synonymous/scores_pvalues_wt"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -381,8 +378,7 @@ def test_main_synonymous_scores(self):
     key = "/main/synonymous/scores"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -394,8 +390,7 @@ def test_main_synonymous_weights(self):
     key = "/main/synonymous/weights"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -407,8 +402,7 @@ def test_main_synonymous_log_ratios(self):
     key = "/main/synonymous/log_ratios"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -420,8 +414,7 @@ def test_main_synonymous_counts(self):
     key = "/main/synonymous/counts"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -433,8 +426,7 @@ def test_main_synonymous_counts_unfiltered(self):
     key = "/main/synonymous/counts_unfiltered"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -446,8 +438,7 @@ def test_raw_synonymous_counts(self):
     key = "/raw/synonymous/counts"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -464,8 +455,7 @@ def test_main_barcodes_scores_shared_full(self):
     key = "/main/barcodes/scores_shared_full"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -477,8 +467,7 @@ def test_main_barcodes_scores_shared(self):
     key = "/main/barcodes/scores_shared"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -490,8 +479,7 @@ def test_main_barcodes_scores_pvalues_wt(self):
     key = "/main/barcodes/scores_pvalues_wt"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -503,8 +491,7 @@ def test_main_barcodes_scores(self):
     key = "/main/barcodes/scores"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
 
     if self.verbose:
@@ -517,8 +504,7 @@ def test_main_barcodes_weights(self):
     key = "/main/barcodes/weights"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -530,8 +516,7 @@ def test_main_barcodes_log_ratios(self):
     key = "/main/barcodes/log_ratios"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -543,8 +528,7 @@ def test_main_barcodes_counts(self):
     key = "/main/barcodes/counts"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -556,8 +540,7 @@ def test_main_barcodes_counts_unfiltered(self):
     key = "/main/barcodes/counts_unfiltered"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -569,8 +552,7 @@ def test_raw_barcodes_counts(self):
     key = "/raw/barcodes/counts"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -582,8 +564,7 @@ def test_main_barcodemap(self):
     key = "/main/barcodemap"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep)
     result = self.obj.store[key]
 
     if self.verbose:
@@ -596,8 +577,7 @@ def test_raw_barcodemap(self):
     key = "/raw/barcodemap"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(str)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(str)
     result = self.obj.store[key].astype(str)
 
     if self.verbose:
@@ -615,8 +595,7 @@ def test_main_identifiers_scores_shared_full(self):
     key = "/main/identifiers/scores_shared_full"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -628,8 +607,7 @@ def test_main_identifiers_scores_shared(self):
     key = "/main/identifiers/scores_shared"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -641,8 +619,7 @@ def test_main_identifiers_scores_pvalues_wt(self):
     key = "/main/identifiers/scores_pvalues_wt"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -654,8 +631,7 @@ def test_main_identifiers_scores(self):
     key = "/main/identifiers/scores"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -667,8 +643,7 @@ def test_main_identifiers_weights(self):
     key = "/main/identifiers/weights"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -680,8 +655,7 @@ def test_main_identifiers_log_ratios(self):
     key = "/main/identifiers/log_ratios"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.float32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.float32)
     result = self.obj.store[key].astype(np.float32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -693,8 +667,7 @@ def test_main_identifiers_counts(self):
     key = "/main/identifiers/counts"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -706,8 +679,7 @@ def test_main_identifiers_counts_unfiltered(self):
     key = "/main/identifiers/counts_unfiltered"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -719,8 +691,7 @@ def test_raw_identifiers_counts(self):
     key = "/raw/identifiers/counts"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
@@ -737,8 +708,7 @@ def test_raw_filter(self):
     key = "/raw/filter"
     file_suffix = key.replace("/", "_")[1:]
     fname = "{}.{}".format(file_suffix, self.file_ext)
-    expected = dispatch_loader(
-        fname, self.result_dir, self.file_sep).astype(np.int32)
+    expected = dispatch_loader(fname, self.result_dir, self.file_sep).astype(np.int32)
     result = self.obj.store[key].astype(np.int32)
 
     if self.verbose:
@@ -762,7 +732,6 @@ TEST_METHODS = {
     "/main/variants/counts": test_main_variants_counts,
     "/main/variants/counts_unfiltered": test_main_variants_counts_unfiltered,
     "/raw/variants/counts": test_raw_variants_counts,
-
     "/main/synonymous/scores_shared_full": test_main_synonymous_scores_shared_full,
     "/main/synonymous/scores_shared": test_main_synonymous_scores_shared,
     "/main/synonymous/scores_pvalues_wt": test_main_synonymous_scores_pvalues_wt,
@@ -772,7 +741,6 @@ TEST_METHODS = {
     "/main/synonymous/counts": test_main_synonymous_counts,
     "/main/synonymous/counts_unfiltered": test_main_synonymous_counts_unfiltered,
     "/raw/synonymous/counts": test_raw_synonymous_counts,
-
     "/main/barcodes/scores_shared_full": test_main_barcodes_scores_shared_full,
     "/main/barcodes/scores_shared": test_main_barcodes_scores_shared,
     "/main/barcodes/scores_pvalues_wt": test_main_barcodes_scores_pvalues_wt,
@@ -784,7 +752,6 @@ TEST_METHODS = {
     "/main/barcodemap": test_main_barcodemap,
     "/raw/barcodemap": test_raw_barcodemap,
     "/raw/barcodes/counts": test_raw_barcodes_counts,
-
     "/main/identifiers/scores_shared_full": test_main_identifiers_scores_shared_full,
     "/main/identifiers/scores_shared": test_main_identifiers_scores_shared,
     "/main/identifiers/scores_pvalues_wt": test_main_identifiers_scores_pvalues_wt,
@@ -794,6 +761,5 @@ TEST_METHODS = {
     "/main/identifiers/counts": test_main_identifiers_counts,
     "/main/identifiers/counts_unfiltered": test_main_identifiers_counts_unfiltered,
     "/raw/identifiers/counts": test_raw_identifiers_counts,
-
     "/raw/filter": test_raw_filter,
 }

@@ -36,5 +36,5 @@ __all__ = [
     "idonly",
     "seqlib",
     "overlap",
-    "variant"
+    "variant",
 ]

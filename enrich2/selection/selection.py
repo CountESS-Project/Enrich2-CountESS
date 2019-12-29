@@ -43,16 +43,14 @@ from ..libraries.basic import BasicSeqLib
 from ..libraries.idonly import IdOnlySeqLib
 from ..libraries.variant import protein_variant
 
-globals()['BasicSeqLib'] = BasicSeqLib
-globals()['BarcodeSeqLib'] = BarcodeSeqLib
-globals()['BcvSeqLib'] = BcvSeqLib
-globals()['BcidSeqLib'] = BcidSeqLib
-globals()['IdOnlySeqLib'] = IdOnlySeqLib
+globals()["BasicSeqLib"] = BasicSeqLib
+globals()["BarcodeSeqLib"] = BarcodeSeqLib
+globals()["BcvSeqLib"] = BcvSeqLib
+globals()["BcidSeqLib"] = BcidSeqLib
+globals()["IdOnlySeqLib"] = IdOnlySeqLib
 
 
-__all__ = [
-    "Selection"
-]
+__all__ = ["Selection"]
 
 
 class Selection(StoreManager):
@@ -146,7 +144,7 @@ class Selection(StoreManager):
     :py:class:`~enrich2.experiment.condition.Condition`
     :py:class:`~enrich2.base.storemanager.StoreManager`
     """
-    
+
     store_suffix = "sel"
     treeview_class_name = "Selection"
 
@@ -178,7 +176,7 @@ class Selection(StoreManager):
                 del self.libraries[tp][tp_ids.index(tree_id)]
                 if len(self.libraries[tp]) == 0:
                     empty = tp
-                break   # found the id, stop looking
+                break  # found the id, stop looking
         if empty is not None:
             del self.libraries[empty]
 
@@ -194,8 +192,10 @@ class Selection(StoreManager):
             return self._wt
         else:
             if self._wt is not None:
-                raise ValueError("Selection should not contain wild type "
-                                 "sequence [{}]".format(self.name))
+                raise ValueError(
+                    "Selection should not contain wild type "
+                    "sequence [{}]".format(self.name)
+                )
             else:
                 return None
 
@@ -215,22 +215,22 @@ class Selection(StoreManager):
                 has_scorer = False
             cfg = SelectionConfiguration(cfg, has_scorer, init_from_gui)
         elif not isinstance(cfg, SelectionConfiguration):
-            raise TypeError("`cfg` was neither a "
-                            "SelectionConfiguration or dict.")
+            raise TypeError("`cfg` was neither a " "SelectionConfiguration or dict.")
 
         StoreManager.configure(self, cfg.store_cfg)
         if configure_children:
             if len(cfg.lib_cfgs) == 0:
-                raise KeyError("Missing required config value "
-                               "{} [{}]".format('libraries', self.name))
+                raise KeyError(
+                    "Missing required config value "
+                    "{} [{}]".format("libraries", self.name)
+                )
 
             for lib_cfg in cfg.lib_cfgs:
-                if lib_cfg.seqlib_type in ('BcvSeqLib', 'BcidSeqLib'):
+                if lib_cfg.seqlib_type in ("BcvSeqLib", "BcidSeqLib"):
                     lib = globals()[lib_cfg.seqlib_type]()
                     mapfile = lib_cfg.barcodes_cfg.map_file
                     if mapfile in list(self.barcode_maps.keys()):
-                        lib.configure(
-                            lib_cfg, barcode_map=self.barcode_maps[mapfile])
+                        lib.configure(lib_cfg, barcode_map=self.barcode_maps[mapfile])
                     else:
                         lib.configure(lib_cfg)
                         self.barcode_maps[mapfile] = lib.barcode_map
@@ -252,17 +252,17 @@ class Selection(StoreManager):
             raise ValueError("Missing timepoint 0 [{}]".format(self.name))
 
         if self.timepoints[0] != 0:
-            raise ValueError("Invalid negative "
-                             "timepoint [{}]".format(self.name))
+            raise ValueError("Invalid negative " "timepoint [{}]".format(self.name))
 
         if len(self.timepoints) < 2:
-            raise ValueError("Multiple timepoints "
-                             "required [{}]".format(self.name))
+            raise ValueError("Multiple timepoints " "required [{}]".format(self.name))
 
-        elif len(self.timepoints) < 3 and 'Regression' in scoring_method:
-            raise ValueError("Insufficient number of timepoints for "
-                             "regression scoring [{}]".format(self.name))
-        
+        elif len(self.timepoints) < 3 and "Regression" in scoring_method:
+            raise ValueError(
+                "Insufficient number of timepoints for "
+                "regression scoring [{}]".format(self.name)
+            )
+
         # check the wild type sequences
         if self.has_wt_sequence():
             for child in self.children[1:]:
@@ -270,16 +270,18 @@ class Selection(StoreManager):
                     log_message(
                         logging_callback=logging.warning,
                         msg="Inconsistent wild type sequences",
-                        extra={'oname': self.name}
+                        extra={"oname": self.name},
                     )
                     break
-        
+
         # check that we're not doing wild type normalization
         # on something with no wild type
-        logr_method = self.get_root().scorer_class_attrs.get('logr_method', '')
+        logr_method = self.get_root().scorer_class_attrs.get("logr_method", "")
         if not self.has_wt_sequence() and logr_method == "wt":
-            raise ValueError("No wild type sequence for wild "
-                             "type normalization [{}]".format(self.name))
+            raise ValueError(
+                "No wild type sequence for wild "
+                "type normalization [{}]".format(self.name)
+            )
 
         # validate children
         for child in self.children:
@@ -295,14 +297,16 @@ class Selection(StoreManager):
         cfg[SCORER] = {
             SCORER_PATH: self.get_root().scorer_path,
             SCORER_OPTIONS: self.get_root().scorer_class_attrs,
-            SCORER_PATH + " md5": compute_md5(self.get_root().scorer_path)
+            SCORER_PATH + " md5": compute_md5(self.get_root().scorer_path),
         }
         return cfg
 
     def add_child(self, child):
         if child.name in self.child_names():
-            raise ValueError("Non-unique sequencing library name "
-                             "'{}' [{}]".format(child.name, self.name))
+            raise ValueError(
+                "Non-unique sequencing library name "
+                "'{}' [{}]".format(child.name, self.name)
+            )
         child.parent = self
         try:
             self.libraries[child.timepoint].append(child)
@@ -316,8 +320,10 @@ class Selection(StoreManager):
         :py:class:`~barcodevariant.BcvSeqLib` objects with 
         the same barcode map, else ``False``.
         """
-        return all(isinstance(lib, BcvSeqLib) for lib in self.children) and \
-            len(list(self.barcode_maps.keys())) == 1
+        return (
+            all(isinstance(lib, BcvSeqLib) for lib in self.children)
+            and len(list(self.barcode_maps.keys())) == 1
+        )
 
     def is_barcodeid(self):
         """
@@ -326,8 +332,10 @@ class Selection(StoreManager):
         :py:class:`~barcodeid.BcidSeqLib` objects with 
         the same barcode map, else ``False``.
         """
-        return all(isinstance(lib, BcidSeqLib) for lib in self.children) and \
-            len(list(self.barcode_maps.keys())) == 1
+        return (
+            all(isinstance(lib, BcidSeqLib) for lib in self.children)
+            and len(list(self.barcode_maps.keys())) == 1
+        )
 
     def is_coding(self):
         """
@@ -361,7 +369,7 @@ class Selection(StoreManager):
         log_message(
             logging_callback=logging.info,
             msg="Counting for each time point ({})".format(label),
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
         for lib in self.children:
             lib.calculate()
@@ -370,7 +378,7 @@ class Selection(StoreManager):
         log_message(
             logging_callback=logging.info,
             msg="Aggregating SeqLib data",
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
 
         destination = "/main/{}/counts_unfiltered".format(label)
@@ -381,7 +389,7 @@ class Selection(StoreManager):
             log_message(
                 logging_callback=logging.info,
                 msg="Replacing existing '{}'".format(destination),
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
             self.store.remove(destination)
 
@@ -393,13 +401,14 @@ class Selection(StoreManager):
         for tp in self.timepoints:
             for lib in self.libraries[tp]:
                 complete_index = complete_index.union(
-                    pd.Index(lib.store.select_column(lib_table, 'index'))
+                    pd.Index(lib.store.select_column(lib_table, "index"))
                 )
         log_message(
             logging_callback=logging.info,
             msg="Created shared index for count data ({} {})".format(
-                len(complete_index), label),
-            extra={'oname': self.name}
+                len(complete_index), label
+            ),
+            extra={"oname": self.name},
         )
 
         # min_itemsize value
@@ -409,29 +418,28 @@ class Selection(StoreManager):
         for i in range(0, len(complete_index), self.chunksize):
             # don't duplicate the index if the chunksize is large
             if self.chunksize < len(complete_index):
-                index_chunk = complete_index[i:i + self.chunksize]
+                index_chunk = complete_index[i : i + self.chunksize]
             else:
                 index_chunk = complete_index
 
             log_message(
                 logging_callback=logging.info,
                 msg="Merging counts for chunk {} ({} rows)".format(
-                    i // self.chunksize + 1, len(index_chunk)),
-                extra={'oname': self.name}
+                    i // self.chunksize + 1, len(index_chunk)
+                ),
+                extra={"oname": self.name},
             )
 
             for tp in self.timepoints:
                 c = self.libraries[tp][0].store.select(
-                    key=lib_table,
-                    where="index={}".format(list(index_chunk))
+                    key=lib_table, where="index={}".format(list(index_chunk))
                 )
                 for lib in self.libraries[tp][1:]:
                     c = c.add(
                         lib.store.select(
-                            key=lib_table,
-                            where="index={}".format(list(index_chunk))
+                            key=lib_table, where="index={}".format(list(index_chunk))
                         ),
-                        fill_value=0
+                        fill_value=0,
                     )
                 c.columns = ["c_{}".format(tp)]
                 if tp == 0:
@@ -444,13 +452,13 @@ class Selection(StoreManager):
                 self.store.append(
                     key="/main/{}/counts_unfiltered".format(label),
                     value=tp_frame.astype(float),
-                    min_itemsize={'index': max_index_length},
-                    data_columns=list(tp_frame.columns)
+                    min_itemsize={"index": max_index_length},
+                    data_columns=list(tp_frame.columns),
                 )
             else:
                 self.store.append(
                     key="/main/{}/counts_unfiltered".format(label),
-                    value=tp_frame.astype(float)
+                    value=tp_frame.astype(float),
                 )
 
     def filter_counts(self, label):
@@ -465,8 +473,8 @@ class Selection(StoreManager):
         synonymous variants, the counts are re-aggregated using only the 
         complete cases in the underlying element type.
         """
-        valid_type = (self.is_barcodeid() or self.is_barcodevariant())
-        if valid_type and label != 'barcodes':
+        valid_type = self.is_barcodeid() or self.is_barcodevariant()
+        if valid_type and label != "barcodes":
             # calculate proper combined counts
             # df = self.store._store.select("/main/barcodes/counts")
             # this should exist because of the order of label calculations
@@ -478,9 +486,7 @@ class Selection(StoreManager):
             df = self.store.select("/main/{}/counts_unfiltered".format(label))
         df.dropna(axis="index", how="any", inplace=True)
         self.store.put(
-            "/main/{}/counts".format(label),
-            df.astype(float),
-            data_columns=df.columns
+            "/main/{}/counts".format(label), df.astype(float), data_columns=df.columns
         )
 
     def combine_barcode_maps(self):
@@ -502,18 +508,16 @@ class Selection(StoreManager):
         bcm = None
         for lib in self.children:
             if bcm is None:
-                bcm = lib.store['/raw/barcodemap']
+                bcm = lib.store["/raw/barcodemap"]
             else:
                 bcm = bcm.join(
-                    lib.store['/raw/barcodemap'], rsuffix=".drop", how="outer")
-                new = bcm.loc[pd.isnull(bcm)['value']]
-                bcm.loc[new.index, 'value'] = new['value.drop']
+                    lib.store["/raw/barcodemap"], rsuffix=".drop", how="outer"
+                )
+                new = bcm.loc[pd.isnull(bcm)["value"]]
+                bcm.loc[new.index, "value"] = new["value.drop"]
                 bcm.drop("value.drop", axis="columns", inplace=True)
         bcm.sort_values("value", inplace=True)
-        self.store.put(
-            key="/main/barcodemap", value=bcm,
-            data_columns=bcm.columns
-        )
+        self.store.put(key="/main/barcodemap", value=bcm, data_columns=bcm.columns)
 
     def timepoint_indices_intersect(self):
         """
@@ -529,17 +533,19 @@ class Selection(StoreManager):
         in common. Raises ValueError if not.
         """
         from functools import reduce
+
         table_key = "/main/{}/counts".format(label)
         libs = [lib for tp in self.timepoints for lib in self.libraries[tp]]
-        series_ls = [lib.store.select_column(table_key, 'index') for lib in libs]
+        series_ls = [lib.store.select_column(table_key, "index") for lib in libs]
         index_ls = [pd.Index(series.values) for series in series_ls]
         index_len_ls = [len(set(idx)) for idx in index_ls]
         common = reduce(lambda idx1, idx2: idx1.intersection(idx2), index_ls)
         common_len = len(common)
         all_good = all(common_len == idx_len for idx_len in index_len_ls)
         if not all_good:
-            raise ValueError("Timepoints contain different variants"
-                             " for label {}.".format(label))
+            raise ValueError(
+                "Timepoints contain different variants" " for label {}.".format(label)
+            )
 
     def timepoints_contain_variants(self):
         """
@@ -556,11 +562,13 @@ class Selection(StoreManager):
         """
         table_key = "/main/{}/counts".format(label)
         libs = [lib for tp in self.timepoints for lib in self.libraries[tp]]
-        series_ls = [lib.store.select_column(table_key, 'index') for lib in libs]
+        series_ls = [lib.store.select_column(table_key, "index") for lib in libs]
         all_good = all(set(s.values) != set(["_wt"]) for s in series_ls)
         if not all_good:
-            raise ValueError("Some timepoints do not contain any"
-                             " variants for label {}.".format(label))
+            raise ValueError(
+                "Some timepoints do not contain any"
+                " variants for label {}.".format(label)
+            )
 
     def table_not_empty_for_key(self, key):
         """
@@ -578,8 +586,7 @@ class Selection(StoreManager):
 
         """
         if not self.table_exists_for_key(key):
-            raise ValueError("Required table {} does "
-                             "not exist.".format(key))
+            raise ValueError("Required table {} does " "not exist.".format(key))
         empty = self.store[key].empty
         return not empty
 
@@ -598,16 +605,16 @@ class Selection(StoreManager):
         `bool`
             ``True`` if index of scores matches counts for label.
         """
-        scores_key = '/main/{}/scores'.format(label)
-        counts_key = '/main/{}/counts'.format(label)
+        scores_key = "/main/{}/scores".format(label)
+        counts_key = "/main/{}/counts".format(label)
         if self.table_exists_for_key(scores_key):
             scores_index = self.get_table(scores_key).index
             counts_index = self.get_table(counts_key).index
             return scores_index.equals(counts_index)
         else:
-            raise ValueError("Table {} does not exist [{}].".format(
-                scores_key, self.name
-            ))
+            raise ValueError(
+                "Table {} does not exist [{}].".format(scores_key, self.name)
+            )
 
     def table_exists_for_key(self, key):
         """
@@ -636,12 +643,10 @@ class Selection(StoreManager):
             key = "/main/{}/counts".format(label)
 
             if not self.table_exists_for_key(key):
-                raise ValueError("Required table {} does "
-                                 "not exist.".format(key))
+                raise ValueError("Required table {} does " "not exist.".format(key))
 
             if not self.table_not_empty_for_key(key):
-                raise ValueError("Required table {} does "
-                                 "is empty.".format(key))
+                raise ValueError("Required table {} does " "is empty.".format(key))
 
     def calculate(self):
         """
@@ -651,8 +656,10 @@ class Selection(StoreManager):
         scorer_class_name = self.get_root().scorer_class.name
 
         if len(self.labels) == 0:
-            raise ValueError("No data present across all "
-                             "sequencing libraries [{}]".format(self.name))
+            raise ValueError(
+                "No data present across all "
+                "sequencing libraries [{}]".format(self.name)
+            )
 
         for label in self.labels:
             self.merge_counts_unfiltered(label)
@@ -664,18 +671,19 @@ class Selection(StoreManager):
         self.ensure_main_count_tables_exist_and_populated()
         self.timepoints_contain_variants()
 
-        if 'Demo' in scorer_class_name:
-            raise ValueError('Invalid scoring method "{}" '
-                             '[{}]'.format(scorer_class_name, self.name))
+        if "Demo" in scorer_class_name:
+            raise ValueError(
+                'Invalid scoring method "{}" '
+                "[{}]".format(scorer_class_name, self.name)
+            )
 
-        if 'Regression' in scorer_class_name \
-                and len(self.timepoints) <= 2:
-            raise ValueError("Regression-based scoring "
-                             "requires three or more time points.")
+        if "Regression" in scorer_class_name and len(self.timepoints) <= 2:
+            raise ValueError(
+                "Regression-based scoring " "requires three or more time points."
+            )
 
         scorer = self.get_root().scorer_class(
-            store_manager=self,
-            options=self.get_root().scorer_class_attrs
+            store_manager=self, options=self.get_root().scorer_class_attrs
         )
         scorer.run()
 
@@ -683,8 +691,7 @@ class Selection(StoreManager):
         non_allowed_methods = ("Counts Only", "Demo")
         scoring_method = scorer_class_name
 
-        if scoring_method not in non_allowed_methods \
-                and self.component_outliers:
+        if scoring_method not in non_allowed_methods and self.component_outliers:
             if self.is_barcodevariant() or self.is_barcodeid():
                 self.calc_outliers("barcodes")
             if self.is_coding():
@@ -702,7 +709,7 @@ class Selection(StoreManager):
             log_message(
                 logging_callback=logging.info,
                 msg="Generating tab-separated output files",
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
             for k in self.store.keys():
                 self.write_table_tsv(k)
@@ -720,9 +727,7 @@ class Selection(StoreManager):
                 key="/main/variants/counts", column="index"
             )
         except KeyError:
-            raise KeyError(
-                "No variant counts found [{}]".format(self.name)
-            )
+            raise KeyError("No variant counts found [{}]".format(self.name))
         for v in variants:
             pv = protein_variant(v)
             try:
@@ -741,8 +746,8 @@ class Selection(StoreManager):
             Mapping of barcode keys to barcode map values.
         """
         mapping = dict()
-        for bc, v in self.store['/main/barcodemap'].iterrows():
-            v = v['value']
+        for bc, v in self.store["/main/barcodemap"].iterrows():
+            v = v["value"]
             try:
                 mapping[v].update([bc])
             except KeyError:
@@ -777,22 +782,25 @@ class Selection(StoreManager):
                 label2 = "identifiers"
             else:
                 # this should never happen
-                raise AttributeError("Failed to identify parent "
-                                     "label when calculating "
-                                     "barcode outliers [{}]".format(self.name))
+                raise AttributeError(
+                    "Failed to identify parent "
+                    "label when calculating "
+                    "barcode outliers [{}]".format(self.name)
+                )
         else:
-            raise KeyError("Invalid label '{}' for calc_outliers [{}]".format(
-                label,  self.name))
+            raise KeyError(
+                "Invalid label '{}' for calc_outliers [{}]".format(label, self.name)
+            )
 
         log_message(
             logging_callback=logging.info,
             msg="Identifying outliers ({}-{})".format(label, label2),
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
         log_message(
             logging_callback=logging.info,
             msg="Mapping {} to {}".format(label, label2),
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
 
         if label == "variants":
@@ -800,68 +808,68 @@ class Selection(StoreManager):
         elif label == "barcodes":
             mapping = self.barcodemap_mapping()
         else:
-            raise KeyError("Invalid label '{}' for calc_outliers [{}]".format(
-                label,  self.name))
+            raise KeyError(
+                "Invalid label '{}' for calc_outliers [{}]".format(label, self.name)
+            )
 
         # get the scores
         df1 = self.store.select(
-            "/main/{}/scores".format(label), columns=['score', 'SE'])
+            "/main/{}/scores".format(label), columns=["score", "SE"]
+        )
         df2 = self.store.select(
-            "/main/{}/scores".format(label2), columns=['score', 'SE'])
+            "/main/{}/scores".format(label2), columns=["score", "SE"]
+        )
 
         # pre-calculate variances
-        df1['var'] = df1['SE'] ** 2
-        df1.drop('SE', axis=1, inplace=True)
-        df2['var'] = df2['SE'] ** 2
-        df2.drop('SE', axis=1, inplace=True)
+        df1["var"] = df1["SE"] ** 2
+        df1.drop("SE", axis=1, inplace=True)
+        df2["var"] = df2["SE"] ** 2
+        df2.drop("SE", axis=1, inplace=True)
 
         # set up empty results DF
         result_df = pd.DataFrame(
-            np.nan,
-            index=df1.index,
-            columns=['z', 'pvalue_raw', 'parent']
+            np.nan, index=df1.index, columns=["z", "pvalue_raw", "parent"]
         )
 
         # because this step can be slow, output chunk-style logging messages
         # pre-calculate the lengths for the log messages
         log_chunk = 1
-        log_chunksize_list = [log_chunksize] * \
-                             (len(df2) / log_chunksize) + \
-                             [len(df2) % log_chunksize]
+        log_chunksize_list = [log_chunksize] * (len(df2) / log_chunksize) + [
+            len(df2) % log_chunksize
+        ]
 
         for i, x in enumerate(df2.index):
             if i % log_chunksize == 0:
                 log_message(
                     logging_callback=logging.info,
                     msg="Calculating outlier p-values for "
-                        "chunk {} ({} rows) ({}-{})".format(
-                        log_chunk, log_chunksize_list[log_chunk - 1],
-                        label, label2),
-                    extra={'oname': self.name}
+                    "chunk {} ({} rows) ({}-{})".format(
+                        log_chunk, log_chunksize_list[log_chunk - 1], label, label2
+                    ),
+                    extra={"oname": self.name},
                 )
                 log_chunk += 1
             try:
-                components = df1.loc[mapping[x]].dropna(
-                    axis="index", how="all"
-                )
+                components = df1.loc[mapping[x]].dropna(axis="index", how="all")
             except KeyError:
                 # none of the components were in the index
                 continue
             if len(components.index) >= minimum_components:
                 for c in components.index:
                     zvalue = np.absolute(
-                        df2.loc[x, 'score'] - df1.loc[c, 'score']) / \
-                             np.sqrt(df2.loc[x, 'var'] + df1.loc[c, 'var'])
-                    result_df.loc[c, 'z'] = zvalue
-                    result_df.loc[c, 'pvalue_raw'] = 2 * stats.norm.sf(zvalue)
-                    result_df.loc[c, 'parent'] = x
+                        df2.loc[x, "score"] - df1.loc[c, "score"]
+                    ) / np.sqrt(df2.loc[x, "var"] + df1.loc[c, "var"])
+                    result_df.loc[c, "z"] = zvalue
+                    result_df.loc[c, "pvalue_raw"] = 2 * stats.norm.sf(zvalue)
+                    result_df.loc[c, "parent"] = x
         if WILD_TYPE_VARIANT in result_df.index:
-            result_df.loc[WILD_TYPE_VARIANT, 'z'] = np.nan
-            result_df.loc[WILD_TYPE_VARIANT, 'pvalue_raw'] = np.nan
-        result_df['z'] = result_df['z'].astype(float)
-        result_df['pvalue_raw'] = result_df['pvalue_raw'].astype(float)
+            result_df.loc[WILD_TYPE_VARIANT, "z"] = np.nan
+            result_df.loc[WILD_TYPE_VARIANT, "pvalue_raw"] = np.nan
+        result_df["z"] = result_df["z"].astype(float)
+        result_df["pvalue_raw"] = result_df["pvalue_raw"].astype(float)
 
         self.store.put(
-            key="/main/{}/outliers".format(label), value=result_df,
-            data_columns=result_df.columns
+            key="/main/{}/outliers".format(label),
+            value=result_df,
+            data_columns=result_df.columns,
         )

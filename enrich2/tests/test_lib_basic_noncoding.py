@@ -27,10 +27,10 @@ CFG_DIR = "data/config/basic/"
 READS_DIR = create_file_path("basic/", "data/reads/")
 RESULT_DIR = "data/result/basic/"
 
-LIBTYPE = 'basic'
-FILE_EXT = 'tsv'
-FILE_SEP = '\t'
-CODING_STR = 'n'
+LIBTYPE = "basic"
+FILE_EXT = "tsv"
+FILE_SEP = "\t"
+CODING_STR = "n"
 
 
 # -------------------------------------------------------------------------- #
@@ -40,32 +40,40 @@ CODING_STR = 'n'
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsIntegrated(unittest.TestCase):
     def setUp(self):
-        prefix = 'integrated'
+        prefix = "integrated"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
 
         # Set all filter parameters
-        cfg['fastq']['filters']['max N'] = 0
-        cfg['fastq']['filters']['chastity'] = True
-        cfg['fastq']['filters']['avg quality'] = 38
-        cfg['fastq']['filters']['min quality'] = 20
+        cfg["fastq"]["filters"]["max N"] = 0
+        cfg["fastq"]["filters"]["chastity"] = True
+        cfg["fastq"]["filters"]["avg quality"] = 38
+        cfg["fastq"]["filters"]["min quality"] = 20
 
         # Set trim parameters
-        cfg['fastq']['start'] = 4
-        cfg['fastq']['length'] = 3
-        cfg['fastq']['reverse'] = True
-        cfg['variants']['wild type']['sequence'] = "TTT"
+        cfg["fastq"]["start"] = 4
+        cfg["fastq"]["length"] = 3
+        cfg["fastq"]["reverse"] = True
+        cfg["variants"]["wild type"]["sequence"] = "TTT"
 
         # Set Variant parameters
-        cfg['variants']['wild type']['reference offset'] = 3
-        cfg['variants']['min counts'] = 2
-        cfg['variants']['max mutations'] = 1
-        cfg['variants']['use aligner'] = True
+        cfg["variants"]["wild type"]["reference offset"] = 3
+        cfg["variants"]["min counts"] = 2
+        cfg["variants"]["max mutations"] = 1
+        cfg["variants"]["use aligner"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -83,14 +91,22 @@ class TestBasicSeqLibCountsIntegrated(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsSynonymous(unittest.TestCase):
     def setUp(self):
-        prefix = 'synonymous'
+        prefix = "synonymous"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -108,14 +124,22 @@ class TestBasicSeqLibCountsSynonymous(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsSingleMutation(unittest.TestCase):
     def setUp(self):
-        prefix = 'single_mut'
+        prefix = "single_mut"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -133,14 +157,22 @@ class TestBasicSeqLibCountsSingleMutation(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsMultiMutation(unittest.TestCase):
     def setUp(self):
-        prefix = 'multi_mut'
+        prefix = "multi_mut"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -158,14 +190,22 @@ class TestBasicSeqLibCountsMultiMutation(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWildType(unittest.TestCase):
     def setUp(self):
-        prefix = 'wildtype'
+        prefix = "wildtype"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -183,15 +223,23 @@ class TestBasicSeqLibCountsWildType(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWithMaxNFQFilter(unittest.TestCase):
     def setUp(self):
-        prefix = 'filter_maxn'
+        prefix = "filter_maxn"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['fastq']['filters']['max N'] = 0
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["fastq"]["filters"]["max N"] = 0
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -209,15 +257,23 @@ class TestBasicSeqLibCountsWithMaxNFQFilter(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWithChaste(unittest.TestCase):
     def setUp(self):
-        prefix = 'filter_chastity'
+        prefix = "filter_chastity"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['fastq']['filters']['chastity'] = True
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["fastq"]["filters"]["chastity"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -235,15 +291,23 @@ class TestBasicSeqLibCountsWithChaste(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWithMinQualFQFilter(unittest.TestCase):
     def setUp(self):
-        prefix = 'filter_minq'
+        prefix = "filter_minq"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['fastq']['filters']['min quality'] = 20
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["fastq"]["filters"]["min quality"] = 20
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -261,15 +325,23 @@ class TestBasicSeqLibCountsWithMinQualFQFilter(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWithAvgQualFQFilter(unittest.TestCase):
     def setUp(self):
-        prefix = 'filter_avgq'
+        prefix = "filter_avgq"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['fastq']['filters']['avg quality'] = 38
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["fastq"]["filters"]["avg quality"] = 38
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -287,16 +359,24 @@ class TestBasicSeqLibCountsWithAvgQualFQFilter(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsTrimLengthSetting(unittest.TestCase):
     def setUp(self):
-        prefix = 'trim_len'
+        prefix = "trim_len"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['fastq']['length'] = 3
-        cfg['variants']['wild type']['sequence'] = "AAA"
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["fastq"]["length"] = 3
+        cfg["variants"]["wild type"]["sequence"] = "AAA"
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -314,16 +394,24 @@ class TestBasicSeqLibCountsTrimLengthSetting(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsTrimStartSetting(unittest.TestCase):
     def setUp(self):
-        prefix = 'trim_start'
+        prefix = "trim_start"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['fastq']['start'] = 4
-        cfg['variants']['wild type']['sequence'] = "AAA"
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["fastq"]["start"] = 4
+        cfg["variants"]["wild type"]["sequence"] = "AAA"
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -341,16 +429,24 @@ class TestBasicSeqLibCountsTrimStartSetting(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsReverseSetting(unittest.TestCase):
     def setUp(self):
-        prefix = 'revcomp'
+        prefix = "revcomp"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['fastq']['reverse'] = True
-        cfg['variants']['wild type']['sequence'] = "TTTTTT"
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["fastq"]["reverse"] = True
+        cfg["variants"]["wild type"]["sequence"] = "TTTTTT"
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -368,15 +464,23 @@ class TestBasicSeqLibCountsReverseSetting(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWithRefOffset(unittest.TestCase):
     def setUp(self):
-        prefix = 'reference_offset'
+        prefix = "reference_offset"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['variants']['wild type']['reference offset'] = 6
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["variants"]["wild type"]["reference offset"] = 6
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -394,15 +498,23 @@ class TestBasicSeqLibCountsWithRefOffset(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWithVariantMinCount(unittest.TestCase):
     def setUp(self):
-        prefix = 'variant_mincounts'
+        prefix = "variant_mincounts"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['variants']['min counts'] = 2
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["variants"]["min counts"] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -420,15 +532,23 @@ class TestBasicSeqLibCountsWithVariantMinCount(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWithVariantMaxMutations(unittest.TestCase):
     def setUp(self):
-        prefix = 'variant_maxmutations'
+        prefix = "variant_maxmutations"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['variants']['max mutations'] = 1
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["variants"]["max mutations"] = 1
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -446,15 +566,23 @@ class TestBasicSeqLibCountsWithVariantMaxMutations(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsWithVariantAligner(unittest.TestCase):
     def setUp(self):
-        prefix = 'use_aligner'
+        prefix = "use_aligner"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['variants']['use aligner'] = True
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["variants"]["use aligner"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -472,14 +600,22 @@ class TestBasicSeqLibCountsWithVariantAligner(unittest.TestCase):
 # -------------------------------------------------------------------------- #
 class TestBasicSeqLibCountsOnlyMode(unittest.TestCase):
     def setUp(self):
-        prefix = 'counts_only'
+        prefix = "counts_only"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['counts file'] = '{}/{}.tsv'.format(READS_DIR, prefix)
+        cfg["counts file"] = "{}/{}.tsv".format(READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BasicSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BasicSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 

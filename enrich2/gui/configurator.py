@@ -55,10 +55,7 @@ from .options_frame import ScorerScriptsDropDown
 from .logging_frame import show_log_window
 from .plugin_source_window import SourceWindow
 
-__all__ = [
-    "write_json",
-    "Configurator"
-]
+__all__ = ["write_json", "Configurator"]
 
 
 def write_json(d, handle):
@@ -160,6 +157,7 @@ class Configurator(tk.Tk):
     :py:class:`~tkinter.Tk`
     
     """
+
     def __init__(self):
         tk.Tk.__init__(self)
         self.title("Enrich 2")
@@ -211,8 +209,7 @@ class Configurator(tk.Tk):
         """
         self.treeview_popup = tk.Menu(self, tearoff=0)
         self.treeview_popup.add_command(
-            label="Apply FASTQ...",
-            command=self.apply_seqlib_fastq
+            label="Apply FASTQ...", command=self.apply_seqlib_fastq
         )
 
     def create_main_frame(self):
@@ -243,11 +240,9 @@ class Configurator(tk.Tk):
         self.treeview["columns"] = ("class", "barcodes", "variants")
         self.treeview.column("class", width=120)
         self.treeview.heading("class", text="Type")
-        self.treeview.column("barcodes", width=25, stretch=tk.NO,
-                             anchor=tk.CENTER)
+        self.treeview.column("barcodes", width=25, stretch=tk.NO, anchor=tk.CENTER)
         self.treeview.heading("barcodes", text="BC")
-        self.treeview.column("variants", width=25, stretch=tk.NO,
-                             anchor=tk.CENTER)
+        self.treeview.column("variants", width=25, stretch=tk.NO, anchor=tk.CENTER)
         self.treeview.heading("variants", text="V")
         self.treeview.grid(row=0, column=0, sticky="nsew")
 
@@ -255,10 +250,12 @@ class Configurator(tk.Tk):
         self.treeview.bind("<Button-2>", self.treeview_context_menu)
 
         # Treeview scrollbars
-        tree_ysb = tk.Scrollbar(tree_frame, orient="vertical",
-                                command=self.treeview.yview)
-        tree_xsb = tk.Scrollbar(tree_frame, orient="horizontal",
-                                command=self.treeview.xview)
+        tree_ysb = tk.Scrollbar(
+            tree_frame, orient="vertical", command=self.treeview.yview
+        )
+        tree_xsb = tk.Scrollbar(
+            tree_frame, orient="horizontal", command=self.treeview.xview
+        )
         tree_ysb.grid(row=0, column=1, sticky="nsw")
         tree_xsb.grid(row=1, column=0, sticky="ewn")
         self.treeview.config(yscroll=tree_ysb.set, xscroll=tree_xsb.set)
@@ -267,14 +264,15 @@ class Configurator(tk.Tk):
         # Frame for New/Edit/Delete buttons
         button_frame = Frame(main, padding=(3, 3, 12, 12))
         button_frame.grid(row=1, column=0)
-        new_button = Button(
-            button_frame, text="New...", command=self.new_button_press)
+        new_button = Button(button_frame, text="New...", command=self.new_button_press)
         new_button.grid(row=0, column=0)
         edit_button = Button(
-            button_frame, text="Edit...", command=self.edit_button_press)
+            button_frame, text="Edit...", command=self.edit_button_press
+        )
         edit_button.grid(row=0, column=1)
         delete_button = Button(
-            button_frame, text="Delete", command=self.delete_button_press)
+            button_frame, text="Delete", command=self.delete_button_press
+        )
         delete_button.grid(row=0, column=2)
 
         self.treeview_buttons = [new_button, delete_button, edit_button]
@@ -291,7 +289,8 @@ class Configurator(tk.Tk):
         # ------------------------------------------------------- #
         # LabelFrame for plugin and options
         scoring_plugin = ScorerScriptsDropDown(
-            right_frame, text='Scoring Options', padding=(3, 3, 12, 12))
+            right_frame, text="Scoring Options", padding=(3, 3, 12, 12)
+        )
         scoring_plugin.grid(row=0, column=0, sticky="new")
         self.scorer_widget = scoring_plugin
 
@@ -299,14 +298,13 @@ class Configurator(tk.Tk):
         # LabelFrame for Analysis Options
         row = 0
         options_frame = LabelFrame(
-            right_frame, text="Analysis Options", padding=(3, 3, 12, 12))
+            right_frame, text="Analysis Options", padding=(3, 3, 12, 12)
+        )
         options_frame.grid(row=1, column=0, sticky="new", pady=4)
 
         # force recalculate
         force_recalculate = Checkbutton(
-            options_frame,
-            text="Force Recalculation",
-            variable=self.force_recalculate
+            options_frame, text="Force Recalculation", variable=self.force_recalculate
         )
         force_recalculate.grid(column=0, row=row, sticky="w")
         row += 1
@@ -315,16 +313,14 @@ class Configurator(tk.Tk):
         component_outliers = Checkbutton(
             options_frame,
             text="Component Outlier Statistics",
-            variable=self.component_outliers
+            variable=self.component_outliers,
         )
         component_outliers.grid(column=0, row=row, sticky="w")
         row += 1
 
         # write tsv
         tsv_requested = Checkbutton(
-            options_frame,
-            text="Write TSV Files",
-            variable=self.tsv_requested
+            options_frame, text="Write TSV Files", variable=self.tsv_requested
         )
         tsv_requested.grid(column=0, row=row, sticky="w")
         tsv_requested.invoke()
@@ -335,7 +331,8 @@ class Configurator(tk.Tk):
         go_button_frame = Frame(main, padding=(3, 3, 12, 12))
         go_button_frame.grid(row=1, column=1)
         go_button = Button(
-            go_button_frame, text="Run Analysis", command=self.go_button_press)
+            go_button_frame, text="Run Analysis", command=self.go_button_press
+        )
         go_button.grid(column=0, row=0)
         self.go_button = go_button
 
@@ -367,8 +364,9 @@ class Configurator(tk.Tk):
             element.counts_file = None
             element.reads = None
         else:
-            raise ValueError("Unrecognized parent object "
-                             "type '{}'".format(type(parent_element)))
+            raise ValueError(
+                "Unrecognized parent object " "type '{}'".format(type(parent_element))
+            )
         return element
 
     def create_menubar(self):
@@ -391,28 +389,24 @@ class Configurator(tk.Tk):
         filemenu.add_command(
             label="Open...",
             accelerator="{}O".format(accel_string),
-            command=self.menu_open
+            command=self.menu_open,
         )
         filemenu.add_command(
-            label="Save",
-            accelerator="{}S".format(accel_string),
-            command=self.menu_save
+            label="Save", accelerator="{}S".format(accel_string), command=self.menu_save
         )
         filemenu.add_command(
             label="Save As...",
             accelerator="{}Shift+S".format(accel_string),
-            command=self.menu_saveas
+            command=self.menu_saveas,
         )
-        menubar.add_cascade(
-            label="File", menu=filemenu
-        )
+        menubar.add_cascade(label="File", menu=filemenu)
 
         # edit menu
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(
             label="Select All",
             accelerator="{}A".format(accel_string),
-            command=self.menu_selectall
+            command=self.menu_selectall,
         )
         menubar.add_cascade(label="Edit", menu=filemenu)
 
@@ -421,17 +415,17 @@ class Configurator(tk.Tk):
         filemenu.add_command(
             label="Show Log",
             accelerator="{}L".format(accel_string),
-            command=show_log_window
+            command=show_log_window,
         )
         filemenu.add_command(
             label="Plugin Sources",
             accelerator="{}P".format(accel_string),
-            command=self.show_plugin_source_window
+            command=self.show_plugin_source_window,
         )
         filemenu.add_command(
             label="Refresh Plugins",
             accelerator="{}R".format(accel_string),
-            command=self.refresh_plugins
+            command=self.refresh_plugins,
         )
         menubar.add_cascade(label="Tools", menu=filemenu)
 
@@ -441,20 +435,18 @@ class Configurator(tk.Tk):
         # add file menu keybinds
         self.bind("<{}o>".format(accel_bind), lambda event: self.menu_open())
         self.bind("<{}s>".format(accel_bind), lambda event: self.menu_save())
-        self.bind("<{}Shift-s>".format(accel_bind),
-                  lambda event: self.menu_saveas())
+        self.bind("<{}Shift-s>".format(accel_bind), lambda event: self.menu_saveas())
 
         # add edit menu keybinds
-        self.bind("<{}a>".format(accel_bind),
-                  lambda event: self.menu_selectall())
+        self.bind("<{}a>".format(accel_bind), lambda event: self.menu_selectall())
 
         # add show log menu keybinds
         # add edit menu keybinds
         self.bind("<{}l>".format(accel_bind), lambda event: show_log_window())
-        self.bind("<{}p>".format(accel_bind),
-                  lambda event: self.show_plugin_source_window())
-        self.bind("<{}r>".format(accel_bind),
-                  lambda event: self.refresh_plugins())
+        self.bind(
+            "<{}p>".format(accel_bind), lambda event: self.show_plugin_source_window()
+        )
+        self.bind("<{}r>".format(accel_bind), lambda event: self.refresh_plugins())
 
     # ---------------------------------------------------------------------- #
     #                          Treeview Methods
@@ -470,7 +462,7 @@ class Configurator(tk.Tk):
             tkinter click event
         """
         target = self.treeview.identify_row(click.y)
-        if target != '':
+        if target != "":
             self.treeview_popup_target_id = target
             self.treeview_popup.post(click.x_root, click.y_root)
         self.treeview_popup_target_id = None
@@ -560,11 +552,9 @@ class Configurator(tk.Tk):
             else:
                 try:
                     # remove the element from its parent's list of children
-                    self.element_dict[tree_id].parent.remove_child_id(
-                        tree_id)
+                    self.element_dict[tree_id].parent.remove_child_id(tree_id)
                 except AttributeError:
-                    raise AttributeError(
-                        "Non-root element lacks proper parent")
+                    raise AttributeError("Non-root element lacks proper parent")
 
             # delete the element from the dictionary
             del self.element_dict[tree_id]
@@ -596,8 +586,7 @@ class Configurator(tk.Tk):
             The storemanager object to configure.
         """
         # set class property
-        self.treeview.set(
-            element.treeview_id, "class", element.treeview_class_name)
+        self.treeview.set(element.treeview_id, "class", element.treeview_class_name)
 
         # add the check marks for barcodes/variants
         if "variants" in element.labels:
@@ -609,8 +598,7 @@ class Configurator(tk.Tk):
         else:
             self.treeview.set(element.treeview_id, "barcodes", "")
 
-        self.treeview.set(
-            element.treeview_id, "class", element.treeview_class_name)
+        self.treeview.set(element.treeview_id, "class", element.treeview_class_name)
 
     def populate_tree(self, element, parent_id=""):
         """
@@ -627,7 +615,8 @@ class Configurator(tk.Tk):
         """
         # insert into the Treeview
         element.treeview_id = self.treeview.insert(
-            parent_id, "end", text=element.name, open=True)
+            parent_id, "end", text=element.name, open=True
+        )
         # add id-element pair to dictionary
         self.element_dict[element.treeview_id] = element
         # set information fields
@@ -719,10 +708,12 @@ class Configurator(tk.Tk):
                     cfg = json.load(handle)
             except ValueError:
                 tkinter.messagebox.showerror(
-                    message_title, "Failed to parse config file.")
+                    message_title, "Failed to parse config file."
+                )
             except IOError:
                 tkinter.messagebox.showerror(
-                    message_title, "Could not read config file.")
+                    message_title, "Could not read config file."
+                )
             else:
                 if is_experiment(cfg):
                     obj = Experiment()
@@ -733,7 +724,8 @@ class Configurator(tk.Tk):
                     obj = globals()[sltype]()
                 else:
                     tkinter.messagebox.showerror(
-                        message_title, "Unrecognized config format.")
+                        message_title, "Unrecognized config format."
+                    )
                     return
                 obj.output_dir_override = False
                 try:
@@ -746,20 +738,18 @@ class Configurator(tk.Tk):
                     scorer_path = cfg.get(SCORER, {}).get(SCORER_PATH, "")
                     scorer_attrs = cfg.get(SCORER, {}).get(SCORER_OPTIONS, {})
                     if scorer_path:
-                        self.scorer_widget.load_from_cfg_file(
-                            scorer_path, scorer_attrs
-                        )
+                        self.scorer_widget.load_from_cfg_file(scorer_path, scorer_attrs)
                     else:
                         log_message(
                             logging_callback=logging.warning,
                             msg="No plugin could be loaded from configuration.",
-                            extra={"oname": self.__class__.__name__}
+                            extra={"oname": self.__class__.__name__},
                         )
 
                 except Exception as e:
                     tkinter.messagebox.showerror(
-                        message_title,
-                        "Failed to load config file:\n\n{}".format(e))
+                        message_title, "Failed to load config file:\n\n{}".format(e)
+                    )
                 else:
                     self.root_element = obj
                     self.cfg_file_name.set(fname)
@@ -773,12 +763,10 @@ class Configurator(tk.Tk):
             self.menu_saveas()
         elif self.root_element is None:
             tkinter.messagebox.showwarning(
-                "Save Configuration", "Cannot save empty configuration.")
-        else:
-            save = askyesno(
-                "Save Configuration",
-                "Overwrite existing configuration?"
+                "Save Configuration", "Cannot save empty configuration."
             )
+        else:
+            save = askyesno("Save Configuration", "Overwrite existing configuration?")
             if not save:
                 return
             try:
@@ -786,23 +774,25 @@ class Configurator(tk.Tk):
                     cfg = self.root_element.serialize()
 
                     # Get the currently selected scorer
-                    if not isinstance(self.root_element, SeqLib) and not \
-                            isinstance(self.root_element, Condition):
-                        _, attrs, scorer_path = \
-                            self.scorer_widget.get_scorer_class_attrs_path()
-                        cfg[SCORER] = {
-                            SCORER_PATH: scorer_path,
-                            SCORER_OPTIONS: attrs
-                        }
+                    if not isinstance(self.root_element, SeqLib) and not isinstance(
+                        self.root_element, Condition
+                    ):
+                        (
+                            _,
+                            attrs,
+                            scorer_path,
+                        ) = self.scorer_widget.get_scorer_class_attrs_path()
+                        cfg[SCORER] = {SCORER_PATH: scorer_path, SCORER_OPTIONS: attrs}
                     write_json(cfg, handle)
             except IOError:
                 tkinter.messagebox.showerror(
-                    "Save Configuration", "Failed to save config file.")
+                    "Save Configuration", "Failed to save config file."
+                )
             else:
                 tkinter.messagebox.showinfo(
                     "Save Configuration",
-                    "Saved file at location:\n\n{}".format(
-                        self.cfg_file_name.get()))
+                    "Saved file at location:\n\n{}".format(self.cfg_file_name.get()),
+                )
 
     def menu_saveas(self):
         """
@@ -810,7 +800,8 @@ class Configurator(tk.Tk):
         """
         if self.root_element is None:
             tkinter.messagebox.showwarning(
-                "Save Configuration", "Cannot save empty configuration.")
+                "Save Configuration", "Cannot save empty configuration."
+            )
         else:
             fname = tkinter.filedialog.asksaveasfilename()
             if len(fname) > 0:  # file was selected
@@ -819,24 +810,31 @@ class Configurator(tk.Tk):
                         cfg = self.root_element.serialize()
 
                         # Get the currently selected scorer
-                        if not isinstance(self.root_element, SeqLib) and not \
-                                isinstance(self.root_element, Condition):
-                            _, attrs, scorer_path = \
-                                self.scorer_widget.get_scorer_class_attrs_path()
+                        if not isinstance(self.root_element, SeqLib) and not isinstance(
+                            self.root_element, Condition
+                        ):
+                            (
+                                _,
+                                attrs,
+                                scorer_path,
+                            ) = self.scorer_widget.get_scorer_class_attrs_path()
                             cfg[SCORER] = {
                                 SCORER_PATH: scorer_path,
-                                SCORER_OPTIONS: attrs
+                                SCORER_OPTIONS: attrs,
                             }
                         write_json(cfg, handle)
                 except IOError:
                     tkinter.messagebox.showerror(
-                        "Save Configuration", "Failed to save config file.")
+                        "Save Configuration", "Failed to save config file."
+                    )
                 else:
                     self.cfg_file_name.set(fname)
                     tkinter.messagebox.showinfo(
                         "Save Configuration",
                         "Saved file at location:\n\n{}".format(
-                            self.cfg_file_name.get()))
+                            self.cfg_file_name.get()
+                        ),
+                    )
 
     def menu_selectall(self):
         """
@@ -863,8 +861,11 @@ class Configurator(tk.Tk):
         This will run the analysis in a new thread and block out GUI editing 
         to prevent the analysis breaking.
         """
-        self.scorer, self.scorer_attrs, self.scorer_path = \
-            self.scorer_widget.get_scorer_class_attrs_path()
+        (
+            self.scorer,
+            self.scorer_attrs,
+            self.scorer_path,
+        ) = self.scorer_widget.get_scorer_class_attrs_path()
 
         if self.scorer is None or self.scorer_attrs is None:
             tkinter.messagebox.showwarning(
@@ -881,19 +882,20 @@ class Configurator(tk.Tk):
                     "Selected plugin has been modified.",
                     "The selected plugin has been modified on disk. Do you "
                     "want to proceed with the current version? To see changes "
-                    "click 'Cancel' and refresh plugins before proceeding."
+                    "click 'Cancel' and refresh plugins before proceeding.",
                 )
                 if not proceed:
                     return
-            if askyesno("Save Configuration?",
-                        "Would you like to save the confiugration "
-                        "file before proceeding?"):
+            if askyesno(
+                "Save Configuration?",
+                "Would you like to save the confiugration " "file before proceeding?",
+            ):
                 self.menu_save()
             run = askyesno(
                 "Begin Analysis?",
                 "Click Yes when you are ready to start.\n\nThis could "
                 "take some time so grab a cup of tea, or a beer if that's "
-                "your thing, and enjoy the show."
+                "your thing, and enjoy the show.",
             )
             if run:
                 self.configure_analysis()
@@ -940,32 +942,31 @@ class Configurator(tk.Tk):
         log_message(
             logging_callback=logging.info,
             msg="Closing stores...",
-            extra={"oname": self.root_element.name}
+            extra={"oname": self.root_element.name},
         )
         self.root_element.store_close(children=True)
         log_message(
             logging_callback=logging.info,
             msg="Stores closed.",
-            extra={"oname": self.root_element.name}
+            extra={"oname": self.root_element.name},
         )
 
         if success:
-            showinfo(
-                "Analysis completed.",
-                "Analysis has completed successfully!")
+            showinfo("Analysis completed.", "Analysis has completed successfully!")
             log_message(
                 logging_callback=logging.info,
                 msg="Completed successfully!",
-                extra={"oname": self.root_element.name}
+                extra={"oname": self.root_element.name},
             )
         else:
             showwarning(
                 "Error during analysis.",
-                "An error occurred during the analysis. See log for details")
+                "An error occurred during the analysis. See log for details",
+            )
             log_message(
                 logging_callback=logging.info,
                 msg="Completed, but with errors!",
-                extra={"oname": self.root_element.name}
+                extra={"oname": self.root_element.name},
             )
         self.set_gui_state(tk.NORMAL)
 
@@ -984,7 +985,7 @@ class Configurator(tk.Tk):
             log_message(
                 logging_callback=logging.exception,
                 msg=exception,
-                extra={"oname": self.root_element.name}
+                extra={"oname": self.root_element.name},
             )
             self.queue.put(False, block=False)
         finally:
@@ -996,10 +997,8 @@ class Configurator(tk.Tk):
         options.
         """
         try:
-            self.root_element.force_recalculate = \
-                self.force_recalculate.get()
-            self.root_element.component_outliers = \
-                self.component_outliers.get()
+            self.root_element.force_recalculate = self.force_recalculate.get()
+            self.root_element.component_outliers = self.component_outliers.get()
             self.root_element.tsv_requested = self.tsv_requested.get()
 
             scorer_class = self.get_selected_scorer_class()
@@ -1011,14 +1010,13 @@ class Configurator(tk.Tk):
         except Exception as e:
             log_message(
                 logging_callback=logging.info,
-                msg="An error occurred when trying to configure the "
-                    "root element.",
-                extra={"oname": self.root_element.name}
+                msg="An error occurred when trying to configure the " "root element.",
+                extra={"oname": self.root_element.name},
             )
             log_message(
                 logging_callback=logging.exception,
                 msg=e,
-                extra={"oname": self.root_element.name}
+                extra={"oname": self.root_element.name},
             )
 
     # ---------------------------------------------------------------------- #
@@ -1037,7 +1035,7 @@ class Configurator(tk.Tk):
         for btn in self.treeview_buttons:
             btn.config(state=state)
         self.go_button.config(state=state)
-        if state == 'normal':
+        if state == "normal":
             self.treeview.bind("<Button-2>", self.treeview_context_menu)
         else:
             self.treeview.bind("<Button-2>", lambda event: event)

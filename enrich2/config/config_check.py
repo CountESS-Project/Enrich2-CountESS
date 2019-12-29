@@ -34,12 +34,12 @@ from ..base.config_constants import BARCODE_MAP_FILE, OVERLAP
 
 
 __all__ = [
-    'is_experiment',
-    'is_condition',
-    'is_selection',
-    'is_seqlib',
-    'seqlib_type',
-    'element_type'
+    "is_experiment",
+    "is_condition",
+    "is_selection",
+    "is_seqlib",
+    "seqlib_type",
+    "element_type",
 ]
 
 
@@ -174,8 +174,7 @@ def seqlib_type(cfg):
     elif IDENTIFIERS in cfg:
         return "IdOnlySeqLib"
     else:
-        raise ValueError("Unable to determine SeqLib type for configuration "
-                         "object.")
+        raise ValueError("Unable to determine SeqLib type for configuration " "object.")
 
 
 def element_type(cfg):

@@ -58,7 +58,7 @@ __all__ = [
     "ExperimentConfiguration",
     "ConditonConfiguration",
     "SelectionConfiguration",
-    "StoreConfiguration"
+    "StoreConfiguration",
 ]
 
 
@@ -125,23 +125,23 @@ class ScorerConfiguration(Configuration):
     :py:class:`~enrich2.plugins.options.Options`
     
     """
+
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for fastq configuration.")
 
         if SCORER_PATH not in cfg:
-            raise KeyError("Missing '{}' key from {} configuration.".format(
-                SCORER_PATH, SCORER
-            ))
+            raise KeyError(
+                "Missing '{}' key from {} configuration.".format(SCORER_PATH, SCORER)
+            )
         if SCORER_OPTIONS not in cfg:
-            raise KeyError("Missing '{}' key from {} configuration.".format(
-                SCORER_OPTIONS, SCORER
-            ))
+            raise KeyError(
+                "Missing '{}' key from {} configuration.".format(SCORER_OPTIONS, SCORER)
+            )
 
         path = cfg[SCORER_PATH]
         attrs = cfg[SCORER_OPTIONS]
-        scorer_class, options, _ = \
-            load_scorer_class_and_options(path)
+        scorer_class, options, _ = load_scorer_class_and_options(path)
 
         self.__options = options if options is not None else Options()
         self.scorer_class = scorer_class
@@ -161,10 +161,12 @@ class ScorerConfiguration(Configuration):
 
         # Check for unused params in attrs and throw error
         unused = list(passed_varnames - expected_varnames)
-        unused_str = ', '.join(["'{}'".format(v) for v in unused])
+        unused_str = ", ".join(["'{}'".format(v) for v in unused])
         if unused:
-            raise ValueError("The options {} in the provided configuration are"
-                             " not defined in the plugin.".format(unused_str))
+            raise ValueError(
+                "The options {} in the provided configuration are"
+                " not defined in the plugin.".format(unused_str)
+            )
 
         # Validate each value in passed attrs
         for varname in passed_varnames & expected_varnames:
@@ -174,14 +176,14 @@ class ScorerConfiguration(Configuration):
 
         # If missing params log warning and set to default
         defaults = list(expected_varnames - passed_varnames)
-        defaults_str = ', '.join(["'{}'".format(v) for v in defaults])
+        defaults_str = ", ".join(["'{}'".format(v) for v in defaults])
         if defaults:
             log_message(
                 logging_callback=logging.warning,
                 msg="The options {} were not found in the provided"
-                    " configuration file. Setting as default "
-                    "values.".format(defaults_str),
-                extra={'oname': self.__class__.__name__}
+                " configuration file. Setting as default "
+                "values.".format(defaults_str),
+                extra={"oname": self.__class__.__name__},
             )
         self.scorer_class_attrs = self.__options.to_dict()
         return self
@@ -248,14 +250,15 @@ class FASTQConfiguration(Configuration):
 
 
     """
+
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for fastq configuration.")
 
         if READS not in cfg:
-            raise KeyError("Missing '{}' key from {} configuration.".format(
-                READS, FASTQ
-            ))
+            raise KeyError(
+                "Missing '{}' key from {} configuration.".format(READS, FASTQ)
+            )
 
         filters_cfg = cfg.get(FILTERS, {})
         self.reads = cfg.get(READS, "")
@@ -270,17 +273,19 @@ class FASTQConfiguration(Configuration):
         Check if reverse if a boolean
         """
         if not isinstance(self.reverse, bool):
-            raise TypeError("Expected bool for reverse but found {}.".format(
-                type(self.reverse)
-            ))
+            raise TypeError(
+                "Expected bool for reverse but found {}.".format(type(self.reverse))
+            )
 
     def validate_trim_start(self):
         """
         Validate the `trim_start` value
         """
         if not isinstance(self.trim_start, int):
-            raise TypeError("FASTQ `start` must be an integer."     
-                            " Found type {}.".format(type(self.trim_start)))
+            raise TypeError(
+                "FASTQ `start` must be an integer."
+                " Found type {}.".format(type(self.trim_start))
+            )
         if self.trim_start < 0:
             raise ValueError("FASTQ `start` must not be negative.")
 
@@ -289,8 +294,10 @@ class FASTQConfiguration(Configuration):
         Validate the `trim_length` value
         """
         if not isinstance(self.trim_length, int):
-            raise TypeError("FASTQ `length` must be an integer."     
-                            " Found type {}.".format(type(self.trim_length)))
+            raise TypeError(
+                "FASTQ `length` must be an integer."
+                " Found type {}.".format(type(self.trim_length))
+            )
         if self.trim_length < 0:
             raise ValueError("FASTQ `length` must not be negative.")
 
@@ -299,19 +306,23 @@ class FASTQConfiguration(Configuration):
         Ensure reads file exists and has an appropriate extension.
         """
         if not isinstance(self.reads, str):
-            raise TypeError("Expected str for reads but found {}.".format(
-                type(self.reads)
-            ))
+            raise TypeError(
+                "Expected str for reads but found {}.".format(type(self.reads))
+            )
         if not os.path.isfile(self.reads):
-            raise IOError("File {} does not exist."
-                          " Try using absolute paths.".format(self.reads))
+            raise IOError(
+                "File {} does not exist."
+                " Try using absolute paths.".format(self.reads)
+            )
 
         _, tail = os.path.split(self.reads)
         _, ext = os.path.splitext(tail)
-        if ext not in {'.bz2', '.gz', '.fq', '.fastq'}:
-            raise IOError("Unsupported format for reads. Files"
-                             "need extension to be either bz2, gz, fq or"
-                             "fastq.")
+        if ext not in {".bz2", ".gz", ".fq", ".fastq"}:
+            raise IOError(
+                "Unsupported format for reads. Files"
+                "need extension to be either bz2, gz, fq or"
+                "fastq."
+            )
 
     def validate(self):
         """
@@ -362,6 +373,7 @@ class FiltersConfiguration(Configuration):
     :py:class:`~FiltersConfiguration`
 
     """
+
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for filters configuration.")
@@ -377,8 +389,10 @@ class FiltersConfiguration(Configuration):
         Ensure that `max_n` is an `int` and not negative.
         """
         if not isinstance(self.max_n, int):
-            raise TypeError("FASTQ filter `max n` must be an integer."
-                            " Found type {}.".format(type(self.max_n)))
+            raise TypeError(
+                "FASTQ filter `max n` must be an integer."
+                " Found type {}.".format(type(self.max_n))
+            )
         if self.max_n < 0:
             raise ValueError("FASTQ filter `max n` must not be negative.")
 
@@ -387,30 +401,34 @@ class FiltersConfiguration(Configuration):
         Ensure that `chaste` is a `bool`.
         """
         if not isinstance(self.chaste, bool):
-            raise TypeError("FASTQ filter `chastity` must be a boolean."
-                            " Found type {}.".format(type(self.max_n)))
+            raise TypeError(
+                "FASTQ filter `chastity` must be a boolean."
+                " Found type {}.".format(type(self.max_n))
+            )
 
     def validate_avg_base_quality(self):
         """
         Ensure that `avg_base_quality` is an `int` and not negative.
         """
         if not isinstance(self.avg_base_quality, int):
-            raise TypeError("FASTQ filter `avg quality` must be an integer."
-                            " Found type {}.".format(type(self.max_n)))
+            raise TypeError(
+                "FASTQ filter `avg quality` must be an integer."
+                " Found type {}.".format(type(self.max_n))
+            )
         if self.avg_base_quality < 0:
-            raise ValueError("FASTQ filter "
-                             "`avg quality` must not be negative.")
+            raise ValueError("FASTQ filter " "`avg quality` must not be negative.")
 
     def validate_min_base_quality(self):
         """
         Ensure that `min_base_quality` is an `int` and not negative.
         """
         if not isinstance(self.min_base_quality, int):
-            raise TypeError("FASTQ filter `min quality` must be an integer."
-                            " Found type {}.".format(type(self.max_n)))
+            raise TypeError(
+                "FASTQ filter `min quality` must be an integer."
+                " Found type {}.".format(type(self.max_n))
+            )
         if self.min_base_quality < 0:
-            raise ValueError("FASTQ filter "
-                             "`min quality` must not be negative.")
+            raise ValueError("FASTQ filter " "`min quality` must not be negative.")
 
     def validate(self):
         """
@@ -434,7 +452,7 @@ class FiltersConfiguration(Configuration):
             FILTERS_CHASTITY: self.chaste,
             FILTERS_MAX_N: self.max_n,
             FILTERS_MIN_Q: self.min_base_quality,
-            FILTERS_AVG_Q: self.avg_base_quality
+            FILTERS_AVG_Q: self.avg_base_quality,
         }
 
 
@@ -464,6 +482,7 @@ class BarcodeConfiguration(Configuration):
     validate_min_count
     
     """
+
     def __init__(self, cfg, require_map=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for barcodes configuration.")
@@ -484,26 +503,32 @@ class BarcodeConfiguration(Configuration):
         Ensure that `map_file` exists and has an appropriate extension.
         """
         if self.map_file and not isinstance(self.map_file, str):
-            raise TypeError("Expected str for map file but found {}.".format(
-                type(self.map_file)
-            ))
+            raise TypeError(
+                "Expected str for map file but found {}.".format(type(self.map_file))
+            )
         if self.map_file and not os.path.isfile(self.map_file):
-            raise IOError("File {} does not exist."
-                          " Try using absolute paths.".format(self.map_file))
+            raise IOError(
+                "File {} does not exist."
+                " Try using absolute paths.".format(self.map_file)
+            )
         elif self.map_file and os.path.isfile(self.map_file):
             _, tail = os.path.split(self.map_file)
             _, ext = os.path.splitext(tail)
-            if ext not in {'.bz2', '.gz', '.txt'}:
-                raise IOError("Unsupported format for map file. Files"
-                                 "need extension to be either bz2, gz or txt.")
+            if ext not in {".bz2", ".gz", ".txt"}:
+                raise IOError(
+                    "Unsupported format for map file. Files"
+                    "need extension to be either bz2, gz or txt."
+                )
 
     def validate_min_count(self):
         """
         Ensure that `min_count` is an `int` and not negative.
         """
         if not isinstance(self.min_count, int):
-            raise TypeError("Barcode `min count` must be an integer."
-                            " Found type {}".format(type(self.min_count)))
+            raise TypeError(
+                "Barcode `min count` must be an integer."
+                " Found type {}".format(type(self.min_count))
+            )
         if self.min_count < 0:
             raise ValueError("Barcode `min count` must not be negative.")
 
@@ -537,6 +562,7 @@ class IdentifiersConfiguration(Configuration):
     validate_min_count
 
     """
+
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for identifiers configuration.")
@@ -548,8 +574,10 @@ class IdentifiersConfiguration(Configuration):
         Ensure that `min_count` is an `int` and not negative.
         """
         if not isinstance(self.min_count, int):
-            raise TypeError("Identifers `min count` must be an integer."
-                            " Found type {}".format(type(self.min_count)))
+            raise TypeError(
+                "Identifers `min count` must be an integer."
+                " Found type {}".format(type(self.min_count))
+            )
         if self.min_count < 0:
             raise ValueError("Identifers `min count` must not be negative.")
 
@@ -598,14 +626,13 @@ class VariantsConfiguration(Configuration):
             raise TypeError("dict required for variants configuration.")
 
         if WILDTYPE not in cfg:
-            raise KeyError("Missing '{}' key from {} configuration.".format(
-                WILDTYPE, VARIANTS
-            ))
+            raise KeyError(
+                "Missing '{}' key from {} configuration.".format(WILDTYPE, VARIANTS)
+            )
 
         wildtype_cfg = cfg.get(WILDTYPE, {})
         self.use_aligner = cfg.get(USE_ALIGNER, False)
-        self.max_mutations = cfg.get(VARIANTS_MAX_MUTATIONS,
-                                     self.DEFAULT_MAX_MUTATIONS)
+        self.max_mutations = cfg.get(VARIANTS_MAX_MUTATIONS, self.DEFAULT_MAX_MUTATIONS)
         self.min_count = cfg.get(VARIANTS_MIN_COUNT, 0)
         self.wildtype_cfg = WildTypeConfiguration(wildtype_cfg).validate()
         self.validate()
@@ -616,11 +643,14 @@ class VariantsConfiguration(Configuration):
         contains a valid sequence.
         """
         if not isinstance(self.use_aligner, bool):
-            raise TypeError("Variants `use aligner` must be a boolean."
-                            " Found type {}.".format(type(self.use_aligner)))
+            raise TypeError(
+                "Variants `use aligner` must be a boolean."
+                " Found type {}.".format(type(self.use_aligner))
+            )
         if self.use_aligner and not self.wildtype_cfg.sequence:
-            raise ValueError("Variants `use aligner` requires a wildtype"
-                             "sequence to be present.")
+            raise ValueError(
+                "Variants `use aligner` requires a wildtype" "sequence to be present."
+            )
 
     def validate_max_mutations(self):
         """
@@ -628,22 +658,28 @@ class VariantsConfiguration(Configuration):
         than 10.
         """
         if not isinstance(self.max_mutations, int):
-            raise TypeError("Variants `max mutations` must be an integer."
-                            " Found type {}".format(type(self.min_count)))
+            raise TypeError(
+                "Variants `max mutations` must be an integer."
+                " Found type {}".format(type(self.min_count))
+            )
         if self.max_mutations < 0:
             raise ValueError("Variants `max mutations` must not be negative.")
 
         if self.max_mutations > self.DEFAULT_MAX_MUTATIONS:
-            raise ValueError("Variants `max mutations` should not be higher "
-                             "than {}.".format(self.DEFAULT_MAX_MUTATIONS))
+            raise ValueError(
+                "Variants `max mutations` should not be higher "
+                "than {}.".format(self.DEFAULT_MAX_MUTATIONS)
+            )
 
     def validate_min_count(self):
         """
         Ensure that `min_count` is an `int` and not negative.
         """
         if not isinstance(self.min_count, int):
-            raise TypeError("Variants `min count` must be an integer."
-                            " Found type {}".format(type(self.min_count)))
+            raise TypeError(
+                "Variants `min count` must be an integer."
+                " Found type {}".format(type(self.min_count))
+            )
         if self.min_count < 0:
             raise ValueError("Variants `min count` must not be negative.")
 
@@ -687,13 +723,15 @@ class WildTypeConfiguration(Configuration):
     validate_sequence
 
     """
+
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for wildtype configuration.")
 
         if SEQUENCE not in cfg:
-            raise KeyError("Missing '{}' from base library "
-                           "configuration.".format(SEQUENCE))
+            raise KeyError(
+                "Missing '{}' from base library " "configuration.".format(SEQUENCE)
+            )
 
         self.coding = cfg.get(CODING, False)
         self.reference_offset = cfg.get(REF_OFFSET, 0)
@@ -714,9 +752,11 @@ class WildTypeConfiguration(Configuration):
         Ensure that `coding` is a `bool`.
         """
         if not isinstance(self.coding, bool):
-            raise TypeError("Wildtype `coding` must be a boolean."
-                            " Found type "
-                            "{}.".format(type(self.coding).__name__))
+            raise TypeError(
+                "Wildtype `coding` must be a boolean."
+                " Found type "
+                "{}.".format(type(self.coding).__name__)
+            )
 
     def validate_reference_offset(self):
         """
@@ -724,12 +764,13 @@ class WildTypeConfiguration(Configuration):
         if `coding` and not a multiple of 3.
         """
         if not isinstance(self.reference_offset, int):
-            raise TypeError("Wildtype `reference offset` "
-                            "must be an integer. Found type "
-                            "{}.".format(type(self.reference_offset).__name__))
+            raise TypeError(
+                "Wildtype `reference offset` "
+                "must be an integer. Found type "
+                "{}.".format(type(self.reference_offset).__name__)
+            )
         if self.reference_offset < 0:
-            raise ValueError("Wildtype `reference offset` "
-                             "must not be negative.")
+            raise ValueError("Wildtype `reference offset` " "must not be negative.")
 
         multiple_of_three = self.reference_offset % 3 == 0
         if self.coding and not multiple_of_three:
@@ -741,25 +782,31 @@ class WildTypeConfiguration(Configuration):
         sequence and a multiple of 3 if `coding` is `True`.
         """
         if not isinstance(self.sequence, str):
-            raise TypeError("Variants `sequence` must be a string. "
-                            "Found type "
-                            "{}".format(type(self.sequence).__name__))
+            raise TypeError(
+                "Variants `sequence` must be a string. "
+                "Found type "
+                "{}".format(type(self.sequence).__name__)
+            )
 
         if not self.sequence:
             raise ValueError(
                 "Cannot have an empty sequence [{}].".format(
-                    type(self.sequence).__name__))
+                    type(self.sequence).__name__
+                )
+            )
 
         if self.sequence and os.path.isfile(self.sequence):
             _, tail = os.path.split(self.sequence)
             _, ext = os.path.splitext(tail)
-            if ext not in {'.bz2', '.gz', '.fa', 'fasta'}:
-                raise IOError("Unsupported format for fasta file. Files"
-                                 " need extension to be either bz2, gz, "
-                                 "fa or fasta.")
+            if ext not in {".bz2", ".gz", ".fa", "fasta"}:
+                raise IOError(
+                    "Unsupported format for fasta file. Files"
+                    " need extension to be either bz2, gz, "
+                    "fa or fasta."
+                )
 
         if os.path.isfile(self.sequence):
-            with open(self.sequence, 'rt') as fp:
+            with open(self.sequence, "rt") as fp:
                 # TODO: replace with fasta reader
                 self.sequence = fp.read().strip()
 
@@ -767,13 +814,17 @@ class WildTypeConfiguration(Configuration):
         atcg_chars_only = "^[ACGT]+$"
         if self.sequence:
             if not re.match(atcg_chars_only, self.sequence):
-                raise ValueError("'sequence' contains unexpected "
-                                 "characters {}".format(self.sequence))
+                raise ValueError(
+                    "'sequence' contains unexpected "
+                    "characters {}".format(self.sequence)
+                )
 
             multple_of_three = len(self.sequence) % 3 == 0
             if self.coding and not multple_of_three:
-                raise ValueError("If `protein coding` is selected "
-                                 "`sequence` must be a multiple of 3.")
+                raise ValueError(
+                    "If `protein coding` is selected "
+                    "`sequence` must be a multiple of 3."
+                )
 
 
 # -------------------------------------------------------------------------- #
@@ -819,6 +870,7 @@ class BaseLibraryConfiguration(Configuration):
     validate_counts_file
 
     """
+
     def __init__(self, cfg, init_fastq=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for base library configuration.")
@@ -826,16 +878,19 @@ class BaseLibraryConfiguration(Configuration):
             raise TypeError("'init_fastq' needs to be a boolean.")
 
         if TIMEPOINT not in cfg:
-            raise KeyError("Missing '{}' from base library "
-                             "configuration.".format(TIMEPOINT))
+            raise KeyError(
+                "Missing '{}' from base library " "configuration.".format(TIMEPOINT)
+            )
 
         if init_fastq and FASTQ not in cfg:
-            raise KeyError("Missing '{}' from base library "
-                             "configuration.".format(FASTQ))
+            raise KeyError(
+                "Missing '{}' from base library " "configuration.".format(FASTQ)
+            )
 
         if not init_fastq and COUNTS_FILE not in cfg:
-            raise KeyError("Missing '{}' from base library "
-                             "configuration.".format(COUNTS_FILE))
+            raise KeyError(
+                "Missing '{}' from base library " "configuration.".format(COUNTS_FILE)
+            )
 
         fastq_cfg = cfg.get(FASTQ, None)
         self.counts_file = cfg.get(COUNTS_FILE, None)
@@ -854,11 +909,12 @@ class BaseLibraryConfiguration(Configuration):
             self.counts_file = None
 
         if init_fastq and self.counts_file is not None:
-            raise ValueError("Cannot define both a counts file and reads file "
-                             "at the same time. It's one or the other, buddy.")
-        if fastq_cfg is None and self.counts_file is None:
             raise ValueError(
-                "Must have either a fastq definition or counts file.")
+                "Cannot define both a counts file and reads file "
+                "at the same time. It's one or the other, buddy."
+            )
+        if fastq_cfg is None and self.counts_file is None:
+            raise ValueError("Must have either a fastq definition or counts file.")
 
         self.store_cfg = StoreConfiguration(cfg, has_scorer=False).validate()
         self.validate()
@@ -878,8 +934,10 @@ class BaseLibraryConfiguration(Configuration):
         than 0.
         """
         if not isinstance(self.timepoint, int):
-            raise TypeError("Library `timepoint` must be an integer."
-                            " Found type {}.".format(type(self.timepoint)))
+            raise TypeError(
+                "Library `timepoint` must be an integer."
+                " Found type {}.".format(type(self.timepoint))
+            )
         if self.timepoint < 0:
             raise ValueError("Library `timepoint` must not be negative.")
 
@@ -888,10 +946,10 @@ class BaseLibraryConfiguration(Configuration):
         Check `report_filtered_reads` is a boolean.
         """
         if not isinstance(self.report_filtered_reads, bool):
-            raise TypeError("Expected bool for `report filtered reads`"
-                            " but found {}.".format(
-                type(self.report_filtered_reads)
-            ))
+            raise TypeError(
+                "Expected bool for `report filtered reads`"
+                " but found {}.".format(type(self.report_filtered_reads))
+            )
 
     def validate_counts_file(self):
         """
@@ -903,18 +961,24 @@ class BaseLibraryConfiguration(Configuration):
             raise ValueError("Must provide a counts file if not using fastq.")
 
         if self.counts_file and not isinstance(self.counts_file, str):
-            raise TypeError("Expected str for `counts file` but "
-                            "found {}.".format(type(self.counts_file)))
+            raise TypeError(
+                "Expected str for `counts file` but "
+                "found {}.".format(type(self.counts_file))
+            )
 
         if self.counts_file and not os.path.isfile(self.counts_file):
-            raise IOError("File {} does not exist. Try using "
-                          "absolute paths.".format(self.counts_file))
+            raise IOError(
+                "File {} does not exist. Try using "
+                "absolute paths.".format(self.counts_file)
+            )
         elif self.counts_file and os.path.isfile(self.counts_file):
             _, tail = os.path.split(self.counts_file)
             _, ext = os.path.splitext(tail)
-            if ext not in {'.tsv', '.txt'}:
-                raise IOError("Unsupported format for `counts file`. Files"
-                                 "need extension to be either bz2, gz or txt.")
+            if ext not in {".tsv", ".txt"}:
+                raise IOError(
+                    "Unsupported format for `counts file`. Files"
+                    "need extension to be either bz2, gz or txt."
+                )
 
 
 class BaseVariantSeqLibConfiguration(BaseLibraryConfiguration):
@@ -942,15 +1006,16 @@ class BaseVariantSeqLibConfiguration(BaseLibraryConfiguration):
     :py:class:`~BaseLibraryConfiguration`
     
     """
+
     def __init__(self, cfg, init_fastq=False):
         if not isinstance(cfg, dict):
-            raise TypeError(
-                "dict required for BaseVariantSeqLibConfiguration.")
+            raise TypeError("dict required for BaseVariantSeqLibConfiguration.")
         BaseLibraryConfiguration.__init__(self, cfg, init_fastq)
 
         if VARIANTS not in cfg:
-            raise KeyError("Key {} missing for BcvSeqLib "
-                           "configuration.".format(VARIANTS))
+            raise KeyError(
+                "Key {} missing for BcvSeqLib " "configuration.".format(VARIANTS)
+            )
 
         variants_cfg = cfg.get(VARIANTS, {})
         if not variants_cfg:
@@ -990,18 +1055,19 @@ class BarcodeSeqLibConfiguration(BaseLibraryConfiguration):
     :py:class:`~BaseLibraryConfiguration`
 
     """
+
     def __init__(self, cfg, init_fastq=True, reqiure_map=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for BarcodeSeqLibConfiguration.")
         BaseLibraryConfiguration.__init__(self, cfg, init_fastq)
 
         if BARCODES not in cfg:
-            raise KeyError("Key {} missing for BarcodeSeqLib "
-                           "configuration.".format(BARCODES))
+            raise KeyError(
+                "Key {} missing for BarcodeSeqLib " "configuration.".format(BARCODES)
+            )
         barcodes_cfg = cfg.get(BARCODES)
 
-        self.barcodes_cfg = BarcodeConfiguration(
-            barcodes_cfg, reqiure_map).validate()
+        self.barcodes_cfg = BarcodeConfiguration(barcodes_cfg, reqiure_map).validate()
         self.validate()
 
 
@@ -1032,16 +1098,17 @@ class BcidSeqLibConfiguration(BarcodeSeqLibConfiguration):
     :py:class:`~BarcodeSeqLibConfiguration`
 
     """
+
     def __init__(self, cfg, init_fastq=True):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for BcidSeqLibConfiguration.")
 
         if IDENTIFIERS not in cfg:
-            raise KeyError("Key {} missing for BcidSeqLib "
-                           "configuration.".format(IDENTIFIERS))
+            raise KeyError(
+                "Key {} missing for BcidSeqLib " "configuration.".format(IDENTIFIERS)
+            )
 
-        BarcodeSeqLibConfiguration.__init__(
-            self, cfg, init_fastq, reqiure_map=True)
+        BarcodeSeqLibConfiguration.__init__(self, cfg, init_fastq, reqiure_map=True)
 
         identifers_cfg = cfg.get(IDENTIFIERS)
         identifers_cfg = IdentifiersConfiguration(identifers_cfg).validate()
@@ -1050,8 +1117,9 @@ class BcidSeqLibConfiguration(BarcodeSeqLibConfiguration):
         self.identifers_cfg = identifers_cfg
 
 
-class BcvSeqLibConfiguration(BaseVariantSeqLibConfiguration,
-                             BarcodeSeqLibConfiguration):
+class BcvSeqLibConfiguration(
+    BaseVariantSeqLibConfiguration, BarcodeSeqLibConfiguration
+):
     """
     Class representing the configuration of a
     :py:class:`~enrich2.libraries.barcodevariant.BcvSeqLib` object.
@@ -1074,14 +1142,13 @@ class BcvSeqLibConfiguration(BaseVariantSeqLibConfiguration,
     :py:class:`~BaseVariantSeqLibConfiguration`.
 
     """
+
     def __init__(self, cfg, init_fastq=True):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for BcvSeqLibConfiguration.")
 
-        BaseVariantSeqLibConfiguration.__init__(
-            self, cfg, init_fastq)
-        BarcodeSeqLibConfiguration.__init__(
-            self, cfg, init_fastq, reqiure_map=True)
+        BaseVariantSeqLibConfiguration.__init__(self, cfg, init_fastq)
+        BarcodeSeqLibConfiguration.__init__(self, cfg, init_fastq, reqiure_map=True)
 
         self.validate()
 
@@ -1109,6 +1176,7 @@ class IdOnlySeqLibConfiguration(BaseLibraryConfiguration):
     :py:class:`~BaseLibraryConfiguration`
 
     """
+
     def __init__(self, cfg):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for IdOnlySeqLib configuration.")
@@ -1138,6 +1206,7 @@ class BasicSeqLibConfiguration(BaseVariantSeqLibConfiguration):
     :py:class:`~BaseVariantSeqLibConfiguration`
 
     """
+
     def __init__(self, cfg, init_fastq=True):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for BasicSeqLibConfiguration.")
@@ -1178,19 +1247,24 @@ class ExperimentConfiguration(Configuration):
     :py:class:`~Configuration`
 
     """
+
     def __init__(self, cfg, init_from_gui=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for experiment configuration.")
 
         if CONDITIONS not in cfg:
-            raise KeyError("Missing required config value `{}` [{}]"
-                           "".format(CONDITIONS, self.__class__.__name__))
+            raise KeyError(
+                "Missing required config value `{}` [{}]"
+                "".format(CONDITIONS, self.__class__.__name__)
+            )
 
         has_scorer = not init_from_gui
         if not init_from_gui:
             if SCORER not in cfg:
-                raise KeyError("Missing required config value `{}` [{}]"
-                               "".format(SCORER, self.__class__.__name__))
+                raise KeyError(
+                    "Missing required config value `{}` [{}]"
+                    "".format(SCORER, self.__class__.__name__)
+                )
 
         self.store_cfg = StoreConfiguration(cfg, has_scorer).validate()
 
@@ -1200,8 +1274,7 @@ class ExperimentConfiguration(Configuration):
 
         self.condition_cfgs = []
         for cfg in condition_cfgs:
-            self.condition_cfgs.append(
-                ConditonConfiguration(cfg, init_from_gui))
+            self.condition_cfgs.append(ConditonConfiguration(cfg, init_from_gui))
         self.validate()
 
     def validate(self):
@@ -1209,8 +1282,9 @@ class ExperimentConfiguration(Configuration):
         Validate all attributes. Overrides parent method.
         """
         if len(self.condition_cfgs) == 0:
-            raise ValueError("At least 1 experimental condition must be "
-                             "present in an experiment.")
+            raise ValueError(
+                "At least 1 experimental condition must be " "present in an experiment."
+            )
 
         condition_names = []
         for cfg in self.condition_cfgs:
@@ -1218,8 +1292,10 @@ class ExperimentConfiguration(Configuration):
             condition_names.append(cfg.store_cfg.name)
 
         if len(set(condition_names)) != len(condition_names):
-            raise ValueError("Non-unique condition names in Experiment "
-                             "[{}].".format(self.__class__.__name__))
+            raise ValueError(
+                "Non-unique condition names in Experiment "
+                "[{}].".format(self.__class__.__name__)
+            )
 
         selection_names = [
             s_cfg.store_cfg.name
@@ -1227,8 +1303,10 @@ class ExperimentConfiguration(Configuration):
             for s_cfg in c_cfg.selection_cfgs
         ]
         if len(set(selection_names)) != len(selection_names):
-            raise ValueError("Non-unique selection names across conditions "
-                             "[{}].".format(self.__class__.__name__))
+            raise ValueError(
+                "Non-unique selection names across conditions "
+                "[{}].".format(self.__class__.__name__)
+            )
 
         self.store_cfg.validate()
         return self
@@ -1264,14 +1342,16 @@ class ConditonConfiguration(Configuration):
     :py:class:`~Configuration`
 
     """
+
     def __init__(self, cfg, init_from_gui=False):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for condition configuration.")
 
         if SELECTIONS not in cfg:
-            raise KeyError("Configuration is missing required config value "
-                           "`{}` [{}]".format(SELECTIONS,
-                                              self.__class__.__name__))
+            raise KeyError(
+                "Configuration is missing required config value "
+                "`{}` [{}]".format(SELECTIONS, self.__class__.__name__)
+            )
         self.selection_cfgs = []
         self.init_from_gui = init_from_gui
         self.store_cfg = StoreConfiguration(cfg, has_scorer=False)
@@ -1282,7 +1362,9 @@ class ConditonConfiguration(Configuration):
         for cfg in selection_cfgs:
             self.selection_cfgs.append(
                 SelectionConfiguration(
-                    cfg, has_scorer=False, init_from_gui=init_from_gui))
+                    cfg, has_scorer=False, init_from_gui=init_from_gui
+                )
+            )
         self.validate()
 
     def validate(self):
@@ -1291,8 +1373,9 @@ class ConditonConfiguration(Configuration):
         """
         if not self.init_from_gui:
             if len(self.selection_cfgs) == 0:
-                raise ValueError("At least 1 selection must be "
-                                 "present in a condition.")
+                raise ValueError(
+                    "At least 1 selection must be " "present in a condition."
+                )
         for cfg in self.selection_cfgs:
             cfg.validate()
         self.store_cfg.validate()
@@ -1333,12 +1416,13 @@ class SelectionConfiguration(Configuration):
     :py:class:`~Configuration`
 
     """
+
     _lib_constructors = {
         "BarcodeSeqLib": BarcodeSeqLibConfiguration,
         "BcidSeqLib": BcidSeqLibConfiguration,
         "BcvSeqLib": BcvSeqLibConfiguration,
         "IdOnlySeqLib": IdOnlySeqLibConfiguration,
-        "BasicSeqLib": BasicSeqLibConfiguration
+        "BasicSeqLib": BasicSeqLibConfiguration,
     }
 
     def __init__(self, cfg, has_scorer=True, init_from_gui=False):
@@ -1352,8 +1436,7 @@ class SelectionConfiguration(Configuration):
         self.store_cfg = StoreConfiguration(cfg, has_scorer).validate()
 
         if LIBRARIES not in cfg:
-            raise KeyError("Selection has no `{}` element.".format(
-                LIBRARIES))
+            raise KeyError("Selection has no `{}` element.".format(LIBRARIES))
 
         library_cfgs = cfg.get(LIBRARIES)
         if not isinstance(library_cfgs, list):
@@ -1373,31 +1456,36 @@ class SelectionConfiguration(Configuration):
         """
         if not self.init_from_gui:
             if len(self.lib_cfgs) == 0:
-                raise ValueError("At least 1 library must be "
-                                 "present in a selection.")
+                raise ValueError(
+                    "At least 1 library must be " "present in a selection."
+                )
 
             self.timepoints = set([l.timepoint for l in self.lib_cfgs])
             if 0 not in self.timepoints:
-                raise ValueError("Missing timepoint 0 [{}].".format(
-                    self.__class__.__name__))
+                raise ValueError(
+                    "Missing timepoint 0 [{}].".format(self.__class__.__name__)
+                )
 
             if len(self.timepoints) < 2:
                 raise ValueError(
-                    "Multiple timepoints required [{}].".format(
-                        self.__class__.__name__))
+                    "Multiple timepoints required [{}].".format(self.__class__.__name__)
+                )
 
             if self.store_cfg.has_scorer:
                 name = self.store_cfg.scorer_cfg.scorer_class.name
-                if len(self.timepoints) < 3 and name == 'Regression':
-                    raise ValueError("Insufficient number of timepoints for "
-                                     "regression scoring "
-                                     "[{}].".format(self.__class__.__name__))
+                if len(self.timepoints) < 3 and name == "Regression":
+                    raise ValueError(
+                        "Insufficient number of timepoints for "
+                        "regression scoring "
+                        "[{}].".format(self.__class__.__name__)
+                    )
 
-        num_names = len(
-            set([lib_cfg.store_cfg.name for lib_cfg in self.lib_cfgs]))
+        num_names = len(set([lib_cfg.store_cfg.name for lib_cfg in self.lib_cfgs]))
         if num_names != len(self.lib_cfgs):
-            raise ValueError("Libraries must have unique names within a "
-                             "selection [{}].".format(self.__class__.__name__))
+            raise ValueError(
+                "Libraries must have unique names within a "
+                "selection [{}].".format(self.__class__.__name__)
+            )
 
         for lib_cfg in self.lib_cfgs:
             lib_cfg.validate()
@@ -1442,6 +1530,7 @@ class StoreConfiguration(Configuration):
     :py:class:`~Configuration`
 
     """
+
     def __init__(self, cfg, has_scorer=True):
         if not isinstance(cfg, dict):
             raise TypeError("dict required for store configuration.")
@@ -1449,13 +1538,9 @@ class StoreConfiguration(Configuration):
             raise TypeError("Boolean required for 'has_storer'.")
 
         if has_scorer and SCORER not in cfg:
-            raise KeyError("Missing '{}' key from store configuration.".format(
-                SCORER
-            ))
+            raise KeyError("Missing '{}' key from store configuration.".format(SCORER))
         if NAME not in cfg:
-            raise KeyError("Missing '{}' key from store configuration.".format(
-                NAME
-            ))
+            raise KeyError("Missing '{}' key from store configuration.".format(NAME))
 
         self.scorer_cfg = cfg.get(SCORER, {})
         self.name = cfg.get(NAME)
@@ -1500,13 +1585,15 @@ class StoreConfiguration(Configuration):
             raise ValueError("Scorer config cannot be NoneType.")
 
         if self.has_store_path and not os.path.exists(self.store_path):
-            raise IOError('Specified store file "{}" not found'.format(
-                self.store_path))
+            raise IOError('Specified store file "{}" not found'.format(self.store_path))
 
-        elif self.has_store_path \
-                and os.path.splitext(self.store_path)[-1].lower() != ".h5":
-            raise IOError('Unrecognized store file extension for '
-                          '"{}"'.format(self.store_path))
+        elif (
+            self.has_store_path
+            and os.path.splitext(self.store_path)[-1].lower() != ".h5"
+        ):
+            raise IOError(
+                "Unrecognized store file extension for " '"{}"'.format(self.store_path)
+            )
 
         if self.has_output_dir:
             if not os.path.exists(self.output_dir):

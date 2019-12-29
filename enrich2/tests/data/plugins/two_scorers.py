@@ -18,11 +18,12 @@
 
 from enrich2.plugins.scoring import BaseScorerPlugin
 
+
 class CountsScorer(BaseScorerPlugin):
 
-    name = 'Counts Only'
-    version = '1.0'
-    author = 'Alan Rubin, Daniel Esposito'
+    name = "Counts Only"
+    version = "1.0"
+    author = "Alan Rubin, Daniel Esposito"
 
     def __init__(self, store_manager, options):
         super().__init__(store_manager, options)
@@ -36,9 +37,9 @@ class CountsScorer(BaseScorerPlugin):
 
 class CountsScorerTwo(BaseScorerPlugin):
 
-    name = 'Counts Only'
-    version = '1.0'
-    author = 'Alan Rubin, Daniel Esposito'
+    name = "Counts Only"
+    version = "1.0"
+    author = "Alan Rubin, Daniel Esposito"
 
     def __init__(self, store_manager, options):
         super().__init__(store_manager, options)

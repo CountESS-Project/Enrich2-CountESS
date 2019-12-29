@@ -33,9 +33,7 @@ from .variant import VariantSeqLib
 from ..base.utils import compute_md5, log_message
 
 
-__all__ = [
-    "BasicSeqLib"
-]
+__all__ = ["BasicSeqLib"]
 
 
 class BasicSeqLib(VariantSeqLib):
@@ -104,11 +102,10 @@ class BasicSeqLib(VariantSeqLib):
         from ..config.types import BasicSeqLibConfiguration
 
         if isinstance(cfg, dict):
-            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            init_fastq = bool(cfg.get("fastq", {}).get("reads", ""))
             cfg = BasicSeqLibConfiguration(cfg, init_fastq)
         elif not isinstance(cfg, BasicSeqLibConfiguration):
-            raise TypeError("`cfg` was neither a "              
-                            "BcidSeqLibConfiguration or dict.")
+            raise TypeError("`cfg` was neither a " "BcidSeqLibConfiguration or dict.")
 
         VariantSeqLib.configure(self, cfg)
 
@@ -129,7 +126,7 @@ class BasicSeqLib(VariantSeqLib):
             in a dictionary.
         """
         cfg = VariantSeqLib.serialize(self)
-        cfg['fastq'] = self.serialize_fastq()
+        cfg["fastq"] = self.serialize_fastq()
         return cfg
 
     def configure_fastq(self, cfg):
@@ -157,19 +154,19 @@ class BasicSeqLib(VariantSeqLib):
             Return a `dict` of filtering options that have non-default values.
         """
         fastq = dict(filters=self.serialize_filters())
-        fastq['reads'] = self.reads
-        fastq['read md5'] = compute_md5(self.reads)
+        fastq["reads"] = self.reads
+        fastq["read md5"] = compute_md5(self.reads)
 
         if self.revcomp_reads:
-            fastq['reverse'] = True
+            fastq["reverse"] = True
         else:
-            fastq['reverse'] = False
+            fastq["reverse"] = False
 
         if self.trim_start > 1:
-            fastq['start'] = self.trim_start
+            fastq["start"] = self.trim_start
 
         if self.trim_length < sys.maxsize:
-            fastq['length'] = self.trim_length
+            fastq["length"] = self.trim_length
 
         return fastq
 
@@ -182,7 +179,8 @@ class BasicSeqLib(VariantSeqLib):
         df_dict = dict()
         log_message(
             logging_callback=logging.info,
-            msg="Counting variants", extra={'oname': self.name}
+            msg="Counting variants",
+            extra={"oname": self.name},
         )
 
         max_mut_variants = 0
@@ -203,22 +201,22 @@ class BasicSeqLib(VariantSeqLib):
                     except KeyError:
                         df_dict[mutations] = 1
 
-        self.save_counts('variants', df_dict, raw=True)
+        self.save_counts("variants", df_dict, raw=True)
         del df_dict
 
         if self.aligner is not None:
             log_message(
                 logging_callback=logging.info,
                 msg="Aligned {} variants".format(self.aligner.calls),
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
             self.aligner_cache = None
 
         log_message(
             logging_callback=logging.info,
             msg="Removed {} total variants with excess "
-                "mutations".format(max_mut_variants),
-            extra={'oname': self.name}
+            "mutations".format(max_mut_variants),
+            extra={"oname": self.name},
         )
         self.save_filter_stats()
 
@@ -233,6 +231,6 @@ class BasicSeqLib(VariantSeqLib):
                 else:
                     self.counts_from_reads()
             self.save_filtered_counts(
-                'variants', "count >= {}".format(self.variant_min_count)
+                "variants", "count >= {}".format(self.variant_min_count)
             )
         self.count_synonymous()

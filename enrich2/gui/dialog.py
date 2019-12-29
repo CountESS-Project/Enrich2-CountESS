@@ -58,13 +58,13 @@ class CustomDialog(Toplevel):
     :py:class:`~Toplevel`
     """
 
-    def __init__(self, parent, title = None, body_frame_text=''):
+    def __init__(self, parent, title=None, body_frame_text=""):
         """
         Initialize a dialog.
         """
         Toplevel.__init__(self, parent)
 
-        self.withdraw() # remain invisible for now
+        self.withdraw()  # remain invisible for now
         # If the master is not viewable, don't
         # make the child transient, or else it
         # would be opened withdrawn
@@ -82,15 +82,13 @@ class CustomDialog(Toplevel):
         self.overall_frame = Frame(self)
 
         if body_frame_text:
-            self.body_frame = LabelFrame(
-                self.overall_frame, text=body_frame_text)
+            self.body_frame = LabelFrame(self.overall_frame, text=body_frame_text)
         else:
-            self.body_frame =Frame(self.overall_frame)
+            self.body_frame = Frame(self.overall_frame)
         self.initial_focus = self.body(self.body_frame)
 
         self.body_frame.grid(
-            column=self.column, row=self.row, sticky='nsew',
-            padx=5, pady=5
+            column=self.column, row=self.row, sticky="nsew", padx=5, pady=5
         )
         self.rowconfigure(self.row, weight=1)
         self.columnconfigure(self.column, weight=1)
@@ -100,8 +98,7 @@ class CustomDialog(Toplevel):
         self.buttonbox()
 
         self.button_box.grid(
-            column=self.column, row=self.row, sticky='e',
-            padx=5, pady=5
+            column=self.column, row=self.row, sticky="e", padx=5, pady=5
         )
         self.rowconfigure(self.row, weight=1)
         self.columnconfigure(self.column, weight=1)
@@ -117,10 +114,11 @@ class CustomDialog(Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.cancel)
 
         if self.parent is not None:
-            self.geometry("+%d+%d" % (parent.winfo_rootx()+50,
-                                      parent.winfo_rooty()+50))
+            self.geometry(
+                "+%d+%d" % (parent.winfo_rootx() + 50, parent.winfo_rooty() + 50)
+            )
 
-        self.deiconify() # become visible now
+        self.deiconify()  # become visible now
 
         self.initial_focus.focus_set()
 
@@ -154,8 +152,7 @@ class CustomDialog(Toplevel):
         """
         w = Button(self.button_box, text="OK", width=10, command=self.ok)
         w.grid(column=0, row=0, padx=5, pady=5)
-        w = Button(
-            self.button_box, text="Cancel", width=10, command=self.cancel)
+        w = Button(self.button_box, text="Cancel", width=10, command=self.cancel)
         w.grid(column=1, row=0, padx=5, pady=5)
         self.button_box.rowconfigure(0, weight=1)
         self.button_box.columnconfigure(0, weight=1)
@@ -169,7 +166,7 @@ class CustomDialog(Toplevel):
         Handles the 'ok' button click.
         """
         if not self.validate():
-            self.initial_focus.focus_set() # put focus back
+            self.initial_focus.focus_set()  # put focus back
             return
 
         self.withdraw()

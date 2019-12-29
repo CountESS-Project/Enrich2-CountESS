@@ -27,10 +27,10 @@ CFG_DIR = "data/config/barcodevariant/"
 READS_DIR = create_file_path("barcodevariant/", "data/reads/")
 RESULT_DIR = "data/result/barcodevariant/"
 
-LIBTYPE = 'barcodevariant'
-FILE_EXT = 'tsv'
-FILE_SEP = '\t'
-CODING_STR = 'n'
+LIBTYPE = "barcodevariant"
+FILE_EXT = "tsv"
+FILE_SEP = "\t"
+CODING_STR = "n"
 
 
 # -------------------------------------------------------------------------- #
@@ -44,38 +44,44 @@ class TestBcvSeqLibCountsIntegrated(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'integrated'
+        prefix = "integrated"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/{}_barcode_map.txt".format(
-            READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/{}_barcode_map.txt".format(READS_DIR, prefix)
 
         # Set all filter parameters
-        cfg['fastq']['filters']['max N'] = 0
-        cfg['fastq']['filters']['chastity'] = True
-        cfg['fastq']['filters']['avg quality'] = 38
-        cfg['fastq']['filters']['min quality'] = 20
+        cfg["fastq"]["filters"]["max N"] = 0
+        cfg["fastq"]["filters"]["chastity"] = True
+        cfg["fastq"]["filters"]["avg quality"] = 38
+        cfg["fastq"]["filters"]["min quality"] = 20
 
         # Set trim parameters
-        cfg['fastq']['start'] = 4
-        cfg['fastq']['length'] = 3
-        cfg['fastq']['reverse'] = True
+        cfg["fastq"]["start"] = 4
+        cfg["fastq"]["length"] = 3
+        cfg["fastq"]["reverse"] = True
 
         # Set barcode parameters
-        cfg['barcodes']['min count'] = 2
+        cfg["barcodes"]["min count"] = 2
 
         # # Set Variant parameters
-        cfg['variants']['wild type']['sequence'] = "TTTTTT"
-        cfg['variants']['wild type']['reference offset'] = 3
-        cfg['variants']['min count'] = 3
-        cfg['variants']['max mutations'] = 1
-        cfg['variants']['use aligner'] = True
+        cfg["variants"]["wild type"]["sequence"] = "TTTTTT"
+        cfg["variants"]["wild type"]["reference offset"] = 3
+        cfg["variants"]["min count"] = 3
+        cfg["variants"]["max mutations"] = 1
+        cfg["variants"]["use aligner"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -97,20 +103,26 @@ class TestBcvSeqLibCountsBarcodesMinCountFilter(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'barcodes_mincount'
+        prefix = "barcodes_mincount"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['barcodes']['min count'] = 2
+        cfg["barcodes"]["min count"] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -133,20 +145,26 @@ class TestBcvSeqLibCountsCountsOnlyMode(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'counts_only'
+        prefix = "counts_only"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['counts file'] = '{}/{}.tsv'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["counts file"] = "{}/{}.tsv".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['barcodes']['min count'] = 4
+        cfg["barcodes"]["min count"] = 4
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -169,20 +187,26 @@ class TestBcvSeqLibCountsAvgQFQFilter(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'filter_avgq'
+        prefix = "filter_avgq"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['fastq']['filters']['avg quality'] = 39
+        cfg["fastq"]["filters"]["avg quality"] = 39
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -205,20 +229,26 @@ class TestBcvSeqLibCountsMinQFQFilter(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'filter_minq'
+        prefix = "filter_minq"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['fastq']['filters']['min quality'] = 39
+        cfg["fastq"]["filters"]["min quality"] = 39
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -241,20 +271,26 @@ class TestBcvSeqLibCountsMaxNFQFilter(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'filter_maxn'
+        prefix = "filter_maxn"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['fastq']['filters']['max N'] = 0
+        cfg["fastq"]["filters"]["max N"] = 0
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -277,20 +313,26 @@ class TestBcvSeqLibCountsNotChasteFQFilter(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'filter_chastity'
+        prefix = "filter_chastity"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['fastq']['filters']['chastity'] = True
+        cfg["fastq"]["filters"]["chastity"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -313,17 +355,23 @@ class TestBcvSeqLibDetectMultiMutations(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'multi_mut'
+        prefix = "multi_mut"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/{}_barcode_map.txt".format(
-            READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/{}_barcode_map.txt".format(READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -347,17 +395,23 @@ class TestBcvSeqLibDetectSingleMutations(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'single_mut'
+        prefix = "single_mut"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/{}_barcode_map.txt".format(
-            READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/{}_barcode_map.txt".format(READS_DIR, prefix)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -380,20 +434,26 @@ class TestBcvSeqLibWithRevcomp(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'revcomp'
+        prefix = "revcomp"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/{}_barcode_map.txt".format(
-            READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/{}_barcode_map.txt".format(READS_DIR, prefix)
 
         # Set barcode parameters
-        cfg['fastq']['reverse'] = True
+        cfg["fastq"]["reverse"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -416,21 +476,26 @@ class TestBcvSeqLibWithTrimLengthAt3(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'trim_len'
+        prefix = "trim_len"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes'][
-            'map file'] = "{}/{}_barcode_map.txt".format(
-            READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/{}_barcode_map.txt".format(READS_DIR, prefix)
 
         # Set barcode parameters
-        cfg['fastq']['length'] = 3
+        cfg["fastq"]["length"] = 3
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -452,21 +517,26 @@ class TestBcvSeqLibWithTrimStartAt4(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'trim_start'
+        prefix = "trim_start"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes'][
-            'map file'] = "{}/{}_barcode_map.txt".format(
-            READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/{}_barcode_map.txt".format(READS_DIR, prefix)
 
         # Set barcode parameters
-        cfg['fastq']['start'] = 4
+        cfg["fastq"]["start"] = 4
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -488,21 +558,26 @@ class TestBcvSeqLibDetectSynonymous(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'synonymous'
+        prefix = "synonymous"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(
-            READS_DIR, prefix)
-        cfg['barcodes'][
-            'map file'] = "{}/{}_barcode_map.txt".format(
-            READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/{}_barcode_map.txt".format(READS_DIR, prefix)
 
         # Set barcode parameters
-        cfg['variants']['wild type']['sequence'] = 'CCTCCT'
+        cfg["variants"]["wild type"]["sequence"] = "CCTCCT"
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -524,16 +599,23 @@ class TestBcvSeqLibDetectWildtype(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'wildtype'
+        prefix = "wildtype"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -556,19 +638,26 @@ class TestBcvSeqLibWithVariantMaxMutationsFilter(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'variant_maxmutations'
+        prefix = "variant_maxmutations"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['variants']['max mutations'] = 1
+        cfg["variants"]["max mutations"] = 1
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -590,19 +679,26 @@ class TestBcvSeqLibWithVariantMinCountFilter(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'variant_mincount'
+        prefix = "variant_mincount"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['variants']['min count'] = 2
+        cfg["variants"]["min count"] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -625,19 +721,26 @@ class TestBcvSeqLibWithReferenceOffset(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'variant_refoffset'
+        prefix = "variant_refoffset"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/barcode_map.txt".format(
-            READS_DIR)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/barcode_map.txt".format(READS_DIR)
 
         # Set barcode parameters
-        cfg['variants']['wild type']['reference offset'] = 3
+        cfg["variants"]["wild type"]["reference offset"] = 3
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 
@@ -660,19 +763,26 @@ class TestBcvSeqLibWithUseAlignerSetting(unittest.TestCase):
     """
 
     def setUp(self):
-        prefix = 'variant_use_aligner'
+        prefix = "variant_use_aligner"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/{}.fq'.format(READS_DIR, prefix)
-        cfg['barcodes']['map file'] = "{}/{}_barcode_map.txt".format(
-            READS_DIR, prefix)
+        cfg["fastq"]["reads"] = "{}/{}.fq".format(READS_DIR, prefix)
+        cfg["barcodes"]["map file"] = "{}/{}_barcode_map.txt".format(READS_DIR, prefix)
 
         # Set barcode parameters
-        cfg['variants']['use aligner'] = True
+        cfg["variants"]["use aligner"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BcvSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype=prefix, scoring_method='', logr_method='', coding='noncoding'
+            store_constructor=BcvSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype=prefix,
+            scoring_method="",
+            logr_method="",
+            coding="noncoding",
         )
         self.test_component.setUp()
 

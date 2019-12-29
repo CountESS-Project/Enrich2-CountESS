@@ -33,9 +33,7 @@ from abc import ABC, abstractclassmethod
 from ..base.utils import log_message
 
 
-
 class StoreInterface(ABC):
-
     @abstractclassmethod
     def __getitem__(self, item):
         pass
@@ -73,8 +71,7 @@ class StoreInterface(ABC):
         pass
 
     @abstractclassmethod
-    def select_as_multiple(self, keys, where, columns=None, selector=None,
-                           chunk=False):
+    def select_as_multiple(self, keys, where, columns=None, selector=None, chunk=False):
         pass
 
     @abstractclassmethod
@@ -98,7 +95,7 @@ class StoreInterface(ABC):
         pass
 
     @abstractclassmethod
-    def open(self, path, mode='a'):
+    def open(self, path, mode="a"):
         pass
 
     @abstractclassmethod
@@ -163,7 +160,7 @@ class HDFStore(StoreInterface):
     
     """
 
-    def __init__(self, path='', mode='a', chunksize=10000, format='table'):
+    def __init__(self, path="", mode="a", chunksize=10000, format="table"):
         if not isinstance(path, str):
             raise TypeError("`path` must be a string.")
         if not isinstance(mode, str):
@@ -254,7 +251,7 @@ class HDFStore(StoreInterface):
         `str`
             The backend being used by this StoreInterface.
         """
-        return 'pandas.HDFStore'
+        return "pandas.HDFStore"
 
     def keys(self):
         """
@@ -282,7 +279,7 @@ class HDFStore(StoreInterface):
             self._store.close()
         self._store = None
 
-    def open(self, path, mode='a'):
+    def open(self, path, mode="a"):
         """
         Opens the store pointed at by `path`. Closes the current store first 
         if there is one before opening the new store.
@@ -337,41 +334,46 @@ class HDFStore(StoreInterface):
 
         has_columns = False
         if where is not None:
-            has_columns = (where.find('columns=') >= 0) or \
-                          (where.find('columns =') >= 0) or \
-                          (where.find('column=') >= 0) or \
-                          (where.find('column =') >= 0) or \
-                          (where.find('columns in') >= 0) or \
-                          (where.find('column in') >= 0)
+            has_columns = (
+                (where.find("columns=") >= 0)
+                or (where.find("columns =") >= 0)
+                or (where.find("column=") >= 0)
+                or (where.find("column =") >= 0)
+                or (where.find("columns in") >= 0)
+                or (where.find("column in") >= 0)
+            )
         if has_columns:
-            raise ValueError("Cannot use keyword 'column(s)' in 'where' when "
-                             "using select_as_multiple. Use 'columns' to "
-                             "specify the columns to return and "
-                             "'where' to specify selection criteria.")
+            raise ValueError(
+                "Cannot use keyword 'column(s)' in 'where' when "
+                "using select_as_multiple. Use 'columns' to "
+                "specify the columns to return and "
+                "'where' to specify selection criteria."
+            )
         if has_columns and chunk:
-            raise ValueError("Cannot select columns in 'where' and chunk "
-                             "simultaneously. This is not supported "
-                             "behviour in Pandas. When chunking, use "
-                             "'columns' to specify the columns to return and"
-                             "'where' to specify selection criteria.")
+            raise ValueError(
+                "Cannot select columns in 'where' and chunk "
+                "simultaneously. This is not supported "
+                "behviour in Pandas. When chunking, use "
+                "'columns' to specify the columns to return and"
+                "'where' to specify selection criteria."
+            )
 
         result = self._store.select(
             key=key,
             where=where,
             columns=columns,
-            chunksize=self.chunksize if chunk else None
+            chunksize=self.chunksize if chunk else None,
         )
-        if where is None and columns == ['index']:
+        if where is None and columns == ["index"]:
             pass
         else:
             if not chunk and result.empty:
                 log_message(
                     logging_callback=logging.warning,
                     msg="`select` with the following attributes: "
-                        "key='{}', where='{}', columns={}, chunk={} "
-                        "returned an empty DataFrame.".format(
-                            key, where, columns, chunk),
-                    extra={'oname': self.__class__.__name__}
+                    "key='{}', where='{}', columns={}, chunk={} "
+                    "returned an empty DataFrame.".format(key, where, columns, chunk),
+                    extra={"oname": self.__class__.__name__},
                 )
         return result
 
@@ -396,22 +398,20 @@ class HDFStore(StoreInterface):
         if not isinstance(column, str):
             raise TypeError("`column` must be a string.")
 
-        result = self._store.select_column(
-            key=key,
-            column=column
-        )
+        result = self._store.select_column(key=key, column=column)
         if result.empty:
             log_message(
                 logging_callback=logging.warning,
                 msg="`select_column` with the following attributes: "
-                    "key='{}', column='{}' returned an empty "
-                    "DataFrame.".format(key, column),
-                extra={'oname': self.__class__.__name__}
+                "key='{}', column='{}' returned an empty "
+                "DataFrame.".format(key, column),
+                extra={"oname": self.__class__.__name__},
             )
         return result
 
-    def select_as_multiple(self, keys, where=None,
-                           columns=None, selector=None, chunk=False):
+    def select_as_multiple(
+        self, keys, where=None, columns=None, selector=None, chunk=False
+    ):
         """
         Retrieve pandas objects stored at keys the current store, and 
         optionally apply filtering to each based on the `where` criteria.
@@ -458,42 +458,49 @@ class HDFStore(StoreInterface):
 
         has_columns = False
         if where is not None:
-            has_columns = (where.find('columns=') >= 0) or \
-                          (where.find('columns =') >= 0) or \
-                          (where.find('column=') >= 0) or \
-                          (where.find('column =') >= 0) or \
-                          (where.find('columns in') >= 0) or \
-                          (where.find('column in') >= 0)
+            has_columns = (
+                (where.find("columns=") >= 0)
+                or (where.find("columns =") >= 0)
+                or (where.find("column=") >= 0)
+                or (where.find("column =") >= 0)
+                or (where.find("columns in") >= 0)
+                or (where.find("column in") >= 0)
+            )
         if has_columns:
-            raise ValueError("Cannot use keyword 'column(s)' in 'where' when "
-                             "using select_as_multiple. Use 'columns' to "
-                             "specify the columns to return and "
-                             "'where' to specify selection criteria.")
+            raise ValueError(
+                "Cannot use keyword 'column(s)' in 'where' when "
+                "using select_as_multiple. Use 'columns' to "
+                "specify the columns to return and "
+                "'where' to specify selection criteria."
+            )
         if has_columns and chunk:
-            raise ValueError("Cannot select columns in 'where' and chunk "
-                             "simultaneously. This is not supported "
-                             "behviour in Pandas. When chunking, use "
-                             "'columns' to specify the columns to return and"
-                             "'where' to specify selection criteria.")
+            raise ValueError(
+                "Cannot select columns in 'where' and chunk "
+                "simultaneously. This is not supported "
+                "behviour in Pandas. When chunking, use "
+                "'columns' to specify the columns to return and"
+                "'where' to specify selection criteria."
+            )
 
         result = self._store.select_as_multiple(
             keys=keys,
             where=where,
             columns=columns,
             selector=selector,
-            chunksize=self.chunksize if chunk else None
+            chunksize=self.chunksize if chunk else None,
         )
-        if where is None and columns == ['index']:
+        if where is None and columns == ["index"]:
             pass
         else:
             if not chunk and result.empty:
                 log_message(
                     logging_callback=logging.warning,
                     msg="`select_as_multiple` with the following attributes: "
-                        "keys={}, where='{}', columns={}, selector='{}', "
-                        "chunk={} returned an empty DataFrame.".format(
-                            keys, where, columns, selector, chunk),
-                    extra={'oname': self.__class__.__name__}
+                    "keys={}, where='{}', columns={}, selector='{}', "
+                    "chunk={} returned an empty DataFrame.".format(
+                        keys, where, columns, selector, chunk
+                    ),
+                    extra={"oname": self.__class__.__name__},
                 )
         return result
 
@@ -542,8 +549,8 @@ class HDFStore(StoreInterface):
                 log_message(
                     logging_callback=logging.warning,
                     msg="Appending data with overlapping index. This will "
-                        "duplicate entries.",
-                    extra={'oname': self.__class__.__name__}
+                    "duplicate entries.",
+                    extra={"oname": self.__class__.__name__},
                 )
 
         if isinstance(value.columns, pd.MultiIndex):
@@ -551,21 +558,21 @@ class HDFStore(StoreInterface):
         else:
             if min_itemsize is None and len(value.index):
                 max_index_length = max(len(x) for x in value.index)
-                min_itemsize = {'index': max_index_length}
+                min_itemsize = {"index": max_index_length}
 
             if data_columns is None:
                 self._store.append(
                     key=key,
                     value=value,
                     min_itemsize=min_itemsize,
-                    data_columns=list(value.columns)
+                    data_columns=list(value.columns),
                 )
             else:
                 self._store.append(
                     key=key,
                     value=value,
                     min_itemsize=min_itemsize,
-                    data_columns=list(data_columns)
+                    data_columns=list(data_columns),
                 )
 
     def put(self, key, value, data_columns=None, min_itemsize=None, append=False):
@@ -596,32 +603,34 @@ class HDFStore(StoreInterface):
                 log_message(
                     logging_callback=logging.warning,
                     msg="Appending data with overlapping index. This will "
-                        "duplicate entries.",
-                    extra={'oname': self.__class__.__name__}
+                    "duplicate entries.",
+                    extra={"oname": self.__class__.__name__},
                 )
 
         if isinstance(value.columns, pd.MultiIndex):
-            self._store.put(key, value, format='table', append=append)
+            self._store.put(key, value, format="table", append=append)
         else:
             if min_itemsize is None and len(value.index):
                 max_index_length = max(len(x) for x in value.index)
-                min_itemsize = {'index': max_index_length}
+                min_itemsize = {"index": max_index_length}
 
             if data_columns is None:
                 self._store.put(
-                    key, value,
+                    key,
+                    value,
                     format=self._format,
                     append=append,
                     min_itemsize=min_itemsize,
-                    data_columns=list(value.columns)
+                    data_columns=list(value.columns),
                 )
             else:
                 self._store.put(
-                    key, value,
+                    key,
+                    value,
                     format=self._format,
                     append=append,
                     min_itemsize=min_itemsize,
-                    data_columns=list(data_columns)
+                    data_columns=list(data_columns),
                 )
 
     def clear(self):
@@ -629,7 +638,7 @@ class HDFStore(StoreInterface):
         Clears all data in the store by closing and re-opening in write mode.
         """
         self.ensure_open()
-        self.open(self.filename, mode='w')
+        self.open(self.filename, mode="w")
 
     def check(self, key):
         """
@@ -692,12 +701,12 @@ class HDFStore(StoreInterface):
             try:
                 metadata = self.get_metadata(key)
                 metadata.update(data)
-                self._store.get_storer(key).attrs['enrich2'] = metadata
+                self._store.get_storer(key).attrs["enrich2"] = metadata
             except AttributeError:
-                self._store.get_storer(key).attrs['enrich2'] = data
+                self._store.get_storer(key).attrs["enrich2"] = data
         else:
             try:
-                self._store.get_storer(key).attrs['enrich2'] = data
+                self._store.get_storer(key).attrs["enrich2"] = data
             except KeyError:
                 raise KeyError("Key '{}' not found in store.".format(key))
 
@@ -720,7 +729,7 @@ class HDFStore(StoreInterface):
             raise KeyError("Key '{}' not found in store.".format(key))
 
         try:
-            return self._store.get_storer(key).attrs['enrich2']
+            return self._store.get_storer(key).attrs["enrich2"]
         except AttributeError:
             return {}
         except KeyError:
@@ -753,5 +762,6 @@ class HDFStore(StoreInterface):
         Raises a ValueError if there is no open store.
         """
         if not self.is_open():
-            raise ValueError("Cannot perform store operation if no store has"
-                             " been opened.")
+            raise ValueError(
+                "Cannot perform store operation if no store has" " been opened."
+            )

@@ -28,10 +28,9 @@ RESULT_DIR = "data/result/selection/"
 
 
 class TestSelectionRaisesValueErrorOnlyWTCounts(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data("selection_valueerror_only_wt.json", CFG_PATH)
-        cfg = update_cfg_file(cfg, 'counts', 'wt')
+        cfg = update_cfg_file(cfg, "counts", "wt")
         obj = Selection()
         obj.force_recalculate = False
         obj.component_outliers = False

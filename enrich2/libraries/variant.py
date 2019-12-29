@@ -46,7 +46,7 @@ __all__ = [
     "has_indel",
     "has_unresolvable",
     "protein_variant",
-    "VariantSeqLib"
+    "VariantSeqLib",
 ]
 
 
@@ -135,9 +135,8 @@ def single2hgvs(s):
         Returns a list of HGVS variants.
     """
     _validate_str(s)
-    t = re.findall('[A-Z*]\d+[A-Z*]', s)
-    return ["p.{}{}{}".format(AA_CODES[x[0]], x[1:-1], AA_CODES[x[-1]])
-            for x in t]
+    t = re.findall("[A-Z*]\d+[A-Z*]", s)
+    return ["p.{}{}{}".format(AA_CODES[x[0]], x[1:-1], AA_CODES[x[-1]]) for x in t]
 
 
 def get_variant_type(variant):
@@ -158,13 +157,13 @@ def get_variant_type(variant):
         and synonymous special variants will return ``None``.
     """
     _validate_str(variant)
-    v = variant.split(', ')[0]  # test first token of multi-mutant
+    v = variant.split(", ")[0]  # test first token of multi-mutant
     if re_protein.match(v) is not None:
-        return 'protein'
+        return "protein"
     elif re_coding.match(v) is not None:
-        return 'coding'
+        return "coding"
     elif re_noncoding.match(v) is not None:
-        return 'noncoding'
+        return "noncoding"
     else:
         return None
 
@@ -238,7 +237,7 @@ def has_unresolvable(variant):
         ``True`` if there is an unresolvable change, else ``False``
     """
     _validate_str(variant)
-    if AA_CODES['?'] in variant:
+    if AA_CODES["?"] in variant:
         return True
     else:
         return False
@@ -333,6 +332,7 @@ class VariantSeqLib(SeqLib):
     :py:class:`~enrich2.libraries.barcodevariant.BcvSeqLib`
     
     """
+
     def __init__(self):
         SeqLib.__init__(self)
         self.wt = WildTypeSequence(self.name)
@@ -340,9 +340,9 @@ class VariantSeqLib(SeqLib):
         self.aligner_cache = None
         self.variant_min_count = 0
         self.max_mutations = None
-        
+
         # 'synonymous' label may be added in configure() if wt is coding
-        self.add_label('variants')
+        self.add_label("variants")
 
     def configure(self, cfg):
         """
@@ -358,17 +358,18 @@ class VariantSeqLib(SeqLib):
         from ..config.types import BaseVariantSeqLibConfiguration
 
         if isinstance(cfg, dict):
-            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            init_fastq = bool(cfg.get("fastq", {}).get("reads", ""))
             cfg = BaseVariantSeqLibConfiguration(cfg, init_fastq)
         elif not isinstance(cfg, BaseVariantSeqLibConfiguration):
-            raise TypeError("`cfg` was neither a "
-                            "BaseVariantSeqLibConfiguration or dict.")
+            raise TypeError(
+                "`cfg` was neither a " "BaseVariantSeqLibConfiguration or dict."
+            )
 
         SeqLib.configure(self, cfg)
         self.wt.configure(cfg.variants_cfg.wildtype_cfg)
 
         if self.is_coding():
-            self.add_label('synonymous')
+            self.add_label("synonymous")
 
         self.variant_min_count = cfg.variants_cfg.min_count
         self.max_mutations = cfg.variants_cfg.max_mutations
@@ -392,13 +393,13 @@ class VariantSeqLib(SeqLib):
         """
         cfg = SeqLib.serialize(self)
 
-        cfg['variants'] = dict()
-        cfg['variants']['wild type'] = self.wt.serialize()
-        cfg['variants']['use aligner'] = self.aligner is not None
+        cfg["variants"] = dict()
+        cfg["variants"]["wild type"] = self.wt.serialize()
+        cfg["variants"]["use aligner"] = self.aligner is not None
         if self.max_mutations != DEFAULT_MAX_MUTATIONS:
-            cfg['variants']['max mutations'] = self.max_mutations
+            cfg["variants"]["max mutations"] = self.max_mutations
         if self.variant_min_count > 0:
-            cfg['variants']['min count'] = self.variant_min_count
+            cfg["variants"]["min count"] = self.variant_min_count
 
         return cfg
 
@@ -426,8 +427,7 @@ class VariantSeqLib(SeqLib):
         if self.wt is not None:
             return True
         else:
-            raise ValueError(
-                "Wild type not set properly [{}]".format(self.name))
+            raise ValueError("Wild type not set properly [{}]".format(self.name))
 
     def align_variant(self, variant_dna):
         """
@@ -463,18 +463,18 @@ class VariantSeqLib(SeqLib):
             if cat == "match":
                 continue
             elif cat == "mismatch":
-                mut = "{pre}>{post}".format(pre=self.wt.dna_seq[x],
-                                            post=variant_dna[y])
+                mut = "{pre}>{post}".format(pre=self.wt.dna_seq[x], post=variant_dna[y])
             elif cat == "insertion":
                 if y > length:
-                    dup = variant_dna[y:y + length]
-                    if dup == variant_dna[y - length:y]:
+                    dup = variant_dna[y : y + length]
+                    if dup == variant_dna[y - length : y]:
                         mut = "dup{seq}".format(seq=dup)
                     else:
                         mut = "_{pos}ins{seq}".format(pos=x + 2, seq=dup)
                 else:
-                    mut = "_{pos}ins{seq}".format(pos=x + 2,
-                                                  seq=variant_dna[y:y + length])
+                    mut = "_{pos}ins{seq}".format(
+                        pos=x + 2, seq=variant_dna[y : y + length]
+                    )
             elif cat == "deletion":
                 mut = "_{pos}del".format(pos=x + length)
             mutations.append((x, mut))
@@ -510,8 +510,10 @@ class VariantSeqLib(SeqLib):
             if the variant was discarded due to excess mismatches.
         """
         if not re.match("^[ACGTNXacgtnx]+$", variant_dna):
-            raise ValueError("Variant DNA sequence contains unexpected "
-                             "characters [{}]".format(self.name))
+            raise ValueError(
+                "Variant DNA sequence contains unexpected "
+                "characters [{}]".format(self.name)
+            )
 
         variant_dna = variant_dna.upper()
 
@@ -524,8 +526,14 @@ class VariantSeqLib(SeqLib):
             mutations = list()
             for i in range(len(variant_dna)):
                 if variant_dna[i] != self.wt.dna_seq[i]:
-                    mutations.append((i, "{pre}>{post}".format(
-                        pre=self.wt.dna_seq[i], post=variant_dna[i])))
+                    mutations.append(
+                        (
+                            i,
+                            "{pre}>{post}".format(
+                                pre=self.wt.dna_seq[i], post=variant_dna[i]
+                            ),
+                        )
+                    )
                     if len(mutations) > self.max_mutations:
                         if self.aligner is not None:
                             mutations = self.align_variant(variant_dna)
@@ -544,9 +552,9 @@ class VariantSeqLib(SeqLib):
             variant_protein = ""
             for i in range(0, len(variant_dna), 3):
                 try:
-                    variant_protein += CODON_TABLE[variant_dna[i:i + 3]]
+                    variant_protein += CODON_TABLE[variant_dna[i : i + 3]]
                 except KeyError:  # garbage codon due to indel, X, or N
-                    variant_protein += '?'
+                    variant_protein += "?"
 
             for pos, change in mutations:
                 ref_dna_pos = pos + self.wt.dna_offset + 1
@@ -554,16 +562,15 @@ class VariantSeqLib(SeqLib):
                 mut = "c.{pos}{change}".format(pos=ref_dna_pos, change=change)
                 if has_indel(change):
                     mut += " (p.{pre}{pos}fs)".format(
-                        pre=AA_CODES[self.wt.protein_seq[pos // 3]],
-                        pos=ref_pro_pos
+                        pre=AA_CODES[self.wt.protein_seq[pos // 3]], pos=ref_pro_pos
                     )
-                elif variant_protein[pos//3] == self.wt.protein_seq[pos // 3]:
+                elif variant_protein[pos // 3] == self.wt.protein_seq[pos // 3]:
                     mut += " (p.=)"
                 else:
                     mut += " (p.{pre}{pos}{post})".format(
                         pre=AA_CODES[self.wt.protein_seq[pos // 3]],
                         pos=ref_pro_pos,
-                        post=AA_CODES[variant_protein[pos // 3]]
+                        post=AA_CODES[variant_protein[pos // 3]],
                     )
                 mutation_strings.append(mut)
         else:
@@ -573,7 +580,7 @@ class VariantSeqLib(SeqLib):
                 mutation_strings.append(mut)
 
         if len(mutation_strings) > 0:
-            variant_string = ', '.join(mutation_strings)
+            variant_string = ", ".join(mutation_strings)
         else:
             variant_string = WILD_TYPE_VARIANT
         return variant_string
@@ -599,7 +606,7 @@ class VariantSeqLib(SeqLib):
             log_message(
                 logging_callback=logging.warning,
                 msg="Cannot count synonymous mutations in noncoding data",
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
             return
 
@@ -609,23 +616,23 @@ class VariantSeqLib(SeqLib):
         log_message(
             logging_callback=logging.info,
             msg="Counting synonymous variants",
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
         df_dict = dict()
 
-        for variant, count in self.store['/main/variants/counts'].iterrows():
+        for variant, count in self.store["/main/variants/counts"].iterrows():
             if variant == WILD_TYPE_VARIANT:
-                df_dict[variant] = count['count']
+                df_dict[variant] = count["count"]
             else:
                 variant = protein_variant(variant)
                 if len(variant) == 0:
                     variant = SYNONYMOUS_VARIANT
                 try:
-                    df_dict[variant] += count['count']
+                    df_dict[variant] += count["count"]
                 except KeyError:
-                    df_dict[variant] = count['count']
+                    df_dict[variant] = count["count"]
 
-        self.save_counts('synonymous', df_dict, raw=False)
+        self.save_counts("synonymous", df_dict, raw=False)
         del df_dict
 
     def report_filtered_variant(self, variant, count):
@@ -644,6 +651,6 @@ class VariantSeqLib(SeqLib):
         log_message(
             logging_callback=logging.debug,
             msg="Filtered variant (quantity={n}) (excess mutations)"
-                      "\n{read!s}".format(n=count, read=variant),
-            extra={'oname': self.name}
+            "\n{read!s}".format(n=count, read=variant),
+            extra={"oname": self.name},
         )

@@ -29,25 +29,33 @@ READS_DIR = "data/reads/selection/"
 RESULT_DIR = "data/result/selection/"
 
 DRIVER = "runTest"
-LIBTYPE = 'barcode'
-FILE_EXT = 'tsv'
-FILE_SEP = '\t'
+LIBTYPE = "barcode"
+FILE_EXT = "tsv"
+FILE_SEP = "\t"
 
 
 class TestSelectionTimepointMerge(unittest.TestCase):
-
     def setUp(self):
-        scoring = 'counts'
-        logr = 'wt'
+        scoring = "counts"
+        logr = "wt"
         cfg = load_config_data(CFG_FILE, CFG_DIR)
         cfg = update_cfg_file(cfg, scoring, logr)
         params = deepcopy(DEFAULT_STORE_PARAMS)
 
         self.general_test_component = HDF5TestComponent(
-            store_constructor=Selection, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, params=params,
-            verbose=False, libtype=LIBTYPE,
-            scoring_method='timepoint_merge', logr_method='', coding='')
+            store_constructor=Selection,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            params=params,
+            verbose=False,
+            libtype=LIBTYPE,
+            scoring_method="timepoint_merge",
+            logr_method="",
+            coding="",
+        )
         self.general_test_component.setUp()
 
     def tearDown(self):

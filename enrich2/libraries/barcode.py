@@ -33,9 +33,7 @@ from .seqlib import SeqLib
 from ..base.utils import compute_md5, log_message
 
 
-__all__ = [
-    "BarcodeSeqLib"
-]
+__all__ = ["BarcodeSeqLib"]
 
 
 class BarcodeSeqLib(SeqLib):
@@ -99,7 +97,7 @@ class BarcodeSeqLib(SeqLib):
         self.trim_start = None
         self.trim_length = None
         self.barcode_min_count = 0
-        self.add_label('barcodes')
+        self.add_label("barcodes")
 
     def configure(self, cfg):
         """
@@ -114,11 +112,12 @@ class BarcodeSeqLib(SeqLib):
         from ..config.types import BarcodeSeqLibConfiguration
 
         if isinstance(cfg, dict):
-            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            init_fastq = bool(cfg.get("fastq", {}).get("reads", ""))
             cfg = BarcodeSeqLibConfiguration(cfg, init_fastq)
         elif not isinstance(cfg, BarcodeSeqLibConfiguration):
-            raise TypeError("`cfg` was neither a "
-                            "BarcodeSeqLibConfiguration or dict.")
+            raise TypeError(
+                "`cfg` was neither a " "BarcodeSeqLibConfiguration or dict."
+            )
 
         SeqLib.configure(self, cfg)
         self.barcode_min_count = cfg.barcodes_cfg.min_count
@@ -140,10 +139,10 @@ class BarcodeSeqLib(SeqLib):
             in a dictionary.
         """
         cfg = SeqLib.serialize(self)
-        cfg['barcodes'] = dict()
+        cfg["barcodes"] = dict()
         if self.barcode_min_count > 0:
-            cfg['barcodes']['min count'] = self.barcode_min_count
-        cfg['fastq'] = self.serialize_fastq()
+            cfg["barcodes"]["min count"] = self.barcode_min_count
+        cfg["fastq"] = self.serialize_fastq()
         return cfg
 
     def configure_fastq(self, cfg):
@@ -171,16 +170,16 @@ class BarcodeSeqLib(SeqLib):
             Return a `dict` of filtering options that have non-default values.
         """
         fastq = {
-            'reads': self.reads,
-            'reverse': self.revcomp_reads,
-            'filters': self.serialize_filters(),
-            'reads md5': compute_md5(self.reads)
+            "reads": self.reads,
+            "reverse": self.revcomp_reads,
+            "filters": self.serialize_filters(),
+            "reads md5": compute_md5(self.reads),
         }
         if self.trim_start is not None and self.trim_start > 1:
-            fastq['start'] = self.trim_start
+            fastq["start"] = self.trim_start
 
         if self.trim_length is not None and self.trim_length < sys.maxsize:
-            fastq['length'] = self.trim_length
+            fastq["length"] = self.trim_length
 
         return fastq
 
@@ -203,7 +202,7 @@ class BarcodeSeqLib(SeqLib):
         log_message(
             logging_callback=logging.info,
             msg="Counting Barcodes",
-            extra={'oname': self.name}
+            extra={"oname": self.name},
         )
         for fqr in read_fastq(self.reads):
             fqr.trim_length(self.trim_length, start=self.trim_start)
@@ -216,7 +215,7 @@ class BarcodeSeqLib(SeqLib):
                 except KeyError:
                     df_dict[fqr.sequence.upper()] = 1
 
-        self.save_counts(label='barcodes', df_dict=df_dict, raw=True)
+        self.save_counts(label="barcodes", df_dict=df_dict, raw=True)
         del df_dict
 
     def calculate(self):
@@ -230,11 +229,11 @@ class BarcodeSeqLib(SeqLib):
         If ``"/main/barcodes/counts"`` already exists, those will be used
         instead of re-counting.
         """
-        if self.check_store('/main/barcodes/counts'):
+        if self.check_store("/main/barcodes/counts"):
             return
 
         # no raw counts present
-        if not self.check_store('/raw/barcodes/counts'):
+        if not self.check_store("/raw/barcodes/counts"):
             if self.counts_file is not None:
                 self.counts_from_file(self.counts_file)
             else:
@@ -242,7 +241,6 @@ class BarcodeSeqLib(SeqLib):
 
         if len(self.labels) == 1:  # only barcodes
             self.save_filtered_counts(
-                label='barcodes',
-                query="count >= {}".format(self.barcode_min_count)
+                label="barcodes", query="count >= {}".format(self.barcode_min_count)
             )
             self.save_filter_stats()

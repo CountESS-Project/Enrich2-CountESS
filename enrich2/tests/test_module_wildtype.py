@@ -29,7 +29,6 @@ def make_cfg(sequence, offset=0, coding=False):
 
 
 class TestWildTypeModule(unittest.TestCase):
-
     def setUp(self):
         pass
 
@@ -57,7 +56,7 @@ class TestWildTypeModule(unittest.TestCase):
         cfg = make_cfg("AAAAAA", coding=True)
         wt = WildTypeSequence("Test")
         wt.configure(cfg)
-        self.assertTrue(wt.protein_seq == 'KK')
+        self.assertTrue(wt.protein_seq == "KK")
 
     def test_protein_sequence_loads_correctly_noncoding(self):
         cfg = make_cfg("AAAAAA", coding=False)
@@ -122,7 +121,7 @@ class TestWildTypeModule(unittest.TestCase):
             wt.configure(cfg)
 
     def test_error_invalid_offset_not_a_number(self):
-        cfg = make_cfg("AAAAAA", offset='a')
+        cfg = make_cfg("AAAAAA", offset="a")
         wt = WildTypeSequence("Test")
         with self.assertRaises(TypeError):
             wt.configure(cfg)
@@ -187,14 +186,14 @@ class TestWildTypeModule(unittest.TestCase):
         wt = WildTypeSequence("Test")
         wt.configure(cfg)
         tuples = wt.position_tuples(protein=True)
-        self.assertEquals(tuples, [(3, 'K'), (4, 'K')])
+        self.assertEquals(tuples, [(3, "K"), (4, "K")])
 
     def test_position_tuples_has_correct_offset_noncoding(self):
         cfg = make_cfg("AAA", offset=6, coding=False)
         wt = WildTypeSequence("Test")
         wt.configure(cfg)
         tuples = wt.position_tuples(protein=False)
-        self.assertEquals(tuples, [(7, 'A'), (8, 'A'), (9, 'A')])
+        self.assertEquals(tuples, [(7, "A"), (8, "A"), (9, "A")])
 
     def test_throw_error_position_tuples_protein_but_seq_not_coding(self):
         cfg = make_cfg("AAAAAA", offset=6, coding=False)

@@ -31,9 +31,7 @@ from ..base.constants import CODON_TABLE
 from ..base.utils import log_message
 
 
-__all__ = [
-    'WildTypeSequence'
-]
+__all__ = ["WildTypeSequence"]
 
 
 class WildTypeSequence(object):
@@ -93,6 +91,7 @@ class WildTypeSequence(object):
     :py:class:`~enrich2.libraries.seqlib.VariantSeqLib`
     
     """
+
     def __init__(self, parent_name):
         self.parent_name = parent_name
         self.dna_seq = None
@@ -103,9 +102,11 @@ class WildTypeSequence(object):
     def __eq__(self, other):
         # note we don't need to check protein_offset,
         # since it depends on dna_offset and protein_seq
-        return self.dna_seq == other.dna_seq and \
-               self.protein_seq == other.protein_seq and \
-               self.dna_offset == other.dna_offset
+        return (
+            self.dna_seq == other.dna_seq
+            and self.protein_seq == other.protein_seq
+            and self.dna_offset == other.dna_offset
+        )
 
     def __ne__(self, other):
         return not self == other
@@ -126,25 +127,28 @@ class WildTypeSequence(object):
         if isinstance(cfg, dict):
             cfg = WildTypeConfiguration(cfg)
         elif not isinstance(cfg, WildTypeConfiguration):
-            raise TypeError("`cfg` was neither a "
-                            "WildTypeConfiguration or dict.")
+            raise TypeError("`cfg` was neither a " "WildTypeConfiguration or dict.")
 
         self.dna_offset = cfg.reference_offset
         self.dna_seq = cfg.sequence.upper()
         if not re.match("^[ACGT]+$", self.dna_seq):
-            raise ValueError("WT DNA sequence contains unexpected "
-                             "characters [{}]".format(self.parent_name))
+            raise ValueError(
+                "WT DNA sequence contains unexpected "
+                "characters [{}]".format(self.parent_name)
+            )
 
         if cfg.coding:
             # require coding sequences are in-frame
             if len(self.dna_seq) % 3 != 0:
-                raise ValueError("WT DNA sequence contains incomplete "
-                                 "codons [{}]".format(self.parent_name))
+                raise ValueError(
+                    "WT DNA sequence contains incomplete "
+                    "codons [{}]".format(self.parent_name)
+                )
 
             # perform translation
             self.protein_seq = ""
             for i in range(0, len(self.dna_seq), 3):
-                self.protein_seq += CODON_TABLE[self.dna_seq[i:i + 3]]
+                self.protein_seq += CODON_TABLE[self.dna_seq[i : i + 3]]
 
             # set the reference offset if it's a multiple of three
             if self.dna_offset % 3 == 0:
@@ -153,8 +157,8 @@ class WildTypeSequence(object):
                 log_message(
                     logging_callback=logging.warning,
                     msg="Ignoring reference offset for protein "
-                        "changes (not a multiple of three)",
-                    extra={'oname': self.parent_name}
+                    "changes (not a multiple of three)",
+                    extra={"oname": self.parent_name},
                 )
                 self.protein_offset = 0
         else:
@@ -173,9 +177,9 @@ class WildTypeSequence(object):
             in a dictionary.
         """
         cfg = {
-            'sequence': self.dna_seq,
-            'coding': self.is_coding(),
-            'reference offset': self.dna_offset
+            "sequence": self.dna_seq,
+            "coding": self.is_coding(),
+            "reference offset": self.dna_offset,
         }
         return cfg
 
@@ -210,8 +214,10 @@ class WildTypeSequence(object):
         new.configure(self.serialize())
 
         if new != self:
-            raise ValueError("Failed to duplicate wild type "
-                             "sequence [{}]".format(self.parent_name))
+            raise ValueError(
+                "Failed to duplicate wild type "
+                "sequence [{}]".format(self.parent_name)
+            )
         else:
             return new
 
@@ -234,9 +240,11 @@ class WildTypeSequence(object):
         """
         if protein:
             if not self.is_coding():
-                raise AttributeError("Cannot return wild type protein "
-                                     "position tuples for non-coding wild "
-                                     "type [{}]".format(self.parent_name))
+                raise AttributeError(
+                    "Cannot return wild type protein "
+                    "position tuples for non-coding wild "
+                    "type [{}]".format(self.parent_name)
+                )
             else:
                 seq = self.protein_seq
                 offset = self.protein_offset

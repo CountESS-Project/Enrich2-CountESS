@@ -26,9 +26,9 @@ options.add_option(
     name="Normalization Method",
     varname="logr_method",
     dtype=str,
-    default='Wild Type',
-    choices={'Wild Type': 'wt', 'Full': 'full', 'Complete': 'complete'},
-    hidden=False
+    default="Wild Type",
+    choices={"Wild Type": "wt", "Full": "full", "Complete": "complete"},
+    hidden=False,
 )
 options.add_option(
     name="Weighted",
@@ -36,31 +36,21 @@ options.add_option(
     dtype=bool,
     default=True,
     choices={},
-    hidden=False
+    hidden=False,
 )
 options.add_option(
     name="Example String Input",
     varname="ex_string",
     dtype=str,
-    default='Default String...',
+    default="Default String...",
     choices={},
-    hidden=False
+    hidden=False,
 )
 options.add_option(
-    name="Alpha",
-    varname="alpha",
-    dtype=int,
-    default=0,
-    choices={},
-    hidden=False
+    name="Alpha", varname="alpha", dtype=int, default=0, choices={}, hidden=False
 )
 options.add_option(
-    name="Beta",
-    varname="beta",
-    dtype=float,
-    default=0.0,
-    choices={},
-    hidden=False
+    name="Beta", varname="beta", dtype=float, default=0.0, choices={}, hidden=False
 )
 options.add_option(
     name="Use threading",
@@ -68,50 +58,39 @@ options.add_option(
     dtype=bool,
     default=False,
     choices={},
-    hidden=False
+    hidden=False,
 )
 
 # Advanced options that are found in configuration files only
 options.add_option(
-    name='h_string',
-    varname='h_string',
+    name="h_string",
+    varname="h_string",
     dtype=str,
-    default='This is a hidden string',
+    default="This is a hidden string",
     choices={},
-    hidden=True
+    hidden=True,
 )
 options.add_option(
-    name='h_float',
-    varname='h_float',
-    dtype=float,
-    default=6.0,
-    choices={},
-    hidden=True
-
+    name="h_float", varname="h_float", dtype=float, default=6.0, choices={}, hidden=True
 )
 options.add_option(
-    name='h_int',
-    varname='h_int',
-    dtype=int,
-    default=5,
-    choices={},
-    hidden=True
+    name="h_int", varname="h_int", dtype=int, default=5, choices={}, hidden=True
 )
 options.add_option(
-    name='h_list',
-    varname='h_list',
+    name="h_list",
+    varname="h_list",
     dtype=list,
     default=[1, 2, 3, 4],
     choices={},
-    hidden=True
+    hidden=True,
 )
 
 
 class DemoScorer(BaseScorerPlugin):
 
-    name = 'Demo'
-    version = '1.0'
-    author = 'Alan Rubin, Daniel Esposito'
+    name = "Demo"
+    version = "1.0"
+    author = "Alan Rubin, Daniel Esposito"
 
     def compute_scores(self):
         pass

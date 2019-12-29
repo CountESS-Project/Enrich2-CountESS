@@ -29,21 +29,22 @@ from hashlib import md5
 from ..base.utils import log_message
 
 
-SOURCES = os.path.join(os.path.expanduser('~'), '.enrich2/sources.txt')
-DEFAULT_SOURCE = os.path.join(os.path.expanduser('~'), '.enrich2')
+SOURCES = os.path.join(os.path.expanduser("~"), ".enrich2/sources.txt")
+DEFAULT_SOURCE = os.path.join(os.path.expanduser("~"), ".enrich2")
 
 
 def _ensure_sources_file_exists(file):
     if not os.path.exists(file):
         create_default = askyesno(
-            'No file found.',
+            "No file found.",
             "The file '{}' could not be found. Would you like to"
-            "create the default sources file?".format(file))
+            "create the default sources file?".format(file),
+        )
         if create_default:
-            with open(file, 'wt') as fp:
-                fp.write('.enrich2')
+            with open(file, "wt") as fp:
+                fp.write(".enrich2")
         else:
-            open(file, 'wt').close()
+            open(file, "wt").close()
 
 
 def _source_is_valid(source_path):
@@ -59,9 +60,7 @@ def _source_is_valid(source_path):
     `bool`
         True if a path is a valid directory.
     """
-    return source_path and \
-        os.path.exists(source_path) and \
-        os.path.isdir(source_path)
+    return source_path and os.path.exists(source_path) and os.path.isdir(source_path)
 
 
 def parse_sources(file=SOURCES, include_default=False):
@@ -82,7 +81,7 @@ def parse_sources(file=SOURCES, include_default=False):
     """
     _ensure_sources_file_exists(file)
     sources = set()
-    with open(file, 'rt') as fp:
+    with open(file, "rt") as fp:
         for line in fp:
             path = line.strip()
             if path == ".enrich2":
@@ -90,8 +89,8 @@ def parse_sources(file=SOURCES, include_default=False):
             if not _source_is_valid(path):
                 log_message(
                     logging_callback=logging.warning,
-                    msg='{} is not a valid source.'.format(path),
-                    extra={'oname': 'SourceWindowModule'}
+                    msg="{} is not a valid source.".format(path),
+                    extra={"oname": "SourceWindowModule"},
                 )
             else:
                 sources.add(os.path.normpath(path))
@@ -185,7 +184,7 @@ class SourceWindow(Toplevel):
         self.visible = False
         self.sources_file = sources_file
         self.sources = parse_sources(file=sources_file)
-        self.current_stamp = md5(open(sources_file, 'rb').read()).hexdigest()
+        self.current_stamp = md5(open(sources_file, "rb").read()).hexdigest()
         self.session_start_sources = self.sources
         self.init_sources = self.sources
         self.listbox = None
@@ -206,17 +205,16 @@ class SourceWindow(Toplevel):
         list_box_frame.grid(row=0, column=0, sticky=NSEW)
 
         self.listbox = Listbox(list_box_frame)
-        self.listbox.grid(sticky=NSEW, row=0, column=0, padx=(2, 2),
-                          pady=(2, 2))
+        self.listbox.grid(sticky=NSEW, row=0, column=0, padx=(2, 2), pady=(2, 2))
 
-        list_ysb = Scrollbar(list_box_frame, orient="vertical",
-                             command=self.listbox.yview)
-        list_xsb = Scrollbar(list_box_frame, orient="horizontal",
-                             command=self.listbox.xview)
-        list_ysb.grid(row=0, column=1, sticky=N + S + W, padx=(0, 2),
-                      pady=(2, 0))
-        list_xsb.grid(row=1, column=0, sticky=E + W + N, padx=(2, 0),
-                      pady=(0, 0))
+        list_ysb = Scrollbar(
+            list_box_frame, orient="vertical", command=self.listbox.yview
+        )
+        list_xsb = Scrollbar(
+            list_box_frame, orient="horizontal", command=self.listbox.xview
+        )
+        list_ysb.grid(row=0, column=1, sticky=N + S + W, padx=(0, 2), pady=(2, 0))
+        list_xsb.grid(row=1, column=0, sticky=E + W + N, padx=(2, 0), pady=(0, 0))
         self.listbox.config(yscroll=list_ysb.set, xscroll=list_xsb.set)
 
         list_box_frame.grid(sticky=NSEW, row=0, column=0)
@@ -236,13 +234,11 @@ class SourceWindow(Toplevel):
         insert.grid(sticky=W, row=0, column=0, padx=5, pady=5)
         delete = Button(buttons, text="Remove", command=self.remove_item)
         delete.grid(sticky=W, row=0, column=1, padx=5, pady=5)
-        default = Button(
-            buttons, text="Restore", command=self.absolute_restore)
+        default = Button(buttons, text="Restore", command=self.absolute_restore)
         default.grid(sticky=W, row=0, column=2, padx=5, pady=5)
 
         save = Button(buttons, text="Done", command=self.save_and_quit)
         save.grid(sticky=E, row=0, column=3, padx=5, pady=5)
-
 
         buttons.grid(sticky=EW, row=self.row, column=0)
         buttons.columnconfigure(3, weight=3)
@@ -274,8 +270,8 @@ class SourceWindow(Toplevel):
         self.update()
         self.deiconify()
         self.lift()
-        self.attributes('-topmost', True)
-        self.after_idle(self.attributes, '-topmost', False)
+        self.attributes("-topmost", True)
+        self.after_idle(self.attributes, "-topmost", False)
 
     def restore(self):
         """
@@ -303,9 +299,7 @@ class SourceWindow(Toplevel):
         since opening the window. Otherwise, reverts back to whatever sources
         were present when the window was first opened.
         """
-        save = askyesno(
-            'Save changes?',
-            'Would you like to save your changes?')
+        save = askyesno("Save changes?", "Would you like to save your changes?")
         if save:
             self.save_and_quit()
         else:
@@ -317,9 +311,9 @@ class SourceWindow(Toplevel):
         Saves the current set of sources in `sources` to ``sources.txt`` in
         the home directory. Overwrites existing data.
         """
-        with open(self.sources_file, 'wt') as fp:
+        with open(self.sources_file, "wt") as fp:
             for source in self.sources:
-                fp.write('{}\n'.format(source))
+                fp.write("{}\n".format(source))
         self.poll_file_changes()
         self.hide()
 
@@ -330,7 +324,7 @@ class SourceWindow(Toplevel):
         any changes.
         """
         _ensure_sources_file_exists(self.sources_file)
-        stamp = md5(open(self.sources_file, 'rb').read()).hexdigest()
+        stamp = md5(open(self.sources_file, "rb").read()).hexdigest()
         if stamp != self.current_stamp:
             self.update_listbox()
             self.current_stamp = stamp
@@ -354,10 +348,10 @@ class SourceWindow(Toplevel):
             item = self.listbox.get(item_idx)
             if item == DEFAULT_SOURCE:
                 yes = askyesno(
-                    'Remove default directory?',
+                    "Remove default directory?",
                     "Are you sure you want to remove the default Enrich2 "
                     "plugin directory? To add it back in later on, this "
-                    "directory can be found at '{}'".format(DEFAULT_SOURCE)
+                    "directory can be found at '{}'".format(DEFAULT_SOURCE),
                 )
                 if yes:
                     self.listbox.delete(ANCHOR)

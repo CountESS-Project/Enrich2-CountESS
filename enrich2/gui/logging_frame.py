@@ -117,7 +117,7 @@ class ScrolledText(Frame):
             return
         return self
 
-    def set_text(self, text=''):
+    def set_text(self, text=""):
         """
         Appends *text* to the current Text widget's text.
         
@@ -136,7 +136,7 @@ class ScrolledText(Frame):
         """
         Gets all the text inside the Text widget.
         """
-        return self.text.get('1.0', END + '-1c')
+        return self.text.get("1.0", END + "-1c")
 
     def save_text(self):
         """
@@ -194,6 +194,7 @@ class WindowLoggingHandler(logging.Handler):
     basic_handler
         Factory method for creating a basic instantiation of this handler.
     """
+
     def __init__(self, window=None, level=logging.NOTSET):
         logging.Handler.__init__(self, level)
         self.window = window
@@ -210,18 +211,13 @@ class WindowLoggingHandler(logging.Handler):
         button_frame = Frame(self.window)
         save_btn = Button(
             master=button_frame,
-            text='Save As...',
-            command=self.scrolling_text.save_text
+            text="Save As...",
+            command=self.scrolling_text.save_text,
         )
         save_btn.pack(side=RIGHT, anchor=S, padx=5, pady=5)
-        close_btn = Button(
-            master=button_frame,
-            text='Hide',
-            command=self.hide
-        )
+        close_btn = Button(master=button_frame, text="Hide", command=self.hide)
         close_btn.pack(side=RIGHT, anchor=S, padx=5, pady=5)
-        button_frame.pack(
-            side=BOTTOM, expand=NO, fill=BOTH, padx=(2, 2), pady=(2, 2))
+        button_frame.pack(side=BOTTOM, expand=NO, fill=BOTH, padx=(2, 2), pady=(2, 2))
         self.window.protocol("WM_DELETE_WINDOW", self.hide)
 
     def close_window(self):
@@ -229,8 +225,7 @@ class WindowLoggingHandler(logging.Handler):
         Close window. Asks for confirmation first just in case.
         """
         close = askokcancel(
-            'Close Logger',
-            'Do you really want to close the logging window?'
+            "Close Logger", "Do you really want to close the logging window?"
         )
         if close:
             self.close()
@@ -245,8 +240,8 @@ class WindowLoggingHandler(logging.Handler):
         self.window.update()
         self.window.deiconify()
         self.window.lift()
-        self.window.attributes('-topmost', True)
-        self.window.after_idle(self.window.attributes, '-topmost', False)
+        self.window.attributes("-topmost", True)
+        self.window.after_idle(self.window.attributes, "-topmost", False)
         self.visible = True
 
     def hide(self):
@@ -265,7 +260,7 @@ class WindowLoggingHandler(logging.Handler):
         record : :py:class:`~logging.LogRecord`
             The record to emit to logging module.
         """
-        text = self.format(record) + '\n'
+        text = self.format(record) + "\n"
         self.scrolling_text.set_text(text)
 
     def mainloop(self):
@@ -275,8 +270,7 @@ class WindowLoggingHandler(logging.Handler):
         self.window.mainloop()
 
     @classmethod
-    def basic_handler(cls, toplevel=None,
-                      fmt=LOG_FORMAT, level=logging.NOTSET):
+    def basic_handler(cls, toplevel=None, fmt=LOG_FORMAT, level=logging.NOTSET):
         """
         Creates a basic version of a :py:class:`WindowLoggingHandler`
         
@@ -306,13 +300,12 @@ def show_log_window():
     """
     current_handlers = logging.getLogger().handlers
     log_windows = [
-        h for h in current_handlers
-        if h.__class__.__name__ == 'WindowLoggingHandler'
+        h for h in current_handlers if h.__class__.__name__ == "WindowLoggingHandler"
     ]
     if not log_windows:
         log_win = WindowLoggingHandler.basic_handler(Toplevel())
         logging.getLogger().addHandler(log_win)
-        logging.info("Starting new log...", extra={'oname': 'Main'})
+        logging.info("Starting new log...", extra={"oname": "Main"})
     else:
         log_win = log_windows[0]
         if not log_win.visible:

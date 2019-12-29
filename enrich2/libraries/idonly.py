@@ -28,9 +28,7 @@ library derived from a counts file.
 from .seqlib import SeqLib
 
 
-__all__ = [
-    "IdOnlySeqLib"
-]
+__all__ = ["IdOnlySeqLib"]
 
 
 class IdOnlySeqLib(SeqLib):
@@ -69,7 +67,7 @@ class IdOnlySeqLib(SeqLib):
     def __init__(self):
         SeqLib.__init__(self)
         self.identifier_min_count = 0
-        self.add_label('identifiers')
+        self.add_label("identifiers")
 
     def configure(self, cfg):
         """
@@ -86,8 +84,7 @@ class IdOnlySeqLib(SeqLib):
         if isinstance(cfg, dict):
             cfg = IdOnlySeqLibConfiguration(cfg)
         elif not isinstance(cfg, IdOnlySeqLibConfiguration):
-            raise TypeError("`cfg` was neither a "
-                            "IdOnlySeqLibConfiguration or dict.")
+            raise TypeError("`cfg` was neither a " "IdOnlySeqLibConfiguration or dict.")
 
         SeqLib.configure(self, cfg)
         self.identifier_min_count = cfg.identifiers_cfg.min_count
@@ -105,10 +102,9 @@ class IdOnlySeqLib(SeqLib):
         """
         cfg = SeqLib.serialize(self)
 
-        cfg['identifiers'] = dict()
-        if self.identifier_min_count is not None \
-                and self.identifier_min_count > 0:
-            cfg['identifiers']['min count'] = self.identifier_min_count
+        cfg["identifiers"] = dict()
+        if self.identifier_min_count is not None and self.identifier_min_count > 0:
+            cfg["identifiers"]["min count"] = self.identifier_min_count
 
         return cfg
 
@@ -122,4 +118,5 @@ class IdOnlySeqLib(SeqLib):
             else:
                 raise ValueError("Missing counts file [{}]".format(self.name))
             self.save_filtered_counts(
-                'identifiers', "count >= {}".format(self.identifier_min_count))
+                "identifiers", "count >= {}".format(self.identifier_min_count)
+            )

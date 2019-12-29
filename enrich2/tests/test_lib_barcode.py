@@ -28,9 +28,9 @@ CFG_DIR = "data/config/barcode/"
 READS_DIR = create_file_path("barcode/", "data/reads/")
 RESULT_DIR = "data/result/barcode/"
 
-LIBTYPE = 'barcode'
-FILE_EXT = 'tsv'
-FILE_SEP = '\t'
+LIBTYPE = "barcode"
+FILE_EXT = "tsv"
+FILE_SEP = "\t"
 
 
 # -------------------------------------------------------------------------- #
@@ -39,23 +39,30 @@ FILE_SEP = '\t'
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibCountsIntegratedFilters(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/integrated.fq'.format(READS_DIR)
-        cfg['fastq']['filters']['max N'] = 0
-        cfg['fastq']['filters']['chastity'] = True
-        cfg['fastq']['filters']['avg quality'] = 38
-        cfg['fastq']['filters']['min quality'] = 20
-        cfg['fastq']['start'] = 4
-        cfg['fastq']['length'] = 3
-        cfg['fastq']['reverse'] = True
-        cfg['barcodes']['min count'] = 2
+        cfg["fastq"]["reads"] = "{}/integrated.fq".format(READS_DIR)
+        cfg["fastq"]["filters"]["max N"] = 0
+        cfg["fastq"]["filters"]["chastity"] = True
+        cfg["fastq"]["filters"]["avg quality"] = 38
+        cfg["fastq"]["filters"]["min quality"] = 20
+        cfg["fastq"]["start"] = 4
+        cfg["fastq"]["length"] = 3
+        cfg["fastq"]["reverse"] = True
+        cfg["barcodes"]["min count"] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='integrated', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="integrated",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -72,16 +79,23 @@ class TestBarcodeSeqLibCountsIntegratedFilters(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibCountWithBarcodeMinCountSetting(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/barcode_mincount.fq'.format(READS_DIR)
-        cfg['barcodes']['min count'] = 2
+        cfg["fastq"]["reads"] = "{}/barcode_mincount.fq".format(READS_DIR)
+        cfg["barcodes"]["min count"] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='mincount', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="mincount",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -98,16 +112,23 @@ class TestBarcodeSeqLibCountWithBarcodeMinCountSetting(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibCountCountsOnlyMode(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['counts file'] = '{}/counts_only.tsv'.format(READS_DIR)
-        cfg['barcodes']['min count'] = 2
+        cfg["counts file"] = "{}/counts_only.tsv".format(READS_DIR)
+        cfg["barcodes"]["min count"] = 2
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='counts_only', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="counts_only",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -124,16 +145,23 @@ class TestBarcodeSeqLibCountCountsOnlyMode(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibWithAvgQualityFQFilter(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/filter_avgq.fq'.format(READS_DIR)
-        cfg['fastq']['filters']['avg quality'] = 39
+        cfg["fastq"]["reads"] = "{}/filter_avgq.fq".format(READS_DIR)
+        cfg["fastq"]["filters"]["avg quality"] = 39
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='filter_avgq', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="filter_avgq",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -150,16 +178,23 @@ class TestBarcodeSeqLibWithAvgQualityFQFilter(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibWithMaxNFQFilter(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/filter_maxn.fq'.format(READS_DIR)
-        cfg['fastq']['filters']['max N'] = 1
+        cfg["fastq"]["reads"] = "{}/filter_maxn.fq".format(READS_DIR)
+        cfg["fastq"]["filters"]["max N"] = 1
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='filter_maxn', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="filter_maxn",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -176,16 +211,23 @@ class TestBarcodeSeqLibWithMaxNFQFilter(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibWithMinQualFQFilter(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/filter_minq.fq'.format(READS_DIR)
-        cfg['fastq']['filters']['min quality'] = 38
+        cfg["fastq"]["reads"] = "{}/filter_minq.fq".format(READS_DIR)
+        cfg["fastq"]["filters"]["min quality"] = 38
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='filter_minq', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="filter_minq",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -202,17 +244,23 @@ class TestBarcodeSeqLibWithMinQualFQFilter(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibWithChastityFQFilter(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/filter_not_chaste.fq'.format(READS_DIR)
-        cfg['fastq']['filters']['chastity'] = True
+        cfg["fastq"]["reads"] = "{}/filter_not_chaste.fq".format(READS_DIR)
+        cfg["fastq"]["filters"]["chastity"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='filter_not_chaste', scoring_method='',
-            logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="filter_not_chaste",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -229,16 +277,23 @@ class TestBarcodeSeqLibWithChastityFQFilter(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibWithRevcompSetting(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/revcomp.fq'.format(READS_DIR)
-        cfg['fastq']['reverse'] = True
+        cfg["fastq"]["reads"] = "{}/revcomp.fq".format(READS_DIR)
+        cfg["fastq"]["reverse"] = True
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='revcomp', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="revcomp",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -255,16 +310,23 @@ class TestBarcodeSeqLibWithRevcompSetting(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibWithTrimStartSetting(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/trim_start.fq'.format(READS_DIR)
-        cfg['fastq']['start'] = 4
+        cfg["fastq"]["reads"] = "{}/trim_start.fq".format(READS_DIR)
+        cfg["fastq"]["start"] = 4
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='trim_start', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="trim_start",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 
@@ -281,16 +343,23 @@ class TestBarcodeSeqLibWithTrimStartSetting(unittest.TestCase):
 #
 # -------------------------------------------------------------------------- #
 class TestBarcodeSeqLibWithTrimLenSetting(unittest.TestCase):
-
     def setUp(self):
         cfg = load_config_data(CFG_FILE, CFG_DIR)
-        cfg['fastq']['reads'] = '{}/trim_len.fq'.format(READS_DIR)
-        cfg['fastq']['length'] = 5
+        cfg["fastq"]["reads"] = "{}/trim_len.fq".format(READS_DIR)
+        cfg["fastq"]["length"] = 5
 
         self.test_component = HDF5TestComponent(
-            store_constructor=BarcodeSeqLib, cfg=cfg, result_dir=RESULT_DIR,
-            file_ext=FILE_EXT, file_sep=FILE_SEP, save=False, verbose=False,
-            libtype='trim_len', scoring_method='', logr_method='', coding=''
+            store_constructor=BarcodeSeqLib,
+            cfg=cfg,
+            result_dir=RESULT_DIR,
+            file_ext=FILE_EXT,
+            file_sep=FILE_SEP,
+            save=False,
+            verbose=False,
+            libtype="trim_len",
+            scoring_method="",
+            logr_method="",
+            coding="",
         )
         self.test_component.setUp()
 

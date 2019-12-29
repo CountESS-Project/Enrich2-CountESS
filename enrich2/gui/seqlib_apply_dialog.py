@@ -28,16 +28,18 @@ class SeqLibApplyDialog(tkinter.simpledialog.Dialog):
     Confirmation dialog box for applying FASTQ filtering 
     options to selected SeqLibs from the Treeview.
     """
-    def __init__(self, parent_window, tree, source_id,
-                 title="Confirm Filtering Changes"):
+
+    def __init__(
+        self, parent_window, tree, source_id, title="Confirm Filtering Changes"
+    ):
         self.tree = tree
         self.source_id = source_id
         sel = self.tree.treeview.selection()
         tree_elem = self.tree.get_element(self.source_id)
         self.target_ids = [
-            x for x in sel
-            if x != source_id
-            and isinstance(tree_elem, self.tree.get_element(x))
+            x
+            for x in sel
+            if x != source_id and isinstance(tree_elem, self.tree.get_element(x))
         ]
         tkinter.simpledialog.Dialog.__init__(self, parent_window, title)
 
@@ -51,22 +53,24 @@ class SeqLibApplyDialog(tkinter.simpledialog.Dialog):
         if len(self.target_ids) == 0:
             message_string = "No elegible SeqLibs selected."
         elif len(self.target_ids) == 1:
-            message_string = \
-                'Apply FASTQ filtering options from "{}" to "{}"?' \
-                ''.format(
+            message_string = (
+                'Apply FASTQ filtering options from "{}" to "{}"?'
+                "".format(
                     self.tree.get_element(self.source_id).name,
-                    self.tree.get_element(self.target_ids[0]).name
+                    self.tree.get_element(self.target_ids[0]).name,
                 )
+            )
         else:
             bullet = "    " + u"\u25C6"
-            message_string = \
-                'Apply FASTQ filtering options from "{}"" to the following?' \
-                '\n'.format(self.tree.get_element(self.source_id).name)
+            message_string = (
+                'Apply FASTQ filtering options from "{}"" to the following?'
+                "\n".format(self.tree.get_element(self.source_id).name)
+            )
             for x in self.target_ids:
                 message_string += u"{bullet} {name}\n".format(
-                    bullet=bullet, name=self.tree.get_element(x).name)
-        message = tkinter.ttk.Label(
-            master, text=message_string, justify="left")
+                    bullet=bullet, name=self.tree.get_element(x).name
+                )
+        message = tkinter.ttk.Label(master, text=message_string, justify="left")
         message.grid(row=0, sticky="w")
 
     def buttonbox(self):
@@ -77,8 +81,8 @@ class SeqLibApplyDialog(tkinter.simpledialog.Dialog):
         if len(self.target_ids) == 0:
             box = tk.Frame(self)
             w = tk.Button(
-                box, text="OK", width=10,
-                command=self.cancel, default="active")
+                box, text="OK", width=10, command=self.cancel, default="active"
+            )
             w.pack(side="left", padx=5, pady=5)
             self.bind("<Return>", self.cancel)
             box.pack()

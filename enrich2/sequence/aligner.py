@@ -41,7 +41,7 @@ try:
     # Reset the logging handlers after loading ambivert
     for handler in logging.getLogger("ambivert").handlers:
         handler.close()
-    logging.getLogger('ambivert').handlers = []
+    logging.getLogger("ambivert").handlers = []
     for handler in logging.getLogger().handlers:
         handler.close()
     logging.getLogger().handlers = []
@@ -51,22 +51,20 @@ except ImportError:
     pass
 
 
-__all__ = [
-    "Aligner"
-]
+__all__ = ["Aligner"]
 
 
 #: Default similarity matrix used by the aligner.
 #: User-defined matrices must have this format.
 _simple_similarity = {
-    'A': {'A': 1, 'C': -1, 'G': -1, 'T': -1, 'N': 0, 'X': 0},
-    'C': {'A': -1, 'C': 1, 'G': -1, 'T': -1, 'N': 0, 'X': 0},
-    'G': {'A': -1, 'C': -1, 'G': 1, 'T': -1, 'N': 0, 'X': 0},
-    'T': {'A': -1, 'C': -1, 'G': -1, 'T': 1, 'N': 0, 'X': 0},
-    'N': {'A': 0, 'C': 0, 'G': 0, 'T': 0, 'N': 0, 'X': 0},
-    'X': {'A': 0, 'C': 0, 'G': 0, 'T': 0, 'N': 0, 'X': 0},
-    'gap_open': -1,
-    'gap_extend': 0
+    "A": {"A": 1, "C": -1, "G": -1, "T": -1, "N": 0, "X": 0},
+    "C": {"A": -1, "C": 1, "G": -1, "T": -1, "N": 0, "X": 0},
+    "G": {"A": -1, "C": -1, "G": 1, "T": -1, "N": 0, "X": 0},
+    "T": {"A": -1, "C": -1, "G": -1, "T": 1, "N": 0, "X": 0},
+    "N": {"A": 0, "C": 0, "G": 0, "T": 0, "N": 0, "X": 0},
+    "X": {"A": 0, "C": 0, "G": 0, "T": 0, "N": 0, "X": 0},
+    "gap_open": -1,
+    "gap_extend": 0,
 }
 
 
@@ -118,32 +116,30 @@ class Aligner(object):
     This class implements `Needleman-Wunsch <http://en.wikipedia.org/wiki/
     Needleman%E2%80%93Wunsch_algorithm>`_ local alignment.
     """
-    _MAT = 1    # match
-    _INS = 2    # insertion (with respect to wild type)
-    _DEL = 3    # deletion (with respect to wild type)
-    _END = 4    # end of traceback
 
-    def __init__(self, similarity=_simple_similarity, backend='ambivert'):
+    _MAT = 1  # match
+    _INS = 2  # insertion (with respect to wild type)
+    _DEL = 3  # deletion (with respect to wild type)
+    _END = 4  # end of traceback
+
+    def __init__(self, similarity=_simple_similarity, backend="ambivert"):
         similarity_keys = list(similarity.keys())
-        if 'gap_open' in similarity_keys:
-            similarity_keys.remove('gap_open')
-        if 'gap_extend' in similarity_keys:
-            similarity_keys.remove('gap_extend')
-        
+        if "gap_open" in similarity_keys:
+            similarity_keys.remove("gap_open")
+        if "gap_extend" in similarity_keys:
+            similarity_keys.remove("gap_extend")
+
         for key in similarity_keys:
-            keys_map_to_dicts = all(x in similarity[key]
-                                    for x in similarity_keys)
+            keys_map_to_dicts = all(x in similarity[key] for x in similarity_keys)
             symmetrical = len(similarity[key]) != len(similarity_keys)
             if not keys_map_to_dicts or symmetrical:
                 raise ValueError("Asymmetrical alignment scoring matrix")
 
         self.similarity = similarity
-        if 'gap_open' not in self.similarity:
-            raise ValueError(
-                "No gap_open open penalty in alignment scoring matrix.")
-        if 'gap_extend' not in self.similarity:
-            raise ValueError(
-                "No gap_open extend penalty in alignment scoring matrix.")
+        if "gap_open" not in self.similarity:
+            raise ValueError("No gap_open open penalty in alignment scoring matrix.")
+        if "gap_extend" not in self.similarity:
+            raise ValueError("No gap_open extend penalty in alignment scoring matrix.")
 
         self.matrix = None
         self.seq1 = None
@@ -171,7 +167,7 @@ class Aligner(object):
         log_message(
             logging_callback=logging.info,
             msg="Using enrich2 alignment backend.",
-            extra={'oname': 'Aligner'}
+            extra={"oname": "Aligner"},
         )
 
     def align_ambivert(self, seq1, seq2):
@@ -208,20 +204,18 @@ class Aligner(object):
 
         self.matrix = np.ndarray(
             shape=(len(seq1) + 1, len(seq2) + 1),
-            dtype=np.dtype([('score', np.int), ('trace', np.byte)])
+            dtype=np.dtype([("score", np.int), ("trace", np.byte)]),
         )
         seq1 = seq1.upper()
         seq2 = seq2.upper()
 
         a1, a2, *_ = self.needleman_wunsch(
-            seq1, seq2, 
-            gap_open=self.similarity['gap_open'],
-            gap_extend=self.similarity['gap_extend']
+            seq1,
+            seq2,
+            gap_open=self.similarity["gap_open"],
+            gap_extend=self.similarity["gap_extend"],
         )
-        backtrace = cigar_to_backtrace(
-            seq1, seq2,
-            gapped_alignment_to_cigar(a1, a2)[0]
-        )
+        backtrace = cigar_to_backtrace(seq1, seq2, gapped_alignment_to_cigar(a1, a2)[0])
         return backtrace
 
     def align_enrich2(self, seq1, seq2):
@@ -258,25 +252,31 @@ class Aligner(object):
 
         self.matrix = np.ndarray(
             shape=(len(seq1) + 1, len(seq2) + 1),
-            dtype=np.dtype([('score', np.int), ('trace', np.byte)])
+            dtype=np.dtype([("score", np.int), ("trace", np.byte)]),
         )
         seq1 = seq1.upper()
         seq2 = seq2.upper()
 
         # build matrix of scores/traceback information
         for i in range(len(seq1) + 1):
-            self.matrix[i, 0] = (self.similarity['gap_open'] * i, Aligner._DEL)
+            self.matrix[i, 0] = (self.similarity["gap_open"] * i, Aligner._DEL)
         for j in range(len(seq2) + 1):
-            self.matrix[0, j] = (self.similarity['gap_open'] * j, Aligner._INS)
+            self.matrix[0, j] = (self.similarity["gap_open"] * j, Aligner._INS)
         for i in range(1, len(seq1) + 1):
             for j in range(1, len(seq2) + 1):
-                match = (self.matrix[i - 1, j - 1]['score'] +
-                         self.similarity[seq1[i - 1]][seq2[j - 1]],
-                         Aligner._MAT)
-                delete = (self.matrix[i - 1, j]['score'] +
-                          self.similarity['gap_open'], Aligner._DEL)
-                insert = (self.matrix[i, j - 1]['score'] +
-                          self.similarity['gap_open'], Aligner._INS)
+                match = (
+                    self.matrix[i - 1, j - 1]["score"]
+                    + self.similarity[seq1[i - 1]][seq2[j - 1]],
+                    Aligner._MAT,
+                )
+                delete = (
+                    self.matrix[i - 1, j]["score"] + self.similarity["gap_open"],
+                    Aligner._DEL,
+                )
+                insert = (
+                    self.matrix[i, j - 1]["score"] + self.similarity["gap_open"],
+                    Aligner._INS,
+                )
 
                 # traces = [delete, insert, match]
                 # max_score = max(delete, insert, match, key=lambda x: x[0])[0]
@@ -306,22 +306,22 @@ class Aligner(object):
         j = len(seq2)
         traceback = list()
         while i > 0 or j > 0:
-            if self.matrix[i, j]['trace'] == Aligner._MAT:
+            if self.matrix[i, j]["trace"] == Aligner._MAT:
                 if seq1[i - 1] == seq2[j - 1]:
                     traceback.append((i - 1, j - 1, "match", None))
                 else:
                     traceback.append((i - 1, j - 1, "mismatch", None))
                 i -= 1
                 j -= 1
-            elif self.matrix[i, j]['trace'] == Aligner._INS:
+            elif self.matrix[i, j]["trace"] == Aligner._INS:
                 pos_1 = 0 if (i - 1) < 0 else (i - 1)
                 traceback.append((pos_1, j - 1, "insertion", 1))
                 j -= 1
-            elif self.matrix[i, j]['trace'] == Aligner._DEL:
+            elif self.matrix[i, j]["trace"] == Aligner._DEL:
                 pos_2 = 0 if (j - 1) < 0 else (j - 1)
                 traceback.append((i - 1, pos_2, "deletion", 1))
                 i -= 1
-            elif self.matrix[i, j]['trace'] == Aligner._END:
+            elif self.matrix[i, j]["trace"] == Aligner._END:
                 pass
             else:
                 raise RuntimeError("Invalid value in alignment traceback.")
@@ -336,8 +336,10 @@ class Aligner(object):
                     if t[2] == indel[2]:
                         indel[3] += t[3]
                     else:
-                        raise RuntimeError("Aligner failed to combine indels. "
-                                           "Check 'gap_open' penalty.")
+                        raise RuntimeError(
+                            "Aligner failed to combine indels. "
+                            "Check 'gap_open' penalty."
+                        )
                 else:
                     indel = list(t)
             else:
@@ -375,48 +377,50 @@ class Aligner(object):
             A tuple containing aligned seq1, aligned seq2, start position
             in seq1 and start position in seq2
         """
-        DNA_MAP = align.align_ctypes.make_map('ACGTNX', 'N', True)
+        DNA_MAP = align.align_ctypes.make_map("ACGTNX", "N", True)
         DNA_SCORE = make_dna_scoring_matrix(self.similarity)
-    
+
         alignment = align.global_align(
-            bytes(seq1, 'ascii'),
+            bytes(seq1, "ascii"),
             len(seq1),
-            bytes(seq2.upper(), 'ascii'),
+            bytes(seq2.upper(), "ascii"),
             len(seq2),
             DNA_MAP[0],
             DNA_MAP[1],
             DNA_SCORE,
-            gap_open, gap_extend
+            gap_open,
+            gap_extend,
         )
-    
-        if '-' in seq1 or '-' in seq2:
-            raise RuntimeError('Aligning Sequences with gaps is not supported',
-                               seq1, seq2)
+
+        if "-" in seq1 or "-" in seq2:
+            raise RuntimeError(
+                "Aligning Sequences with gaps is not supported", seq1, seq2
+            )
         start_seq1 = 0
         start_seq2 = 0
         frag = alignment[0].align_frag
-        align_seq1 = ''
-        align_seq2 = ''
-    
+        align_seq1 = ""
+        align_seq2 = ""
+
         while frag:
             frag = frag[0]
-    
+
             if frag.type == align.MATCH:
-                f1 = seq1[frag.sa_start:frag.sa_start + frag.hsp_len]
-                f2 = seq2[frag.sb_start:frag.sb_start + frag.hsp_len]
+                f1 = seq1[frag.sa_start : frag.sa_start + frag.hsp_len]
+                f2 = seq2[frag.sb_start : frag.sb_start + frag.hsp_len]
                 align_seq1 += f1
                 align_seq2 += f2
-    
+
             elif frag.type == align.A_GAP:
-                align_seq1 += '-' * frag.hsp_len
-                align_seq2 += seq2[frag.sb_start:frag.sb_start + frag.hsp_len]
-    
+                align_seq1 += "-" * frag.hsp_len
+                align_seq2 += seq2[frag.sb_start : frag.sb_start + frag.hsp_len]
+
             elif frag.type == align.B_GAP:
-                align_seq1 += seq1[frag.sa_start:frag.sa_start + frag.hsp_len]
-                align_seq2 += '-' * frag.hsp_len
-    
+                align_seq1 += seq1[frag.sa_start : frag.sa_start + frag.hsp_len]
+                align_seq2 += "-" * frag.hsp_len
+
             frag = frag.next
-    
+
         assert len(align_seq1) == len(align_seq2)
         align.alignment_free(alignment)
         return align_seq1, align_seq2, start_seq1, start_seq2
@@ -445,45 +449,49 @@ class Aligner(object):
             A tuple containing aligned seq1, aligned seq2, start position
             in seq1 and start position in seq2
         """
-        DNA_MAP = align.align_ctypes.make_map('ACGTNX', 'N', True)
+        DNA_MAP = align.align_ctypes.make_map("ACGTNX", "N", True)
         DNA_SCORE = make_dna_scoring_matrix(self.similarity)
-    
+
         alignment = align.local_align(
-            bytes(seq1, 'ascii'), len(seq1),
-            bytes(seq2.upper(), 'ascii'), len(seq2),
+            bytes(seq1, "ascii"),
+            len(seq1),
+            bytes(seq2.upper(), "ascii"),
+            len(seq2),
             DNA_MAP[0],
             DNA_MAP[1],
             DNA_SCORE,
-            gap_open, gap_extend
+            gap_open,
+            gap_extend,
         )
-        if '-' in seq1 or '-' in seq2:
-            raise RuntimeError('Aligning Sequences with gaps is not supported',
-                               seq1, seq2)
-    
+        if "-" in seq1 or "-" in seq2:
+            raise RuntimeError(
+                "Aligning Sequences with gaps is not supported", seq1, seq2
+            )
+
         start_seq1 = alignment.contents.align_frag.contents.sa_start
         start_seq2 = alignment.contents.align_frag.contents.sb_start
         frag = alignment[0].align_frag
-        align_seq1 = ''
-        align_seq2 = ''
-    
+        align_seq1 = ""
+        align_seq2 = ""
+
         while frag:
             frag = frag[0]
-    
+
             if frag.type == align.MATCH:
-                f1 = seq1[frag.sa_start:frag.sa_start + frag.hsp_len]
-                f2 = seq2[frag.sb_start:frag.sb_start + frag.hsp_len]
+                f1 = seq1[frag.sa_start : frag.sa_start + frag.hsp_len]
+                f2 = seq2[frag.sb_start : frag.sb_start + frag.hsp_len]
                 align_seq1 += f1
                 align_seq2 += f2
-    
+
             elif frag.type == align.A_GAP:
-                align_seq1 += '-' * frag.hsp_len
-                align_seq2 += seq2[frag.sb_start:frag.sb_start + frag.hsp_len]
-    
+                align_seq1 += "-" * frag.hsp_len
+                align_seq2 += seq2[frag.sb_start : frag.sb_start + frag.hsp_len]
+
             elif frag.type == align.B_GAP:
-                align_seq1 += seq1[frag.sa_start:frag.sa_start + frag.hsp_len]
-                align_seq2 += '-' * frag.hsp_len
+                align_seq1 += seq1[frag.sa_start : frag.sa_start + frag.hsp_len]
+                align_seq2 += "-" * frag.hsp_len
             frag = frag.next
-    
+
         assert len(align_seq1) == len(align_seq2)
         align.alignment_free(alignment)
         return align_seq1, align_seq2, start_seq1, start_seq2
@@ -524,7 +532,7 @@ def cigar_to_backtrace(seq1, seq2, cigar):
     j = len(seq2)
     traceback = []
     for num, char in reversed(list(zip(numbers, letters))):
-        if char == 'M':
+        if char == "M":
             for _ in range(num):
                 if seq1[i - 1] == seq2[j - 1]:
                     traceback.append((i - 1, j - 1, "match", None))
@@ -532,11 +540,11 @@ def cigar_to_backtrace(seq1, seq2, cigar):
                     traceback.append((i - 1, j - 1, "mismatch", None))
                 i -= 1
                 j -= 1
-        elif char == 'I':
+        elif char == "I":
             pos_1 = 0 if (i - 1) < 0 else (i - 1)
             traceback.append((pos_1, j - num, "insertion", num))
             j -= num
-        elif char == 'D':
+        elif char == "D":
             pos_2 = 0 if (j - 1) < 0 else (j - 1)
             traceback.append((i - num, pos_2, "deletion", num))
             i -= num
@@ -546,7 +554,7 @@ def cigar_to_backtrace(seq1, seq2, cigar):
     return traceback
 
 
-def make_dna_scoring_matrix(similarity, ordering='ACGTNX'):
+def make_dna_scoring_matrix(similarity, ordering="ACGTNX"):
     """
     Make a ctype DNA scoring matrix for alignment.
     
@@ -576,13 +584,16 @@ def make_dna_scoring_matrix(similarity, ordering='ACGTNX'):
 
 def test(seq1, seq2):
     from enrich2.sequence.aligner import Aligner
-    amb = Aligner(backend='ambivert')
-    aen = Aligner(backend='enrich2')
-    print('Enrich2: {}'.format(aen.align(seq1, seq2)))
-    print('AmBiVert: {}'.format(amb.align(seq1, seq2)))
+
+    amb = Aligner(backend="ambivert")
+    aen = Aligner(backend="enrich2")
+    print("Enrich2: {}".format(aen.align(seq1, seq2)))
+    print("AmBiVert: {}".format(amb.align(seq1, seq2)))
+
 
 def build_aligners():
     from enrich2.sequence.aligner import Aligner
-    amb = Aligner(backend='ambivert')
-    aen = Aligner(backend='enrich2')
+
+    amb = Aligner(backend="ambivert")
+    aen = Aligner(backend="enrich2")
     return amb, aen

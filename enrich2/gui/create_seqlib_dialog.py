@@ -36,13 +36,15 @@ from ..libraries.variant import VariantSeqLib
 from ..libraries.idonly import IdOnlySeqLib
 
 
-seqlib_label_text = OrderedDict([
-    ("BcvSeqLib", "Barcoded Variant"),
-    ("BcidSeqLib", "Barcoded Identifier"),
-    ("BasicSeqLib", "Basic"),
-    ("BarcodeSeqLib", "Barcodes Only"),
-    ("IdOnlySeqLib", "Identifiers Only"),
-])
+seqlib_label_text = OrderedDict(
+    [
+        ("BcvSeqLib", "Barcoded Variant"),
+        ("BcidSeqLib", "Barcoded Identifier"),
+        ("BasicSeqLib", "Basic"),
+        ("BarcodeSeqLib", "Barcodes Only"),
+        ("IdOnlySeqLib", "Identifiers Only"),
+    ]
+)
 
 
 class CreateSeqLibDialog(CustomDialog):
@@ -76,6 +78,7 @@ class CreateSeqLibDialog(CustomDialog):
     --------
     :py:class:`~CustomDialog`
     """
+
     def __init__(self, parent_window, title="New SeqLib"):
         self.element_tkstring = tkinter.StringVar()
         self.element_type = None
@@ -93,8 +96,10 @@ class CreateSeqLibDialog(CustomDialog):
         """
         for i, k in enumerate(seqlib_label_text.keys()):
             rb = Radiobutton(
-                master, text=seqlib_label_text[k],
-                variable=self.element_tkstring, value=k
+                master,
+                text=seqlib_label_text[k],
+                variable=self.element_tkstring,
+                value=k,
             )
             rb.grid(column=0, row=(i + 1), sticky="w")
             if i == 0:

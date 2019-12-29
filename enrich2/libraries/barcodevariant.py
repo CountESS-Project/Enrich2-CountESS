@@ -34,9 +34,7 @@ from .barcode import BarcodeSeqLib
 from .variant import VariantSeqLib
 
 
-__all__ = [
-    "BcvSeqLib"
-]
+__all__ = ["BcvSeqLib"]
 
 
 class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
@@ -100,11 +98,10 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
         from ..config.types import BcvSeqLibConfiguration
 
         if isinstance(cfg, dict):
-            init_fastq = bool(cfg.get('fastq', {}).get("reads", ""))
+            init_fastq = bool(cfg.get("fastq", {}).get("reads", ""))
             cfg = BcvSeqLibConfiguration(cfg, init_fastq)
         elif not isinstance(cfg, BcvSeqLibConfiguration):
-            raise TypeError("`cfg` was neither a "
-                            "BcvSeqLibConfiguration or dict.")
+            raise TypeError("`cfg` was neither a " "BcvSeqLibConfiguration or dict.")
 
         VariantSeqLib.configure(self, cfg)
         BarcodeSeqLib.configure(self, cfg)
@@ -112,12 +109,12 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             if barcode_map.filename == cfg.barcodes_cfg.map_file:
                 self.barcode_map = barcode_map
             else:
-                raise ValueError("Attempted to assign non-matching "
-                                 "barcode map [{}]".format(self.name))
+                raise ValueError(
+                    "Attempted to assign non-matching "
+                    "barcode map [{}]".format(self.name)
+                )
         else:
-            self.barcode_map = BarcodeMap(
-                cfg.barcodes_cfg.map_file, is_variant=True
-            )
+            self.barcode_map = BarcodeMap(cfg.barcodes_cfg.map_file, is_variant=True)
 
     def serialize(self):
         """
@@ -135,9 +132,8 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
 
         # required for creating new objects in GUI
         if self.barcode_map is not None:
-            cfg['barcodes']['map file'] = self.barcode_map.filename
-            cfg['barcodes']['map file md5'] = compute_md5(
-                self.barcode_map.filename)
+            cfg["barcodes"]["map file"] = self.barcode_map.filename
+            cfg["barcodes"]["map file md5"] = compute_md5(self.barcode_map.filename)
         return cfg
 
     def calculate(self):
@@ -154,22 +150,22 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             log_message(
                 logging_callback=logging.info,
                 msg="Converting barcodes to variants",
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
 
             # store mapped barcodes
             self.save_filtered_counts(
-                label='barcodes',
+                label="barcodes",
                 query="index in {} & count >= {}".format(
                     list(self.barcode_map.keys()), self.barcode_min_count
-                )
+                ),
             )
 
             # count variants associated with the barcodes
             max_mut_barcodes = 0
             max_mut_variants = 0
-            for bc, count in self.store['/main/barcodes/counts'].iterrows():
-                count = count['count']
+            for bc, count in self.store["/main/barcodes/counts"].iterrows():
+                count = count["count"]
                 variant = self.barcode_map[bc]
                 mutations = self.count_variant(variant)
                 if mutations is None:  # variant has too many mutations
@@ -183,26 +179,23 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
                     except KeyError:
                         df_dict[mutations] = count
                     barcode_variants[bc] = mutations
-            
+
             # save counts, filtering based on the min count
-            counts = {
-                k: v for k, v in df_dict.items()
-                if v >= self.variant_min_count
-            }
-            self.save_counts('variants', counts, raw=False)
+            counts = {k: v for k, v in df_dict.items() if v >= self.variant_min_count}
+            self.save_counts("variants", counts, raw=False)
             del df_dict
 
             # write the active subset of the BarcodeMap to the store
             barcodes = list(barcode_variants.keys())
-            data = {'value': [barcode_variants[bc] for bc in barcodes]}
+            data = {"value": [barcode_variants[bc] for bc in barcodes]}
             barcode_variants = pd.DataFrame(data, index=barcodes)
             del barcodes
 
-            barcode_variants.sort_values('value', inplace=True)
+            barcode_variants.sort_values("value", inplace=True)
             self.store.put(
                 key="/raw/barcodemap",
                 value=barcode_variants,
-                data_columns=barcode_variants.columns
+                data_columns=barcode_variants.columns,
             )
             del barcode_variants
 
@@ -210,7 +203,7 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
                 log_message(
                     logging_callback=logging.info,
                     msg="Aligned {} variants".format(self.aligner.calls),
-                    extra={'oname': self.name}
+                    extra={"oname": self.name},
                 )
                 self.aligner_cache = None
 
@@ -218,10 +211,9 @@ class BcvSeqLib(VariantSeqLib, BarcodeSeqLib):
             log_message(
                 logging_callback=logging.info,
                 msg="Removed {} unique barcodes ({} total variants) with "
-                    "excess mutations".format(
-                        max_mut_barcodes, max_mut_variants),
-                extra={'oname': self.name}
+                "excess mutations".format(max_mut_barcodes, max_mut_variants),
+                extra={"oname": self.name},
             )
             self.save_filter_stats()
-        
+
         self.count_synonymous()

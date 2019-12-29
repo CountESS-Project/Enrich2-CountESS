@@ -43,21 +43,23 @@ __all__ = [
     "create_compressed_outfile",
     "read_fastq",
     "read_fastq_multi",
-    "fastq_filter_chastity"
+    "fastq_filter_chastity",
 ]
 
 
 # The following regex is referenced by line number in the class documentation.
 # Matches FASTQ headers based on the following pattern (modify as needed):
 # @<MachineName>:<Lane>:<Tile>:<X>:<Y>:<Chastity>#<IndexRead>/<ReadNumber>
-header_pattern = re.compile("@(?P<MachineName>.+)"
-                            ":(?P<Lane>\d+)"
-                            ":(?P<Tile>\d+)"
-                            ":(?P<X>\d+)"
-                            ":(?P<Y>\d+)"
-                            ":(?P<Chastity>[01])"
-                            "#(?P<IndexRead>\d)"
-                            "/(?P<ReadNumber>\d)")
+header_pattern = re.compile(
+    "@(?P<MachineName>.+)"
+    ":(?P<Lane>\d+)"
+    ":(?P<Tile>\d+)"
+    ":(?P<X>\d+)"
+    ":(?P<Y>\d+)"
+    ":(?P<Chastity>[01])"
+    "#(?P<IndexRead>\d)"
+    "/(?P<ReadNumber>\d)"
+)
 
 
 # empirically optimized for reading FASTQ files
@@ -123,8 +125,9 @@ class FQRead(object):
     
     
     """
+
     # use slots for memory efficiency
-    __slots__ = ('header', 'sequence', 'header2', 'quality', 'qbase')
+    __slots__ = ("header", "sequence", "header2", "quality", "qbase")
 
     def __init__(self, header, sequence, header2, quality, qbase=33):
         lst = [header, sequence, header2, quality]
@@ -135,21 +138,21 @@ class FQRead(object):
         # print(quality, len(quality))
 
         if not all(isinstance(x, str) for x in lst):
-            raise ValueError('Bad file contents. Expeceted str got type '
-                             '{}'.format(type(lst[-1])))
+            raise ValueError(
+                "Bad file contents. Expeceted str got type " "{}".format(type(lst[-1]))
+            )
         if not all(len(x) for x in lst):
-            raise ValueError('Missing fields in FASTQ record')
+            raise ValueError("Missing fields in FASTQ record")
         if len(sequence) != len(quality):
-            raise ValueError('Different lengths for sequence and quality')
-        if header[0] != '@' or header2[0] != '+':
-            raise ValueError('Improperly formatted FASTQ record')
+            raise ValueError("Different lengths for sequence and quality")
+        if header[0] != "@" or header2[0] != "+":
+            raise ValueError("Improperly formatted FASTQ record")
 
         self.header = header
         self.sequence = sequence
         self.header2 = header2
         # quality is a list of integers
-        self.quality = [x - qbase for x in
-                        array('b', quality.encode('ascii')).tolist()]
+        self.quality = [x - qbase for x in array("b", quality.encode("ascii")).tolist()]
         self.qbase = qbase
 
     def __str__(self):
@@ -157,16 +160,16 @@ class FQRead(object):
         Reformat as a four-line FASTQ_ record. This method converts the 
         integer quality values back into a string.
         """
-        quality = array('b', [x + self.qbase for x in self.quality]).tobytes()
-        quality = quality.decode('ascii')
-        return '\n'.join([self.header, self.sequence, self.header2, quality])
+        quality = array("b", [x + self.qbase for x in self.quality]).tobytes()
+        quality = quality.decode("ascii")
+        return "\n".join([self.header, self.sequence, self.header2, quality])
 
     def __len__(self):
         """
         Object length is the length of the sequence.
         """
         return len(self.sequence)
-    
+
     def trim(self, start=1, end=None):
         """
         Trims this :py:class:`~FQRead` to contain bases between 
@@ -179,8 +182,8 @@ class FQRead(object):
         end : `int`, default: None
             Position to end read trimming.
         """
-        self.sequence = self.sequence[start - 1:end]
-        self.quality = self.quality[start - 1:end]
+        self.sequence = self.sequence[start - 1 : end]
+        self.quality = self.quality[start - 1 : end]
 
     def trim_length(self, length, start=1):
         """
@@ -277,16 +280,16 @@ class FQRead(object):
         `bool`
         """
         try:
-            if self.header_information()['Chastity'] == 1:
+            if self.header_information()["Chastity"] == 1:
                 return True
             else:
                 return False
-        except KeyError:    # no 'Chastity' in pattern
+        except KeyError:  # no 'Chastity' in pattern
             if raises:
                 raise KeyError("No chastity bit in FASTQ header pattern")
             else:
                 return False
-        except TypeError:   # no header match (unexpected format)
+        except TypeError:  # no header match (unexpected format)
             if raises:
                 raise ValueError("Unexpected FASTQ header format")
             else:
@@ -330,8 +333,10 @@ def split_fastq_path(fname):
         if ext.lower() in (".fq", ".fastq"):
             return head, base, ext, compression
         else:
-            print("Warning: unexpected file extension for '{fname}'".format(
-                fname=fname), file=stderr)
+            print(
+                "Warning: unexpected file extension for '{fname}'".format(fname=fname),
+                file=stderr,
+            )
             return None
     else:
         raise IOError("file '{fname}' doesn't exist".format(fname=fname))
@@ -363,8 +368,7 @@ def create_compressed_outfile(fname, compression):
     elif compression is None:
         handle = open(fname, "wt")
     else:
-        raise IOError("unrecognized compression mode '{mode}'".format(
-            mode=compression))
+        raise IOError("unrecognized compression mode '{mode}'".format(mode=compression))
     return handle
 
 
@@ -399,40 +403,41 @@ def read_fastq(fname, filter_function=None, buffer_size=BUFFER_SIZE, qbase=33):
         forward/reverse reads), use :py:func:`read_fastq_multi` instead.
     """
     _, _, ext, compression = split_fastq_path(fname)
-    if compression is None and ext in (".fq", ".fastq"): # raw FASTQ
+    if compression is None and ext in (".fq", ".fastq"):  # raw FASTQ
         open_func = open
     elif compression == "bz2":
         open_func = bz2.open
     elif compression == "gz":
         open_func = gzip.open
     else:
-        raise IOError("Unrecognized compression "
-                      "mode '{mode}'".format(mode=compression))
+        raise IOError(
+            "Unrecognized compression " "mode '{mode}'".format(mode=compression)
+        )
 
     eof = False
-    leftover = ''
-    with open_func(fname, 'rt') as handle:
+    leftover = ""
+    with open_func(fname, "rt") as handle:
         while not eof:
             buf = handle.read(buffer_size)
             if len(buf) < buffer_size:
                 eof = True
 
-            buf = leftover + buf # prepend partial record from previous buffer
-            lines = buf.split('\n')
+            buf = leftover + buf  # prepend partial record from previous buffer
+            lines = buf.split("\n")
             fastq_count = len(lines) // 4
 
-            if not eof: # handle lines from the trailing partial FASTQ record
+            if not eof:  # handle lines from the trailing partial FASTQ record
                 dangling = len(lines) % 4
-                if dangling == 0: # quality line (probably) incomplete
+                if dangling == 0:  # quality line (probably) incomplete
                     dangling = 4
                     fastq_count = fastq_count - 1
                 # join the leftover lines back into a string
-                leftover = '\n'.join(lines[len(lines) - dangling:])
+                leftover = "\n".join(lines[len(lines) - dangling :])
 
             # index into the list of lines to pull out the FASTQ records
             for i in range(fastq_count):
                 # (header, sequence, header2, quality)
-                fq = FQRead(*lines[i * 4:(i + 1) * 4], qbase=qbase)
+                fq = FQRead(*lines[i * 4 : (i + 1) * 4], qbase=qbase)
                 if filter_function is None:
                     # no filtering
                     yield fq
@@ -444,8 +449,9 @@ def read_fastq(fname, filter_function=None, buffer_size=BUFFER_SIZE, qbase=33):
                     continue
 
 
-def read_fastq_multi(fnames, filter_function=None, buffer_size=BUFFER_SIZE,
-                     match_lengths=True, qbase=33):
+def read_fastq_multi(
+    fnames, filter_function=None, buffer_size=BUFFER_SIZE, match_lengths=True, qbase=33
+):
     """
     Generator function for reading from multiple FASTQ_ files in parallel. 
     The argument *fnames* is an iterable of FASTQ_ file names. Yields a 
@@ -481,20 +487,21 @@ def read_fastq_multi(fnames, filter_function=None, buffer_size=BUFFER_SIZE,
     """
     fq_generators = list()
     for f in fnames:
-        fq_generators.append(read_fastq(f, filter_function=None,
-                             buffer_size=BUFFER_SIZE, qbase=qbase))
+        fq_generators.append(
+            read_fastq(f, filter_function=None, buffer_size=BUFFER_SIZE, qbase=qbase)
+        )
 
     for records in itertools.zip_longest(*fq_generators, fillvalue=None):
-        if None in records: # mismatched file lengths
+        if None in records:  # mismatched file lengths
             if match_lengths:
                 yield None
             else:
-                break # shortest FASTQ file is empty, so we're done
-        if filter_function is None:                     # no filtering
+                break  # shortest FASTQ file is empty, so we're done
+        if filter_function is None:  # no filtering
             yield records
         elif all(filter_function(x) for x in records):  # pass filtering
             yield records
-        else:                                           # fail filtering
+        else:  # fail filtering
             continue
 
 

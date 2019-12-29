@@ -23,7 +23,4 @@ Module consists of testing suite and helper functions for test I/O and
 basic automation.
 """
 
-__all__ = [
-    "methods",
-    "utils"
-]
+__all__ = ["methods", "utils"]

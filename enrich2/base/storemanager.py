@@ -40,9 +40,7 @@ import logging
 from ..base.utils import log_message
 
 
-__all__ = [
-    "StoreManager"
-]
+__all__ = ["StoreManager"]
 
 
 class StoreManager(object):
@@ -185,6 +183,7 @@ class StoreManager(object):
     :py:class:`~enrich2.selection.selection.Selection`
     :py:class:`~enrich2.experiment.experiment.Experiment`
     """
+
     store_suffix = None
     has_store = True
     treeview_class_name = None
@@ -257,8 +256,10 @@ class StoreManager(object):
             if self.parent is not None:
                 return self.parent.force_recalculate
             else:
-                raise ValueError("Forced recalculation option not specified "
-                                 "at root [{}]".format(self.name))
+                raise ValueError(
+                    "Forced recalculation option not specified "
+                    "at root [{}]".format(self.name)
+                )
         else:
             return self._force_recalculate
 
@@ -270,8 +271,10 @@ class StoreManager(object):
         if value in (True, False):
             self._force_recalculate = value
         else:
-            raise ValueError("Invalid setting '{}' for force_recalculate "
-                             "[{}]".format(value, self.name))
+            raise ValueError(
+                "Invalid setting '{}' for force_recalculate "
+                "[{}]".format(value, self.name)
+            )
 
     @property
     def component_outliers(self):
@@ -285,8 +288,10 @@ class StoreManager(object):
             if self.parent is not None:
                 return self.parent.component_outliers
             else:
-                raise ValueError("Calculate component outliers option not "
-                                 "specified at root [{}]".format(self.name))
+                raise ValueError(
+                    "Calculate component outliers option not "
+                    "specified at root [{}]".format(self.name)
+                )
         else:
             return self._component_outliers
 
@@ -298,8 +303,10 @@ class StoreManager(object):
         if value in (True, False):
             self._component_outliers = value
         else:
-            raise ValueError("Invalid setting '{}' for component_outliers "
-                             "[{}]".format(value, self.name))
+            raise ValueError(
+                "Invalid setting '{}' for component_outliers "
+                "[{}]".format(value, self.name)
+            )
 
     @property
     def tsv_requested(self):
@@ -313,8 +320,9 @@ class StoreManager(object):
             if self.parent is not None:
                 return self.parent.tsv_requested
             else:
-                raise ValueError("Write tsv option not specified at root "
-                                 "[{}]".format(self.name))
+                raise ValueError(
+                    "Write tsv option not specified at root " "[{}]".format(self.name)
+                )
         else:
             return self._tsv_requested
 
@@ -326,8 +334,10 @@ class StoreManager(object):
         if value in (True, False):
             self._tsv_requested = value
         else:
-            raise ValueError("Invalid setting '{}' for tsv_requested "
-                             "[{}]".format(value, self.name))
+            raise ValueError(
+                "Invalid setting '{}' for tsv_requested "
+                "[{}]".format(value, self.name)
+            )
 
     @property
     def scoring_method(self):
@@ -341,8 +351,9 @@ class StoreManager(object):
             if self.parent is not None:
                 return self.parent.scorer_class.name
             else:
-                raise ValueError("Scoring method not specified at root "
-                                 "[{}]".format(self.name))
+                raise ValueError(
+                    "Scoring method not specified at root " "[{}]".format(self.name)
+                )
         else:
             return self.parent.scorer_class.name
 
@@ -357,8 +368,10 @@ class StoreManager(object):
             if self.parent is not None:
                 return self.parent.output_dir
             else:
-                raise ValueError("No output directory specified at top level "
-                                 "[{}]".format(self.name))
+                raise ValueError(
+                    "No output directory specified at top level "
+                    "[{}]".format(self.name)
+                )
         else:
             return self._output_dir
 
@@ -369,10 +382,9 @@ class StoreManager(object):
         directory if it doesn't exist.
         """
         try:
-            dirname = os.path.expanduser(dirname)   # handle leading '~'
+            dirname = os.path.expanduser(dirname)  # handle leading '~'
         except AttributeError as e:
-            raise AttributeError("Invalid input for output directory: "
-                                 "{}".format(e))
+            raise AttributeError("Invalid input for output directory: " "{}".format(e))
         try:
             if not os.path.exists(dirname):
                 os.makedirs(dirname)
@@ -392,8 +404,10 @@ class StoreManager(object):
             if self.parent is not None:
                 return self.parent.output_dir_override
             else:
-                raise ValueError("Output directory override not specified at "
-                                 "root [{}]".format(self.name))
+                raise ValueError(
+                    "Output directory override not specified at "
+                    "root [{}]".format(self.name)
+                )
         else:
             return self._output_dir_override
 
@@ -405,8 +419,10 @@ class StoreManager(object):
         if value in (True, False):
             self._output_dir_override = value
         else:
-            raise ValueError("Invalid setting '{}' for output_dir_override "
-                             "[{}]".format(value, self.name))
+            raise ValueError(
+                "Invalid setting '{}' for output_dir_override "
+                "[{}]".format(value, self.name)
+            )
 
     @property
     def tsv_dir(self):
@@ -416,8 +432,11 @@ class StoreManager(object):
         The plot directory is ``<output directory>/tsv/<object name>/``.
         """
         if self._tsv_dir is None:
-            dirname = os.path.join(self.output_dir, "tsv",  "{}_{}".format(
-                    fix_filename(self.name), self.store_suffix))
+            dirname = os.path.join(
+                self.output_dir,
+                "tsv",
+                "{}_{}".format(fix_filename(self.name), self.store_suffix),
+            )
             try:
                 if not os.path.exists(dirname):
                     os.makedirs(dirname)
@@ -487,8 +506,7 @@ class StoreManager(object):
         try:
             names = [x.name for x in self.children]
         except AttributeError:
-            raise AttributeError("No name set for child [{}]".format(
-                    self.name))
+            raise AttributeError("No name set for child [{}]".format(self.name))
         else:
             return names
 
@@ -526,6 +544,7 @@ class StoreManager(object):
             :py:class:`enrich2.config.types.StoreConfiguration`
         """
         from ..config.types import StoreConfiguration
+
         if isinstance(cfg, dict):
             has_scorer = bool(cfg.get(SCORER, {}).get(SCORER_PATH, ""))
             cfg = StoreConfiguration(cfg, has_scorer=has_scorer)
@@ -537,9 +556,9 @@ class StoreManager(object):
             log_message(
                 logging_callback=logging.warning,
                 msg="Using command line supplied output "
-                    "directory instead of config file output "
-                    "directory",
-                extra={'oname': self.name}
+                "directory instead of config file output "
+                "directory",
+                extra={"oname": self.name},
             )
         elif cfg.has_output_dir and not self.output_dir_override:
             self.output_dir = cfg.output_dir
@@ -549,9 +568,8 @@ class StoreManager(object):
             self.store_path = cfg.store_path
             log_message(
                 logging_callback=logging.info,
-                msg='Using specified HDF5 data store "{}"'.format(
-                    self.store_path),
-                extra={'oname': self.name}
+                msg='Using specified HDF5 data store "{}"'.format(self.store_path),
+                extra={"oname": self.name},
             )
         else:
             self.store_cfg = False
@@ -564,20 +582,18 @@ class StoreManager(object):
 
             print_cfg = cfg.scorer_cfg.get_options(keep_defaults=True)
             if print_cfg:
-                msg = 'Scorer parameters '
+                msg = "Scorer parameters "
                 msg += nested_format(print_cfg, False, tab_level=0)
             else:
-                msg = 'No options for scorer detected.'
+                msg = "No options for scorer detected."
 
             log_message(
                 logging_callback=logging.info,
-                msg='Scorer detected.',
-                extra={'oname': self.name}
+                msg="Scorer detected.",
+                extra={"oname": self.name},
             )
             log_message(
-                logging_callback=logging.info,
-                msg=msg,
-                extra={'oname': self.name}
+                logging_callback=logging.info, msg=msg, extra={"oname": self.name}
             )
 
     def serialize(self):
@@ -591,15 +607,15 @@ class StoreManager(object):
             Attributes of this instance and that of inherited classes
             in a dictionary.
         """
-        cfg = {'name': self.name}
+        cfg = {"name": self.name}
         if self.store_cfg:
-            cfg['store'] = self.store_path
+            cfg["store"] = self.store_path
         if self.output_dir is not None:
             if self.parent is not None:
                 if self.output_dir != self.parent.output_dir:
-                    cfg['output directory'] = self.output_dir
+                    cfg["output directory"] = self.output_dir
             else:
-                cfg['output directory'] = self.output_dir
+                cfg["output directory"] = self.output_dir
         return cfg
 
     def validate(self):
@@ -640,40 +656,44 @@ class StoreManager(object):
             if not self.store_cfg:
                 fname = fix_filename(self.name)
                 self.store_path = os.path.join(
-                    self.output_dir,
-                    "{}_{}.h5".format(fname, self.store_suffix))
+                    self.output_dir, "{}_{}.h5".format(fname, self.store_suffix)
+                )
             log_message(
                 logging_callback=logging.info,
                 msg="Loading from store path '{}'.".format(self.store_path),
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
             if os.path.exists(self.store_path):
-                store = HDFStore(self.store_path, mode='a')
+                store = HDFStore(self.store_path, mode="a")
                 for key in store.keys():
                     clear |= not self.check_metadata(key, store)
                 if clear:
-                    msg = 'Found existing HDF5 data store "{}", but ' \
-                          'metadata did not match with this ' \
-                          'instance.'.format(self.store_path)
+                    msg = (
+                        'Found existing HDF5 data store "{}", but '
+                        "metadata did not match with this "
+                        "instance.".format(self.store_path)
+                    )
                     log_message(
                         logging_callback=logging.info,
                         msg=msg,
-                        extra={'oname': self.name}
+                        extra={"oname": self.name},
                     )
                     if not store.is_empty():
                         try:
                             store.clear()
                         except ValueError:
-                            raise IOError("Store '{}' currently has an open"
-                                          "file handle not owned by Enrich2. "
-                                          "Cannot overwrite existing "
-                                          "data.".format(self.store_path))
+                            raise IOError(
+                                "Store '{}' currently has an open"
+                                "file handle not owned by Enrich2. "
+                                "Cannot overwrite existing "
+                                "data.".format(self.store_path)
+                            )
                 else:
                     log_message(
                         logging_callback=logging.info,
                         msg='Found existing HDF5 data store "{}" with matching'
-                            ' metadata.'.format(self.store_path),
-                        extra={'oname': self.name}
+                        " metadata.".format(self.store_path),
+                        extra={"oname": self.name},
                     )
                     self.override_filter_stats = False
                 store.close()
@@ -681,26 +701,25 @@ class StoreManager(object):
             else:
                 log_message(
                     logging_callback=logging.info,
-                    msg='Creating new HDF5 data store "{}"'.format(
-                        self.store_path),
-                    extra={'oname': self.name}
+                    msg='Creating new HDF5 data store "{}"'.format(self.store_path),
+                    extra={"oname": self.name},
                 )
 
-            self.store = HDFStore(self.store_path, mode='a')
+            self.store = HDFStore(self.store_path, mode="a")
 
             if self.force_recalculate or force_delete:
                 if "/main" in self.store:
                     log_message(
                         logging_callback=logging.info,
                         msg="Deleting existing calculated values",
-                        extra={'oname': self.name}
+                        extra={"oname": self.name},
                     )
                     self.store.remove("/main")
                 else:
                     log_message(
                         logging_callback=logging.warning,
                         msg="No existing calculated values in file",
-                        extra={'oname': self.name}
+                        extra={"oname": self.name},
                     )
 
     def store_close(self, children=False):
@@ -720,7 +739,7 @@ class StoreManager(object):
         if children and self.children is not None:
             for child in self.children:
                 child.store_close(children=True)
- 
+
         if self.has_store and self.store is not None and self.store.is_open():
             # Set the metadata. Resets if it already exists, but that should
             # be fine since if it already exists, then it should match.
@@ -745,9 +764,7 @@ class StoreManager(object):
             True if the key exists in the HDF5 store, else False.
         """
         if not self.check_store(key):
-            raise ValueError("Store {} does not exist [{}]".format(
-                key, self.name
-            ))
+            raise ValueError("Store {} does not exist [{}]".format(key, self.name))
         else:
             return self.store[key]
 
@@ -770,15 +787,21 @@ class StoreManager(object):
             log_message(
                 logging_callback=logging.info,
                 msg="Found existing '{}'".format(key),
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
             return True
         else:
             return False
 
-    def map_table(self, source, destination, source_query=None,
-                  row_callback=None, row_callback_args=None,
-                  destination_data_columns=None):
+    def map_table(
+        self,
+        source,
+        destination,
+        source_query=None,
+        row_callback=None,
+        row_callback_args=None,
+        destination_data_columns=None,
+    ):
         """
         Converts source table into destination table.
         This method really needs a better name.
@@ -804,7 +827,7 @@ class StoreManager(object):
             log_message(
                 logging_callback=logging.info,
                 msg="Overwriting existing '{}'".format(destination),
-                extra={'oname': self.name}
+                extra={"oname": self.name},
             )
             self.store.remove(destination)
 
@@ -814,23 +837,24 @@ class StoreManager(object):
 
         # assumes the source tables all have the same index
         # find the min_itemsize
-        max_index_length = self.store.select_column(
-            source[0], 'index').map(len).max()
+        max_index_length = self.store.select_column(source[0], "index").map(len).max()
 
         selections = self.store.select_as_multiple(
             keys=source, where=source_query, selector=source[0], chunk=True
         )
         for df in selections:
             if row_callback is not None:
-                df = df.apply(
-                    row_callback, args=row_callback_args, axis="columns")
+                df = df.apply(row_callback, args=row_callback_args, axis="columns")
             if destination not in self.store:
                 if destination_data_columns is None:
                     # if not specified, index all columns
                     destination_data_columns = list(df.columns)
-                self.store.append(destination, df,
-                                  min_itemsize={'index': max_index_length},
-                                  data_columns=destination_data_columns)
+                self.store.append(
+                    destination,
+                    df,
+                    min_itemsize={"index": max_index_length},
+                    data_columns=destination_data_columns,
+                )
             else:
                 self.store.append(destination, df)
 
@@ -845,8 +869,7 @@ class StoreManager(object):
         """
         shared = pd.Index()
         for t in tables:
-            shared = shared.union(pd.Index(
-                self.store.select_column(t, 'index')))
+            shared = shared.union(pd.Index(self.store.select_column(t, "index")))
         return shared
 
     # -----------------------------------------------------------------------#
@@ -872,8 +895,7 @@ class StoreManager(object):
             if x in ELEMENT_LABELS:
                 labels.update([x])
             else:
-                raise ValueError(
-                    "Invalid element label '{}' [{}]".format(x, self.name))
+                raise ValueError("Invalid element label '{}' [{}]".format(x, self.name))
         else:
             raise AttributeError("Failed to add labels [{}]".format(self.name))
         # sort based on specified order
@@ -890,11 +912,7 @@ class StoreManager(object):
             Metadata dictionary.
         """
         cfg = self.serialize()
-        metadata = {
-            'cfg': cfg,
-            'time': self.creationtime,
-            'user': self.username
-        }
+        metadata = {"cfg": cfg, "time": self.creationtime, "user": self.username}
         return metadata
 
     def check_metadata(self, key, store=None):
@@ -979,7 +997,6 @@ class StoreManager(object):
         """
         self.store.set_metadata(key, d, update)
 
-
     def calculate(self):
         """
         Pure virtual method that defines how the data are calculated.
@@ -1012,4 +1029,5 @@ class StoreManager(object):
         fname = key.strip("/")  # remove leading slash
         fname = fname.replace("/", "_") + ".tsv"
         self.store[key].to_csv(
-            os.path.join(str(self.tsv_dir), fname), sep='\t', na_rep="NA")
+            os.path.join(str(self.tsv_dir), fname), sep="\t", na_rep="NA"
+        )

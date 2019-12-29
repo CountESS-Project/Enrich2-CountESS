@@ -47,11 +47,11 @@ __all__ = [
     "filter_coding_index",
     "single_mutations_to_tuples",
     "fill_position_gaps",
-    "singleton_dataframe"
+    "singleton_dataframe",
 ]
 
 
-SingleMut = collections.namedtuple("SingleMut", ['pre', 'post', 'pos', 'key'])
+SingleMut = collections.namedtuple("SingleMut", ["pre", "post", "pos", "key"])
 
 
 def validate_index(index, element):
@@ -84,8 +84,7 @@ def validate_index(index, element):
     elif element == "synonymous":
         retval = [True for _ in index]
     else:
-        raise NotImplementedError("Unimplemented element type '{}'"
-                                  "".format(element))
+        raise NotImplementedError("Unimplemented element type '{}'" "".format(element))
     return retval
 
 
@@ -158,8 +157,9 @@ def single_mutations_to_tuples(index):
         if the *index* is empty.
     """
     if any(mutation_count(x) != 1 for x in index):
-        raise ValueError("Non-single mutations cannot be converted into "
-                         "SingleMut tuples.")
+        raise ValueError(
+            "Non-single mutations cannot be converted into " "SingleMut tuples."
+        )
 
     # identify the type of index
     try:
@@ -185,13 +185,23 @@ def single_mutations_to_tuples(index):
             raise ValueError("Unrecognized HGVS string {}.".format(x))
         else:
             if is_protein:  # convert to single-letter amino acid code
-                tuples.append(SingleMut(AA_CODES[m.group('pre')],
-                                        AA_CODES[m.group('post')],
-                                        int(m.group('pos')),
-                                        m.group('match')))
+                tuples.append(
+                    SingleMut(
+                        AA_CODES[m.group("pre")],
+                        AA_CODES[m.group("post")],
+                        int(m.group("pos")),
+                        m.group("match"),
+                    )
+                )
             else:
-                tuples.append(SingleMut(m.group('pre'), m.group('post'),
-                                        int(m.group('pos')), m.group('match')))
+                tuples.append(
+                    SingleMut(
+                        m.group("pre"),
+                        m.group("post"),
+                        int(m.group("pos")),
+                        m.group("match"),
+                    )
+                )
 
     return tuples
 
@@ -232,12 +242,13 @@ def fill_position_gaps(positions, gap_size):
         if delta > 1 and delta <= gap_size:
             fill.update(positions[i] + n + 1 for n in range(delta))
     fill.update(positions)
-    
+
     return sorted(list(fill))
 
 
-def singleton_dataframe(values, wt, gap_size=5, coding=True,
-                        plot_wt_score=True, aa_list=AA_LIST):
+def singleton_dataframe(
+    values, wt, gap_size=5, coding=True, plot_wt_score=True, aa_list=AA_LIST
+):
     """
     Prepare data for plotting as a sequence-function map. Returns a data frame
     suitable for plotting as heat map data and a wild type sequence extracted
@@ -273,10 +284,12 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
         data values and a list of single-character wild type values
     """
     if len(values.index) == 0:
-        raise ValueError("Cannot process an empty data frame [{}]".format(
-            wt.parent_name))
-    if any(isinstance(v, str) for v in values) or \
-        any(isinstance(v, bytes) for v in values):
+        raise ValueError(
+            "Cannot process an empty data frame [{}]".format(wt.parent_name)
+        )
+    if any(isinstance(v, str) for v in values) or any(
+        isinstance(v, bytes) for v in values
+    ):
         raise ValueError("Values must be numbers.")
 
     # save the wild type score for later
@@ -287,7 +300,7 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
             log_message(
                 logging_callback=logging.warning,
                 msg="Wild type score not measured, will be missing in plots",
-                extra={'oname': 'dataframe.py'}
+                extra={"oname": "dataframe.py"},
             )
             wt_score = np.nan
 
@@ -301,8 +314,7 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
 
     # create and populate the DataFrame
     # get sorted, unique list of positions that have a mutation
-    positions = fill_position_gaps([x.pos for x in index_tuples],
-                                   gap_size=gap_size)
+    positions = fill_position_gaps([x.pos for x in index_tuples], gap_size=gap_size)
     # initialize the DataFrame
     if coding:
         columns = aa_list
@@ -320,15 +332,15 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
     try:
         wt_sequence = "".join(wt_dict[x] for x in positions)
     except KeyError:
-        raise ValueError("Inconsistent wild type positions [{}]".format(
-            wt.parent_name))
+        raise ValueError("Inconsistent wild type positions [{}]".format(wt.parent_name))
 
     # double-check that the wild type is consistent with the data frame
     for x in index_tuples:
         if x.pos in wt_dict:
             if x.pre != wt_dict[x.pos]:
-                raise ValueError("Inconsistent wild type sequence [{}]".format(
-                    wt.parent_name))
+                raise ValueError(
+                    "Inconsistent wild type sequence [{}]".format(wt.parent_name)
+                )
 
     # add wild type scores if desired
     if plot_wt_score:
@@ -336,4 +348,3 @@ def singleton_dataframe(values, wt, gap_size=5, coding=True,
             frame.loc[p, wt_dict[p]] = wt_score
 
     return frame, wt_sequence
-

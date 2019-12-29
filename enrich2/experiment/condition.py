@@ -29,9 +29,7 @@ from ..base.storemanager import StoreManager
 from ..selection.selection import Selection
 
 
-__all__ = [
-    "Condition"
-]
+__all__ = ["Condition"]
 
 
 class Condition(StoreManager):
@@ -91,14 +89,15 @@ class Condition(StoreManager):
         if isinstance(cfg, dict):
             cfg = ConditonConfiguration(cfg, init_from_gui)
         elif not isinstance(cfg, ConditonConfiguration):
-            raise TypeError(
-                "`cfg` was neither a ConditonConfiguration or dict.")
+            raise TypeError("`cfg` was neither a ConditonConfiguration or dict.")
 
         StoreManager.configure(self, cfg.store_cfg)
         if configure_children:
             if len(cfg.selection_cfgs) == 0:
-                raise KeyError("Missing required config value "
-                               "{} [{}]".format('selections', self.name))
+                raise KeyError(
+                    "Missing required config value "
+                    "{} [{}]".format("selections", self.name)
+                )
             for sel_cfg in cfg.selection_cfgs:
                 sel = Selection()
                 sel.configure(sel_cfg)
@@ -110,7 +109,7 @@ class Condition(StoreManager):
         for dumping to a config file.
         """
         cfg = StoreManager.serialize(self)
-        cfg['selections'] = [child.serialize() for child in self.children]
+        cfg["selections"] = [child.serialize() for child in self.children]
         return cfg
 
     def validate(self):
@@ -138,8 +137,9 @@ class Condition(StoreManager):
         Add a :py:class:`~enrich2.selection.selection.Selection`
         """
         if child.name in self.child_names():
-            raise ValueError("Non-unique selection "
-                             "name '{}' [{}]".format(child.name, self.name))
+            raise ValueError(
+                "Non-unique selection " "name '{}' [{}]".format(child.name, self.name)
+            )
         child.parent = self
         self.selections.append(child)
 
@@ -149,7 +149,4 @@ class Condition(StoreManager):
         :py:class:`~enrich2.selection.selection.Selection` with 
         Treeview id *tree_id*.
         """
-        self.selections = [
-            x for x in self.selections
-            if x.treeview_id != tree_id
-        ]
+        self.selections = [x for x in self.selections if x.treeview_id != tree_id]
