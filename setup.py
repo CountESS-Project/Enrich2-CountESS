@@ -29,15 +29,9 @@ requirements = [
     'matplotlib >= 1.4.3',
     'pyyaml >= 3.12',
     'sphinx_rtd_theme',
-    "sphinx >= 1.5.6"
+    "sphinx >= 1.5.6",
+    'tables >= 3.2.0',
 ]
-
-# dirty workaround to deal with Enthought Canopy referring to the
-# tables module as pytables
-if 'Canopy' in sys.executable:
-    requirements.append('pytables >= 3.2.0')
-else:
-    requirements.append('tables >= 3.2.0')
 
 # Copy script files
 plugins_folder = os.path.join(os.path.expanduser('~'), '.enrich2/')
