@@ -364,6 +364,8 @@ class Experiment(StoreManager):
         if self.check_store("/main/{}/counts".format(label)):
             return
 
+        idx = pd.IndexSlice
+
         # create columns multi-index
         # has to be lex-sorted for multi-slicing to work
         log_message(
@@ -421,7 +423,7 @@ class Experiment(StoreManager):
                     key="/main/{}/counts_unfiltered".format(label)
                 )
                 for tp in sel.timepoints:
-                    data.loc[:][cnd.name, sel.name, "c_{}".format(tp)] = sel_data[
+                    data.loc[:, idx[cnd.name, sel.name, "c_{}".format(tp)]] = sel_data[
                         "c_{}".format(tp)
                     ]
         self.store.put("/main/{}/counts".format(label), data)
@@ -442,6 +444,8 @@ class Experiment(StoreManager):
         """
         if self.check_store("/main/{}/scores_shared_full".format(label)):
             return
+
+        idx = pd.IndexSlice
 
         # create columns multi-index
         # has to be lex-sorted for multi-slicing to work
@@ -501,7 +505,7 @@ class Experiment(StoreManager):
             for sel in cnd.children:
                 sel_data = sel.store.select("/main/{}/scores".format(label))
                 for v in values_list:
-                    data.loc[:][cnd.name, sel.name, v] = sel_data[v]
+                    data.loc[:, idx[cnd.name, sel.name, v]] = sel_data[v]
         self.store.put("/main/{}/scores_shared_full".format(label), data)
 
     def calc_shared(self, label):
