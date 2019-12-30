@@ -130,8 +130,11 @@ class HDF5TestComponent(unittest.TestCase):
 
         if verbose:
             print("Working directory is: {}".format(self.result_dir))
-        logging.getLogger().setLevel(logging.ERROR)
-        logging.captureWarnings(False)
+            logging.getLogger().setLevel(logging.INFO)
+            logging.captureWarnings(True)
+        else:
+            logging.getLogger().setLevel(logging.ERROR)
+            logging.captureWarnings(False)
 
     def __str__(self):
         return "%s (%s)" % (self._testMethodName, self.__name__)
