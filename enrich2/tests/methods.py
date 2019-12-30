@@ -27,6 +27,7 @@ import os
 import shutil
 import unittest
 import numpy as np
+import pandas as pd
 import logging
 
 from types import MethodType
@@ -236,7 +237,7 @@ def test_main_variants_scores_shared_full(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_variants_scores_shared(self):
@@ -248,7 +249,7 @@ def test_main_variants_scores_shared(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_variants_scores_pvalues_wt(self):
@@ -260,7 +261,7 @@ def test_main_variants_scores_pvalues_wt(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_variants_scores(self):
@@ -272,7 +273,7 @@ def test_main_variants_scores(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_variants_weights(self):
@@ -284,7 +285,7 @@ def test_main_variants_weights(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_variants_log_ratios(self):
@@ -296,7 +297,7 @@ def test_main_variants_log_ratios(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_variants_counts(self):
@@ -308,7 +309,7 @@ def test_main_variants_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_variants_counts_unfiltered(self):
@@ -320,7 +321,7 @@ def test_main_variants_counts_unfiltered(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_raw_variants_counts(self):
@@ -333,7 +334,7 @@ def test_raw_variants_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 # -------------------------------------------------------------------------- #
@@ -350,7 +351,7 @@ def test_main_synonymous_scores_shared_full(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_synonymous_scores_shared(self):
@@ -362,7 +363,7 @@ def test_main_synonymous_scores_shared(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_synonymous_scores_pvalues_wt(self):
@@ -374,7 +375,7 @@ def test_main_synonymous_scores_pvalues_wt(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_synonymous_scores(self):
@@ -386,7 +387,7 @@ def test_main_synonymous_scores(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_synonymous_weights(self):
@@ -398,7 +399,7 @@ def test_main_synonymous_weights(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_synonymous_log_ratios(self):
@@ -410,7 +411,7 @@ def test_main_synonymous_log_ratios(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_synonymous_counts(self):
@@ -422,7 +423,7 @@ def test_main_synonymous_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_synonymous_counts_unfiltered(self):
@@ -434,7 +435,7 @@ def test_main_synonymous_counts_unfiltered(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_raw_synonymous_counts(self):
@@ -446,7 +447,7 @@ def test_raw_synonymous_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 # -------------------------------------------------------------------------- #
@@ -463,7 +464,7 @@ def test_main_barcodes_scores_shared_full(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_barcodes_scores_shared(self):
@@ -475,7 +476,7 @@ def test_main_barcodes_scores_shared(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_barcodes_scores_pvalues_wt(self):
@@ -487,7 +488,7 @@ def test_main_barcodes_scores_pvalues_wt(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_barcodes_scores(self):
@@ -500,7 +501,7 @@ def test_main_barcodes_scores(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_barcodes_weights(self):
@@ -512,7 +513,7 @@ def test_main_barcodes_weights(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_barcodes_log_ratios(self):
@@ -524,7 +525,7 @@ def test_main_barcodes_log_ratios(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_barcodes_counts(self):
@@ -603,7 +604,7 @@ def test_main_identifiers_scores_shared_full(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_identifiers_scores_shared(self):
@@ -615,7 +616,7 @@ def test_main_identifiers_scores_shared(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_identifiers_scores_pvalues_wt(self):
@@ -627,7 +628,7 @@ def test_main_identifiers_scores_pvalues_wt(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_identifiers_scores(self):
@@ -639,7 +640,7 @@ def test_main_identifiers_scores(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_identifiers_weights(self):
@@ -651,7 +652,7 @@ def test_main_identifiers_weights(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_identifiers_log_ratios(self):
@@ -663,7 +664,7 @@ def test_main_identifiers_log_ratios(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_identifiers_counts(self):
@@ -675,7 +676,7 @@ def test_main_identifiers_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_main_identifiers_counts_unfiltered(self):
@@ -687,7 +688,7 @@ def test_main_identifiers_counts_unfiltered(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 def test_raw_identifiers_counts(self):
@@ -699,7 +700,7 @@ def test_raw_identifiers_counts(self):
     if self.verbose:
         test_name = "test_{}".format(key.replace("/", "_")[1:])
         print(print_test_comparison(test_name, expected, result))
-    self.assertTrue(result.equals(expected))
+    pd.testing.assert_frame_equal(result, expected)
 
 
 # -------------------------------------------------------------------------- #
