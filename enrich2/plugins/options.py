@@ -31,7 +31,7 @@ for basic operations over an Options object.
 
 import json
 import yaml
-from collections import Mapping
+from collections.abc import Mapping
 
 from ..base.config_constants import SCORER, SCORER_OPTIONS
 
