@@ -29,6 +29,7 @@ import unittest
 import numpy as np
 import pandas as pd
 import logging
+import tempfile
 
 from types import MethodType
 
@@ -154,6 +155,9 @@ class HDF5TestComponent(unittest.TestCase):
         obj.tsv_requested = self.params["tsv_requested"]
         obj.output_dir_override = self.params["output_dir_override"]
 
+        self.temp_dir = tempfile.mkdtemp()  # requires manual cleanup
+        self.cfg["output directory"] = self.temp_dir
+
         obj.configure(self.cfg)
         obj.validate()
 
@@ -177,7 +181,7 @@ class HDF5TestComponent(unittest.TestCase):
         """
         self.obj.store_close(children=True)
         os.remove(self.obj.store_path)
-        shutil.rmtree(self.obj.output_dir)
+        shutil.rmtree(self.temp_dir)
 
     def makeTests(self):
         """
