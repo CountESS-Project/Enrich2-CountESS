@@ -29,6 +29,7 @@ import logging
 import tables
 import pandas as pd
 from abc import ABC, abstractclassmethod
+from typing import Optional
 
 from ..base.utils import log_message
 
@@ -208,13 +209,19 @@ class HDFStore(StoreInterface):
             self._chunksize = value
 
     @property
-    def filename(self):
+    def filename(self) -> Optional[str]:
         """
         Property for store filename access.
+
+        Returns
+        -------
+        Optional[str]
+            The store file name if the store is open, else None.
         """
         if self._store is not None:
             return self._store.filename
-        return ""
+        else:
+            return None
 
     def is_open(self):
         """
