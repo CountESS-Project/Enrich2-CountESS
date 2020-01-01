@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/VariantEffect/Enrich2-py3.svg?branch=master)](https://travis-ci.com/VariantEffect/Enrich2-py3)
+[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/Enrich2-py3/badge.svg?branch=master)](https://coveralls.io/github/VariantEffect/Enrich2-py3?branch=master)
+
 Untitled Enrich2 Successor
 ==========================
 
