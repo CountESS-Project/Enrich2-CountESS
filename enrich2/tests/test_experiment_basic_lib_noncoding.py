@@ -35,7 +35,7 @@ FILE_EXT = "tsv"
 FILE_SEP = "\t"
 
 
-class TestExperimentBasicLibWLSScoringCompleteNormC(unittest.TestCase):
+class TestExperimentBasicLibWLSScoringCompleteNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "WLS"
         logr = "complete"
@@ -65,7 +65,7 @@ class TestExperimentBasicLibWLSScoringCompleteNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibWLSScoringFullNormC(unittest.TestCase):
+class TestExperimentBasicLibWLSScoringFullNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "WLS"
         logr = "full"
@@ -95,7 +95,7 @@ class TestExperimentBasicLibWLSScoringFullNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibWLSScoringWTNormC(unittest.TestCase):
+class TestExperimentBasicLibWLSScoringWTNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "WLS"
         logr = "wt"
@@ -125,7 +125,7 @@ class TestExperimentBasicLibWLSScoringWTNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibOLSScoringCompleteNormC(unittest.TestCase):
+class TestExperimentBasicLibOLSScoringCompleteNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "OLS"
         logr = "complete"
@@ -155,7 +155,7 @@ class TestExperimentBasicLibOLSScoringCompleteNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibOLSScoringFullNormC(unittest.TestCase):
+class TestExperimentBasicLibOLSScoringFullNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "OLS"
         logr = "full"
@@ -185,7 +185,7 @@ class TestExperimentBasicLibOLSScoringFullNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibOLSScoringWTNormC(unittest.TestCase):
+class TestExperimentBasicLibOLSScoringWTNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "OLS"
         logr = "wt"
@@ -215,7 +215,7 @@ class TestExperimentBasicLibOLSScoringWTNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibRatiosScoringCompleteNormC(unittest.TestCase):
+class TestExperimentBasicLibRatiosScoringCompleteNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "ratios"
         logr = "complete"
@@ -245,7 +245,7 @@ class TestExperimentBasicLibRatiosScoringCompleteNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibRatiosScoringFullNormC(unittest.TestCase):
+class TestExperimentBasicLibRatiosScoringFullNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "ratios"
         logr = "full"
@@ -275,7 +275,7 @@ class TestExperimentBasicLibRatiosScoringFullNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibRatiosScoringWTNormC(unittest.TestCase):
+class TestExperimentBasicLibRatiosScoringWTNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "ratios"
         logr = "wt"
@@ -305,7 +305,7 @@ class TestExperimentBasicLibRatiosScoringWTNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibCountsScoringCompleteNormC(unittest.TestCase):
+class TestExperimentBasicLibCountsScoringCompleteNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "counts"
         logr = "complete"
@@ -335,7 +335,7 @@ class TestExperimentBasicLibCountsScoringCompleteNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibCountsScoringFullNormC(unittest.TestCase):
+class TestExperimentBasicLibCountsScoringFullNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "counts"
         logr = "full"
@@ -365,7 +365,7 @@ class TestExperimentBasicLibCountsScoringFullNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibCountsScoringWTNormC(unittest.TestCase):
+class TestExperimentBasicLibCountsScoringWTNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "counts"
         logr = "wt"
@@ -395,7 +395,7 @@ class TestExperimentBasicLibCountsScoringWTNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibSimpleScoringCompleteNormC(unittest.TestCase):
+class TestExperimentBasicLibSimpleScoringCompleteNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "simple"
         logr = "complete"
@@ -425,7 +425,7 @@ class TestExperimentBasicLibSimpleScoringCompleteNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibSimpleScoringFullNormC(unittest.TestCase):
+class TestExperimentBasicLibSimpleScoringFullNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "simple"
         logr = "full"
@@ -455,7 +455,7 @@ class TestExperimentBasicLibSimpleScoringFullNormC(unittest.TestCase):
         self.general_test_component.runTest()
 
 
-class TestExperimentBasicLibSimpleScoringWTNormC(unittest.TestCase):
+class TestExperimentBasicLibSimpleScoringWTNormNC(unittest.TestCase):
     def setUp(self):
         scoring = "simple"
         logr = "wt"
