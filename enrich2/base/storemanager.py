@@ -34,7 +34,7 @@ from .utils import nested_format
 from ..base.utils import fix_filename
 from .config_constants import SCORER, SCORER_PATH
 from ..base.constants import ELEMENT_LABELS
-from ..base.store_wrappers import HDFStore
+from ..base.store_interface import HDFStore
 
 import logging
 from ..base.utils import log_message
@@ -77,7 +77,7 @@ class StoreManager(object):
         method, and modified by the ``serialize`` method.
     store_path : str
         The filepath to the store being managed by this instance.
-    store : :py:class:`enrich2.base.store_wrappers.HDFStore`
+    store : :py:class:`enrich2.base.store_interface.HDFStore`
         The store being managed by this instance.
     chunksize: int
         Chunksize used when iterating and selecting rows/columns from an

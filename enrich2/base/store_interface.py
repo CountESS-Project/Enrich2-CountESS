@@ -120,7 +120,7 @@ class StoreInterface(ABC):
         pass
 
     @abstractclassmethod
-    def ensure_open(self):
+    def raise_if_not_open(self):
         pass
 
 
@@ -210,8 +210,7 @@ class HDFStore(StoreInterface):
 
     @property
     def filename(self) -> Optional[str]:
-        """
-        Property for store filename access.
+        """Property for store filename access.
 
         Returns
         -------
@@ -223,30 +222,30 @@ class HDFStore(StoreInterface):
         else:
             return None
 
-    def is_open(self):
-        """
-        Returns the open status of the current store.
+    def is_open(self) -> bool:
+        """Test whether the store is open.
         
         Returns
         -------
-        `bool`
-            ``True`` if the store is currently open. ``False`` if _store is
-            currently ``None``.
+        bool
+            True if the store is currently open, else False.
         """
         if self._store is not None and self._store.is_open:
             return True
-        return False
+        else:
+            return False
 
-    def is_empty(self):
-        """
-        Returns the empty status of the current store.
+    def is_empty(self) -> bool:
+        """Test whether the store has keys defined.
+
+        This method does not check metadata or the contents of any keys.
 
         Returns
         -------
-        `bool`
-            ``True`` if the store has not data in it. ``False`` if otherwise.
+        bool
+            True if no keys are defined, else False.
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         return not bool(self._store.keys())
 
     def backend(self):
@@ -269,7 +268,7 @@ class HDFStore(StoreInterface):
         `list`
             List of keys in the store.
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         return self._store.keys()
 
     def close(self):
@@ -333,7 +332,7 @@ class HDFStore(StoreInterface):
         :py:class:`~pandas.DataFrame` or 
             :py:class:`~pandas.io.pytables.TableIterator`
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         if where is not None and not isinstance(where, str):
             raise TypeError("`where` must be a string.")
         if columns is not None and not isinstance(columns, list):
@@ -401,7 +400,7 @@ class HDFStore(StoreInterface):
         -------
         :py:class:`~pandas.Series`
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         if not isinstance(column, str):
             raise TypeError("`column` must be a string.")
 
@@ -453,7 +452,7 @@ class HDFStore(StoreInterface):
         :py:class:`~pandas.DataFrame` or 
             :py:class:`~pandas.io.pytables.TableIterator`
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         keys = list(keys)
 
         if where is not None and not isinstance(where, str):
@@ -527,7 +526,7 @@ class HDFStore(StoreInterface):
         `int`
             Number of rows removed (or None if not a Table)
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         return self._store.remove(key, where)
 
     def append(self, key, value, data_columns=None, min_itemsize=None):
@@ -550,7 +549,7 @@ class HDFStore(StoreInterface):
         min_itemsize : `int`:
             The size of the largest index in *value*
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         if self.check(key):
             if set(value.index) & set(self.get(key).index):
                 log_message(
@@ -604,7 +603,7 @@ class HDFStore(StoreInterface):
         append : `bool`
             ``True`` to append to an existing dataframe.
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         if append and self.check(key):
             if set(value.index) & set(self.get(key).index):
                 log_message(
@@ -644,7 +643,7 @@ class HDFStore(StoreInterface):
         """
         Clears all data in the store by closing and re-opening in write mode.
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         self.open(self.filename, mode="w")
 
     def check(self, key):
@@ -661,7 +660,7 @@ class HDFStore(StoreInterface):
         `bool`
             ``True`` if *key* specifies a valid table.
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         return key in self.keys()
 
     def get(self, key):
@@ -678,7 +677,7 @@ class HDFStore(StoreInterface):
         :py:class:`~pandas.DataFrame`
             DataFrame at *key*
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         try:
             return self._store[key]
         except KeyError:
@@ -731,7 +730,7 @@ class HDFStore(StoreInterface):
         `dict`
             The metadata stored.
         """
-        self.ensure_open()
+        self.raise_if_not_open()
         if not self.check(key):
             raise KeyError("Key '{}' not found in store.".format(key))
 
@@ -764,11 +763,14 @@ class HDFStore(StoreInterface):
         this_metadata = self.get_metadata(key)
         return this_metadata == data
 
-    def ensure_open(self):
-        """
-        Raises a ValueError if there is no open store.
+    def raise_if_not_open(self) -> None:
+        """Helper method to raise a ValueError if the store is not open.
+
+        Raises
+        ------
+        ValueError
+            If the store is not open.
+
         """
         if not self.is_open():
-            raise ValueError(
-                "Cannot perform store operation if no store has" " been opened."
-            )
+            raise ValueError("cannot perform store operation if the store is not open")
