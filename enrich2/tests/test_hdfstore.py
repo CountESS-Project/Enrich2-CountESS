@@ -16,8 +16,8 @@ from enrich2.tests.store_interface_tests import (
     TestStoreSelect,
 )
 
-# overwrite the test case's source module so it reports this file in unittest output
-for test_case in (
+# create a list of all the imported test cases
+test_cases = [
     TestStore,
     TestStoreAppend,
     TestStoreCheckKeyExists,
@@ -27,24 +27,17 @@ for test_case in (
     TestStorePut,
     TestStoreRemove,
     TestStoreSelect,
-):
-    test_case.__module__ = "enrich2.tests.test_hdfstore"
+]
+
+# overwrite the test case's source module so it reports this file in unittest output
+for tc in test_cases:
+    tc.__module__ = "enrich2.tests.test_hdfstore"
 
 
 def load_tests(loader, tests, pattern) -> unittest.TestSuite:
     suite = unittest.TestSuite()
-    for test_case in (
-        TestStore,
-        TestStoreAppend,
-        TestStoreCheckKeyExists,
-        TestStoreFileOps,
-        TestStoreGetKey,
-        TestStoreMetadata,
-        TestStorePut,
-        TestStoreRemove,
-        TestStoreSelect,
-    ):
-        tests = loader.loadTestsFromTestCase(test_case)
+    for tc in test_cases:
+        tests = loader.loadTestsFromTestCase(tc)
         suite.addTests(tests)
     return suite
 
