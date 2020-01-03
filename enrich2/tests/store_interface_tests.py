@@ -239,7 +239,7 @@ class TestStoreRemove(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTest
 class TestStoreCheckKeyExists(
     StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested
 ):
-    def test_check_key(self) -> None:
+    def test_has_key(self) -> None:
         data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
 
         with tempfile.TemporaryDirectory() as data_dir:
@@ -247,8 +247,8 @@ class TestStoreCheckKeyExists(
             store = self.StoreInterface(store_path, mode="w")
 
             store.put("/test_table", data)
-            self.assertTrue(store.check("/test_table"))
-            self.assertFalse(store.check("/foo_bar"))
+            self.assertIn("/test_table", store)
+            self.assertNotIn("/foo_bar", store)
 
             store.close()
 
