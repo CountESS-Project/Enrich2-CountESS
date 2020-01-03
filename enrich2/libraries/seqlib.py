@@ -35,7 +35,7 @@ import pandas as pd
 from ..base.storemanager import StoreManager
 from ..base.utils import fix_filename, compute_md5, log_message
 from ..base.constants import ELEMENT_LABELS
-from enrich2.store.interface import HDFStore
+from enrich2.store.hdf import HDFStore
 
 
 __all__ = ["SeqLib"]
