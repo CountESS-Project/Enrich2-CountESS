@@ -17,14 +17,15 @@
 
 from abc import abstractmethod
 from collections import UserDict
-from typing import Sequence, Mapping, Dict, Any
+from typing import Sequence, Mapping, Dict, Any, Union
 import numpy as np
 import dask.dataframe as dd
+import pandas as pd
 
 
 class StoreInterface(UserDict):
     @abstractmethod
-    def put(self, key: str, value) -> None:
+    def put(self, key: str, value: Union[dd.DataFrame, pd.DataFrame]) -> None:
         pass
 
     @abstractmethod
