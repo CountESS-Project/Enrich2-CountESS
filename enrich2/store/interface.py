@@ -31,7 +31,7 @@ import pandas as pd
 from abc import ABC, abstractclassmethod
 from typing import Optional
 
-from ..base.utils import log_message
+from enrich2.base.utils import log_message
 
 
 class StoreInterface(ABC):
