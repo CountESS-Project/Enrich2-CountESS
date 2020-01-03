@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.com/VariantEffect/Enrich2-py3.svg?branch=test_refactor)](https://travis-ci.com/VariantEffect/Enrich2-py3)
-[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/Enrich2-py3/badge.svg?branch=test_refactor)](https://coveralls.io/github/VariantEffect/Enrich2-py3?branch=test_refactor)
+[![Build Status](https://travis-ci.com/VariantEffect/Enrich2-py3.svg?branch=store_dev)](https://travis-ci.com/VariantEffect/Enrich2-py3)
+[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/Enrich2-py3/badge.svg?branch=store_dev)](https://coveralls.io/github/VariantEffect/Enrich2-py3?branch=store_dev)
 
 Untitled Enrich2 Successor
 ==========================
