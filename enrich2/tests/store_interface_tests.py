@@ -17,7 +17,6 @@
 
 
 import os
-from collections import OrderedDict as Od
 import pandas as pd
 import numpy as np
 import unittest
@@ -512,7 +511,7 @@ class TestStoreSelect(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTest
         result = self.store.select_as_multiple(
             keys=["/test_table_1", "/test_table_2"], where="count1=2"
         )
-        data = Od(count1=[2], score1=[0.2], count2=[5], score2=[0.5])
+        data = dict(count1=[2], score1=[0.2], count2=[5], score2=[0.5])
         expected = pd.DataFrame(data, index=["AAC"])
         self.assertTrue(result.equals(expected))
 
@@ -535,7 +534,7 @@ class TestStoreSelect(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTest
         result = self.store.select_as_multiple(
             keys=["/test_table_1", "/test_table_2"], columns=["score1", "score2"]
         )
-        expected = Od(score1=[0.1, 0.2, 0.3], score2=[0.4, 0.5, 0.6])
+        expected = dict(score1=[0.1, 0.2, 0.3], score2=[0.4, 0.5, 0.6])
         expected = pd.DataFrame(expected, index=["AAA", "AAC", "AAG"])
         self.assertTrue(result.equals(expected))
 
@@ -611,7 +610,7 @@ class TestStoreSelect(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTest
             where="count2=6",
             columns=["score1", "score2"],
         )
-        expected = Od(score1=[0.3], score2=[0.6])
+        expected = dict(score1=[0.3], score2=[0.6])
         expected = pd.DataFrame(expected, index=["AAG"])
         self.assertTrue(result.equals(expected))
 
