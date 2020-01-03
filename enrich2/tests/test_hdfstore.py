@@ -1,9 +1,9 @@
 import unittest
 
-from enrich2.store.hdf import HDFStore
+from enrich2.store.hdf import HdfStore
 import enrich2.tests.config as config
 
-config.StoreInterfaceBeingTested = HDFStore
+config.StoreInterfaceBeingTested = HdfStore
 from enrich2.tests.store_interface_tests import (
     TestStore,
     TestStoreAppend,

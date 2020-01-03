@@ -32,7 +32,7 @@ from enrich2.store.interface import StoreInterface
 from enrich2.base.utils import log_message
 
 
-class HDFStore(StoreInterface):
+class HdfStore(StoreInterface):
     """
     A wrapper to the the :py:class:`~pandas.HDFStore` class that implements
     the Enrich2 standard store interface.

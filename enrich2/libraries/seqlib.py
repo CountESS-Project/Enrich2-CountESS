@@ -35,7 +35,7 @@ import pandas as pd
 from ..base.storemanager import StoreManager
 from ..base.utils import fix_filename, compute_md5, log_message
 from ..base.constants import ELEMENT_LABELS
-from enrich2.store.hdf import HDFStore
+from enrich2.store.hdf import HdfStore
 
 
 __all__ = ["SeqLib"]
@@ -558,7 +558,7 @@ class SeqLib(StoreManager):
         fname : `str`
             The file name of the H5 store to load.
         """
-        store = HDFStore(fname)
+        store = HdfStore(fname)
         log_message(
             logging_callback=logging.info,
             msg="Using existing HDF5 data store '{}' for raw data".format(fname),

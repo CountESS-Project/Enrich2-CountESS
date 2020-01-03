@@ -34,7 +34,7 @@ from .utils import nested_format
 from ..base.utils import fix_filename
 from .config_constants import SCORER, SCORER_PATH
 from ..base.constants import ELEMENT_LABELS
-from enrich2.store.hdf import HDFStore
+from enrich2.store.hdf import HdfStore
 
 import logging
 from ..base.utils import log_message
@@ -664,7 +664,7 @@ class StoreManager(object):
                 extra={"oname": self.name},
             )
             if os.path.exists(self.store_path):
-                store = HDFStore(self.store_path, mode="a")
+                store = HdfStore(self.store_path, mode="a")
                 for key in store.keys():
                     clear |= not self.check_metadata(key, store)
                 if clear:
@@ -705,7 +705,7 @@ class StoreManager(object):
                     extra={"oname": self.name},
                 )
 
-            self.store = HDFStore(self.store_path, mode="a")
+            self.store = HdfStore(self.store_path, mode="a")
 
             if self.force_recalculate or force_delete:
                 if "/main" in self.store:
@@ -924,7 +924,7 @@ class StoreManager(object):
         ----------
         key : `str`
             The key to the current table
-        store : :py:class:`~HDFStore`
+        store : :py:class:`~HdfStore`
             The store object to check
 
         Returns
