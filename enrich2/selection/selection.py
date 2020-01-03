@@ -401,7 +401,7 @@ class Selection(StoreManager):
         for tp in self.timepoints:
             for lib in self.libraries[tp]:
                 complete_index = complete_index.union(
-                    pd.Index(lib.store.select_column(lib_table, "index"))
+                    pd.Index(lib.store.get_column(lib_table, "index"))
                 )
         log_message(
             logging_callback=logging.info,
@@ -536,7 +536,7 @@ class Selection(StoreManager):
 
         table_key = "/main/{}/counts".format(label)
         libs = [lib for tp in self.timepoints for lib in self.libraries[tp]]
-        series_ls = [lib.store.select_column(table_key, "index") for lib in libs]
+        series_ls = [lib.store.get_column(table_key, "index") for lib in libs]
         index_ls = [pd.Index(series.values) for series in series_ls]
         index_len_ls = [len(set(idx)) for idx in index_ls]
         common = reduce(lambda idx1, idx2: idx1.intersection(idx2), index_ls)
@@ -562,7 +562,7 @@ class Selection(StoreManager):
         """
         table_key = "/main/{}/counts".format(label)
         libs = [lib for tp in self.timepoints for lib in self.libraries[tp]]
-        series_ls = [lib.store.select_column(table_key, "index") for lib in libs]
+        series_ls = [lib.store.get_column(table_key, "index") for lib in libs]
         all_good = all(set(s.values) != set(["_wt"]) for s in series_ls)
         if not all_good:
             raise ValueError(
@@ -723,7 +723,7 @@ class Selection(StoreManager):
         """
         mapping = dict()
         try:
-            variants = self.store.select_column(
+            variants = self.store.get_column(
                 key="/main/variants/counts", column="index"
             )
         except KeyError:

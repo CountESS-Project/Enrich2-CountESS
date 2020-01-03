@@ -68,7 +68,7 @@ class StoreInterface(ABC):
         pass
 
     @abstractclassmethod
-    def select_column(self, key, column):
+    def get_column(self, key, column):
         pass
 
     @abstractclassmethod
@@ -383,7 +383,7 @@ class HDFStore(StoreInterface):
                 )
         return result
 
-    def select_column(self, key, column):
+    def get_column(self, key, column):
         """
         Return a series with integer index from column. An empty series will
         be returned if ``column`` is not a valid column in the table 
@@ -408,7 +408,7 @@ class HDFStore(StoreInterface):
         if result.empty:
             log_message(
                 logging_callback=logging.warning,
-                msg="`select_column` with the following attributes: "
+                msg="`get_column` with the following attributes: "
                 "key='{}', column='{}' returned an empty "
                 "DataFrame.".format(key, column),
                 extra={"oname": self.__class__.__name__},

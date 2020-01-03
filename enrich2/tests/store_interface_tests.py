@@ -520,7 +520,7 @@ class TestStoreSelect(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTest
         self.store = self.StoreInterface(self.path, mode="w")
         self.store.put("/test_table", data)
 
-        result = self.store.select_column("/test_table", "score")
+        result = self.store.get_column("/test_table", "score")
         expected = pd.Series([0.1, 0.2, 0.3])
         self.assertTrue(result.equals(expected))
 

@@ -837,7 +837,7 @@ class StoreManager(object):
 
         # assumes the source tables all have the same index
         # find the min_itemsize
-        max_index_length = self.store.select_column(source[0], "index").map(len).max()
+        max_index_length = self.store.get_column(source[0], "index").map(len).max()
 
         selections = self.store.select_as_multiple(
             keys=source, where=source_query, selector=source[0], chunk=True
@@ -869,7 +869,7 @@ class StoreManager(object):
         """
         shared = pd.Index()
         for t in tables:
-            shared = shared.union(pd.Index(self.store.select_column(t, "index")))
+            shared = shared.union(pd.Index(self.store.get_column(t, "index")))
         return shared
 
     # -----------------------------------------------------------------------#
