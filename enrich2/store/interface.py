@@ -25,101 +25,117 @@ Contains an interface to abstractly represent store operations such as
 this interface.
 """
 
-import logging
-import tables
-import pandas as pd
-from abc import ABC, abstractclassmethod
-from typing import Optional
-
-from enrich2.base.utils import log_message
+from abc import ABC, abstractmethod
 
 
 class StoreInterface(ABC):
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def __getitem__(self, item):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def __iter__(self):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def __contains__(self, item):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def put(self, key, value, data_columns=None, min_itemsize=None, append=False):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def append(self, key, value, data_columns=None, min_itemsize=None):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def clear(self):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def remove(self, key, where=None):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def select(self, key, where=None, columns=None, chunk=False):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get_column(self, key, column):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def select_as_multiple(self, keys, where, columns=None, selector=None, chunk=False):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get(self, key):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def check(self, key):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def backend(self):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def keys(self):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def close(self):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def open(self, path, mode="a"):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def is_open(self):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def set_metadata(self, key, data, update=True):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def get_metadata(self, key):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def check_metadata(self, key, data):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def is_empty(self):
         pass
 
-    @abstractclassmethod
+    @classmethod
+    @abstractmethod
     def raise_if_not_open(self):
         pass
 
