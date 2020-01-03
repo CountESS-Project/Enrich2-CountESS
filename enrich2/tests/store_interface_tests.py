@@ -19,6 +19,7 @@
 import os
 from collections import OrderedDict as Od
 import pandas as pd
+import numpy as np
 import unittest
 import tempfile
 import operator
@@ -461,68 +462,36 @@ class TestStoreSelect(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTest
 
             store.close()
 
-    @unittest.expectedFailure
-    def test_error_select_using_wherecolumns(self):
-        self.path = os.path.join(self.data_dir, "test.h5")
+    def test_get_column(self) -> None:
         data = pd.DataFrame(
             {"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=["AAA", "AAC", "AAG"]
         )
 
-        self.store = self.StoreInterface(self.path, mode="w")
-        self.store.put("/test_table", data)
+        with tempfile.TemporaryDirectory() as data_dir:
+            store_path = os.path.join(data_dir, "test.h5")
+            store = self.StoreInterface(store_path, mode="w")
 
-        with self.assertRaises(ValueError):
-            self.store.select("/test_table", where='columns=["score"] & count<3')
+            store.put("/test_table", data)
 
-    @unittest.expectedFailure
-    def test_select_with_chunks(self):
-        self.path = os.path.join(self.data_dir, "test.h5")
+            result = store.get_column("/test_table", "score")
+            np.testing.assert_array_equal(result.values, data["score"].values)
+
+            store.close()
+
+    def test_get_column_no_matches(self) -> None:
         data = pd.DataFrame(
             {"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=["AAA", "AAC", "AAG"]
         )
 
-        self.store = self.StoreInterface(self.path, mode="w")
-        self.store.put("/test_table", data)
+        with tempfile.TemporaryDirectory() as data_dir:
+            store_path = os.path.join(data_dir, "test.h5")
+            store = self.StoreInterface(store_path, mode="w")
 
-        result = self.store.select(
-            "/test_table", where="count<3", columns=["score"], chunk=True
-        )
-        expected = pd.DataFrame({"score": [0.1, 0.2]}, index=["AAA", "AAC"])
-        for df in result:
-            self.assertTrue(df.equals(expected))
+            store.put("/test_table", data)
 
-    @unittest.expectedFailure
-    def test_valueerror_use_chunks_with_where_columns(self):
-        self.path = os.path.join(self.data_dir, "test.h5")
-        data = pd.DataFrame(
-            {"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=["AAA", "AAC", "AAG"]
-        )
+            self.assertRaises(KeyError, store.get_column, "/test_table", "foo")
 
-        self.store = self.StoreInterface(self.path, mode="w")
-        self.store.put("/test_table", data)
-
-        with self.assertRaises(ValueError):
-            self.store.select(
-                "/test_table", where='columns=["count"] & count<3', chunk=True
-            )
-        with self.assertRaises(ValueError):
-            self.store.select(
-                "/test_table", where='column=["count"] & count<3', chunk=True
-            )
-
-    @unittest.expectedFailure
-    def test_select_column(self):
-        self.path = os.path.join(self.data_dir, "test.h5")
-        data = pd.DataFrame(
-            {"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=["AAA", "AAC", "AAG"]
-        )
-
-        self.store = self.StoreInterface(self.path, mode="w")
-        self.store.put("/test_table", data)
-
-        result = self.store.get_column("/test_table", "score")
-        expected = pd.Series([0.1, 0.2, 0.3])
-        self.assertTrue(result.equals(expected))
+            store.close()
 
     @unittest.expectedFailure
     def test_select_multiple_using_where(self):
