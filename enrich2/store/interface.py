@@ -15,126 +15,41 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-
-"""
-Enrich2 base wrapper module
-=================================
-
-Contains an interface to abstractly represent store operations such as 
-'put', 'append', 'select' etc. Provides classes that concretely implement
-this interface.
-"""
-
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from collections import UserDict
+from typing import Sequence, Mapping, Dict, Any
+import numpy as np
+import dask.dataframe as dd
 
 
-class StoreInterface(ABC):
-    @classmethod
+class StoreInterface(UserDict):
     @abstractmethod
-    def __getitem__(self, item):
+    def put(self, key: str, value) -> None:
         pass
 
-    @classmethod
     @abstractmethod
-    def __iter__(self):
+    def drop(self, key: str) -> None:
         pass
 
-    @classmethod
     @abstractmethod
-    def __contains__(self, item):
+    def get(self, key: str) -> dd.DataFrame:
         pass
 
-    @classmethod
     @abstractmethod
-    def put(self, key, value, data_columns=None, min_itemsize=None, append=False):
+    def get_column(self, key: str, column: str) -> np.ndarray:
         pass
 
-    @classmethod
     @abstractmethod
-    def append(self, key, value, data_columns=None, min_itemsize=None):
+    def get_with_merge(self, keys: Sequence[str]) -> dd.DataFrame:
         pass
 
-    @classmethod
     @abstractmethod
-    def clear(self):
+    def set_metadata(self, key: str, metadata: Mapping[str, Any], update: bool = True):
         pass
 
-    @classmethod
     @abstractmethod
-    def remove(self, key, where=None):
+    def get_metadata(self, key: str) -> Dict[str, Any]:
         pass
 
-    @classmethod
-    @abstractmethod
-    def select(self, key, where=None, columns=None, chunk=False):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def get_column(self, key, column):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def select_as_multiple(self, keys, where, columns=None, selector=None, chunk=False):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def get(self, key):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def check(self, key):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def backend(self):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def keys(self):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def close(self):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def open(self, path, mode="a"):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def is_open(self):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def set_metadata(self, key, data, update=True):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def get_metadata(self, key):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def check_metadata(self, key, data):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def is_empty(self):
-        pass
-
-    @classmethod
-    @abstractmethod
-    def raise_if_not_open(self):
-        pass
+    def is_empty(self) -> bool:
+        return len(self.keys()) == 0
