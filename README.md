@@ -1,16 +1,16 @@
-[![Build Status](https://travis-ci.com/VariantEffect/Enrich2-py3.svg?branch=master)](https://travis-ci.com/VariantEffect/Enrich2-py3)
-[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/Enrich2-py3/badge.svg?branch=master)](https://coveralls.io/github/VariantEffect/Enrich2-py3?branch=master)
+[![Build Status](https://travis-ci.com/VariantEffect/CountESS.svg?branch=master)](https://travis-ci.com/VariantEffect/CountESS)
+[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/CountESS/badge.svg?branch=master)](https://coveralls.io/github/VariantEffect/CountESS?branch=master)
 
-Untitled Enrich2 Successor
-==========================
+CountESS
+========
 
-Enrich2 is a general software tool for processing, analyzing, and visualizing data from deep mutational scanning experiments.
+CountESS (Count-based Experiment Scoring and Statistics) is a general software tool for processing, analyzing, and visualizing data from high-throughput functional genomics experiments based on count data, such as deep mutational scanning.
 
-This is a new project seeking to update Enrich2 to use Python 3.6+ and add additional features.
+This project extends previous work on Enrich2 by moving from Python 2.7 to Python 3.6+ and add adding new features to improve performance and enable analysis of new types of data.
 
 Questions?
 ----------
 
-Please use the [GitHub Issue Tracker](https://github.com/FowlerLab/Enrich2/issues) to file bug reports or request features. 
+Please use the [GitHub Issue Tracker](https://github.com/VariantEffect/CountESS/issues) to file bug reports or request features. 
 
-Enrich2 was written by [Alan F Rubin](mailto:alan.rubin@wehi.edu.au) and [Daniel C Esposito](mailto:esposito.d@wehi.edu.au).
+CountESS is maintained by [Alan F Rubin](mailto:alan.rubin@wehi.edu.au).
