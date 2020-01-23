@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.com/VariantEffect/CountESS.svg?branch=master)](https://travis-ci.com/VariantEffect/CountESS)
-[![Coverage Status](https://coveralls.io/repos/github/VariantEffect/CountESS/badge.svg?branch=master)](https://coveralls.io/github/VariantEffect/CountESS?branch=master)
+[![Build Status](https://travis-ci.com/CountESS-Project/CountESS.svg?branch=master)](https://travis-ci.com/CountESS-Project/CountESS)
+[![Coverage Status](https://coveralls.io/repos/github/CountESS-Project/CountESS/badge.svg?branch=master)](https://coveralls.io/github/CountESS-Project/CountESS?branch=master)
 
 CountESS
 ========
