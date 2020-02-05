@@ -5,28 +5,20 @@ import enrich2.tests.config as config
 
 config.StoreInterfaceBeingTested = HdfStore
 from enrich2.tests.store_interface_tests import (
-    TestStore,
-    TestStoreAppend,
-    TestStoreCheckKeyExists,
-    TestStoreFileOps,
-    TestStoreGetKey,
-    TestStoreMetadata,
+    TestStorePath,
     TestStorePut,
-    TestStoreRemove,
-    TestStoreSelect,
+    TestStoreDrop,
+    TestStoreGet,
+    TestStoreMetadata,
 )
 
 # create a list of all the imported test cases
 test_cases = [
-    TestStore,
-    TestStoreAppend,
-    TestStoreCheckKeyExists,
-    TestStoreFileOps,
-    TestStoreGetKey,
-    TestStoreMetadata,
+    TestStorePath,
     TestStorePut,
-    TestStoreRemove,
-    TestStoreSelect,
+    TestStoreDrop,
+    TestStoreGet,
+    TestStoreMetadata,
 ]
 
 # overwrite the test case's source module so it reports this file in unittest output

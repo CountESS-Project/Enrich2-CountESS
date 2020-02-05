@@ -15,15 +15,34 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-from abc import abstractmethod
-from collections import UserDict
-from typing import Sequence, Mapping, Dict, Any, Union
+from abc import ABCMeta, abstractmethod
+from typing import List, Sequence, Mapping, Dict, Any, Union
+import os.path
 import numpy as np
 import dask.dataframe as dd
 import pandas as pd
 
 
-class StoreInterface(UserDict):
+class StoreInterface(metaclass=ABCMeta):
+    file_extensions = None
+
+    def __init__(self, path: str) -> None:
+        self._keys = list()
+        if os.path.splitext(path)[-1].lower() not in self.file_extensions:
+            raise ValueError(f"invalid file extension for {self.__class__.__name__}")
+        # TODO: path operations, e.g. normalize and abspath
+        self._path = path
+
+    def keys(self) -> List[str]:
+        return self._keys
+
+    def is_empty(self) -> bool:
+        return len(self._keys) == 0
+
+    @property
+    def path(self) -> str:
+        return self._path
+
     @abstractmethod
     def put(self, key: str, value: Union[dd.DataFrame, pd.DataFrame]) -> None:
         pass
@@ -45,12 +64,11 @@ class StoreInterface(UserDict):
         pass
 
     @abstractmethod
-    def set_metadata(self, key: str, metadata: Mapping[str, Any], update: bool = True):
+    def set_metadata(
+        self, key: str, metadata: Mapping[str, Any], update: bool = True
+    ) -> None:
         pass
 
     @abstractmethod
     def get_metadata(self, key: str) -> Dict[str, Any]:
         pass
-
-    def is_empty(self) -> bool:
-        return len(self.keys()) == 0
