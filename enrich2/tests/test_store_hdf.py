@@ -4,26 +4,12 @@ from enrich2.store.hdf import HdfStore
 import enrich2.tests.config as config
 
 config.StoreInterfaceBeingTested = HdfStore
-from enrich2.tests.store_interface_tests import (
-    TestStorePath,
-    TestStorePut,
-    TestStoreDrop,
-    TestStoreGet,
-    TestStoreMetadata,
-)
-
-# create a list of all the imported test cases
-test_cases = [
-    TestStorePath,
-    TestStorePut,
-    TestStoreDrop,
-    TestStoreGet,
-    TestStoreMetadata,
-]
+from enrich2.tests.store_interface_tests import *
+test_cases = [globals()[x] for x in globals().keys() if x.startswith("TestStore")]
 
 # overwrite the test case's source module so it reports this file in unittest output
 for tc in test_cases:
-    tc.__module__ = "enrich2.tests.test_store_hdf"
+    tc.__module__ = __name__
 
 
 def load_tests(loader, tests, pattern) -> unittest.TestSuite:
