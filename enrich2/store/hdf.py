@@ -24,12 +24,14 @@ from enrich2.store.interface import StoreInterface
 
 
 class HdfStore(StoreInterface):
-    """
-    Implementation for using a single HDF5 file as the storage backend.
+    """Implementation for using a single HDF5 file as the storage backend.
 
-    To ensure compatibility with dask, the file is written using table format.
+    To ensure compatibility with Dask, the file is written using table format.
     Attempting to use an existing HDF5 file in fixed format may result in a
     TypeError.
+
+    Leading "/" characters are removed from the HDF5 keys when an existing
+    store is loaded.
 
     Parameters
     ----------
@@ -52,7 +54,9 @@ class HdfStore(StoreInterface):
 
         if self.path.is_file():
             with pd.HDFStore(str(self.path)) as store:
-                self._keys.extend(store.keys())
+                # drop the leading "/" from the file keys
+                file_keys = [k[1:] if k.startswith("/") else k for k in store.keys()]
+                self._keys.extend(file_keys)
 
     def put(self, key: str, value: dd.DataFrame) -> None:
         """
