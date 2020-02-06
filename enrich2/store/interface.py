@@ -51,7 +51,7 @@ class StoreInterface(metaclass=ABCMeta):
         return self._keys
 
     def is_empty(self) -> bool:
-        return len(self._keys) == 0
+        return len(self.keys()) == 0
 
     @property
     def path(self) -> pathlib.Path:
