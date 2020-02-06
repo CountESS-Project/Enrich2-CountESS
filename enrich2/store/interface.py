@@ -17,7 +17,8 @@
 
 from abc import ABCMeta, abstractmethod
 from typing import List, Sequence, Mapping, Dict, Any, Union
-import os.path
+from os import PathLike
+import pathlib
 import numpy as np
 import dask.dataframe as dd
 import pandas as pd
@@ -26,12 +27,16 @@ import pandas as pd
 class StoreInterface(metaclass=ABCMeta):
     file_extensions = None
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: Union[PathLike, str]) -> None:
         self._keys = list()
-        if os.path.splitext(path)[-1].lower() not in self.file_extensions:
+        if isinstance(path, str):
+            self._path = pathlib.Path(path)
+        elif isinstance(path, PathLike):
+            self._path = path
+        else:
+            raise TypeError(f"invalid file path object for {self.__class__.__name__}")
+        if self._path.suffix not in self.file_extensions:
             raise ValueError(f"invalid file extension for {self.__class__.__name__}")
-        # TODO: path operations, e.g. normalize and abspath
-        self._path = path
 
     def keys(self) -> List[str]:
         return self._keys

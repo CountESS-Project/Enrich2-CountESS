@@ -16,7 +16,7 @@
 #  along with Enrich2. If not, see <http://www.gnu.org/licenses/>.
 
 
-import os
+import pathlib
 import pandas as pd
 import numpy as np
 import unittest
@@ -28,7 +28,7 @@ from enrich2.tests.config import StoreInterfaceBeingTested
 class StoreInterfaceTest(unittest.TestCase):
     def setUp(self) -> None:
         self._temp_dir = tempfile.TemporaryDirectory()
-        self.path = os.path.join(
+        self.path = pathlib.Path(
             self._temp_dir.name, f"temp{self.StoreInterface.file_extensions[0]}"
         )
         self.store = self.StoreInterface(self.path)
@@ -43,7 +43,37 @@ class StoreInterfaceTest(unittest.TestCase):
 
 class TestStorePath(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):
     def test_path(self) -> None:
+        # tests the default implemented in StoreInterfaceTest.setUp()
         self.assertEqual(self.store.path, self.path)
+
+    def test_path_as_pathlike(self) -> None:
+        test_path = pathlib.Path(
+            self._temp_dir.name, f"test_path{self.StoreInterface.file_extensions[0]}"
+        )
+        test_store = self.StoreInterface(test_path)
+        self.assertEqual(test_store.path, test_path)
+
+    def test_path_as_string(self) -> None:
+        test_path = str(
+            pathlib.Path(
+                self._temp_dir.name,
+                f"test_path{self.StoreInterface.file_extensions[0]}",
+            )
+        )
+        test_store = self.StoreInterface(test_path)
+        self.assertEqual(str(test_store.path), test_path)
+
+    def test_path_as_invalid_type(self) -> None:
+        test_path = 1234
+        self.assertRaises(TypeError, self.StoreInterface, test_path)
+
+    def test_path_bad_extension(self) -> None:
+        test_path = pathlib.Path(self._temp_dir.name, f"test_path.mp3")
+        self.assertRaises(ValueError, self.StoreInterface, test_path)
+
+    def test_path_no_extension(self) -> None:
+        test_path = pathlib.Path(self._temp_dir.name, f"test_path")
+        self.assertRaises(ValueError, self.StoreInterface, test_path)
 
 
 class TestStorePut(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):
