@@ -29,10 +29,8 @@ class StoreInterface(metaclass=ABCMeta):
 
     def __init__(self, path: Union[PathLike, str]) -> None:
         self._keys = list()
-        if isinstance(path, str):
+        if isinstance(path, str) or isinstance(path, PathLike):
             self._path = pathlib.Path(path)
-        elif isinstance(path, PathLike):
-            self._path = path
         else:
             raise TypeError(f"invalid file path object for {self.__class__.__name__}")
         if self._path.suffix not in self.file_extensions:
@@ -45,7 +43,7 @@ class StoreInterface(metaclass=ABCMeta):
         return len(self._keys) == 0
 
     @property
-    def path(self) -> str:
+    def path(self) -> pathlib.Path:
         return self._path
 
     @abstractmethod

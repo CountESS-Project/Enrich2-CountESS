@@ -15,11 +15,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
-import os.path
 import pandas as pd
 import dask.dataframe as dd
 import numpy as np
 from typing import Union, Sequence, Mapping, Any, Dict
+from os import PathLike
 from enrich2.store.interface import StoreInterface
 
 
@@ -47,11 +47,11 @@ class HdfStore(StoreInterface):
     file_extensions = (".h5",)
     metadata_key = "countESS"
 
-    def __init__(self, path: str):
+    def __init__(self, path: Union[PathLike, str]):
         super().__init__(path)
 
-        if os.path.isfile(self.path):
-            with pd.HDFStore(self.path) as store:
+        if self.path.is_file():
+            with pd.HDFStore(str(self.path)) as store:
                 self._keys.extend(store.keys())
 
     def put(self, key: str, value: Union[dd.DataFrame, pd.DataFrame]) -> None:
