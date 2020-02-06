@@ -18,6 +18,7 @@
 
 import pathlib
 import pandas as pd
+import dask.dataframe as dd
 import numpy as np
 import unittest
 import tempfile
@@ -92,22 +93,24 @@ class TestStoreReopen(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTest
         self.assertListEqual(self.store.keys(), store_2.keys())
 
     def test_reopen_with_data(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
 
-        self.store.put("/test_table", data)
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
 
         store_2 = self.StoreInterface(self.path)
         self.assertListEqual(self.store.keys(), store_2.keys())
 
-        result_1 = self.store.get("/test_table")
-        result_2 = store_2.get("/test_table")
+        result_1 = self.store.get("test_table")
+        result_2 = store_2.get("test_table")
         pd.testing.assert_frame_equal(result_1.compute(), result_2.compute())
 
     def test_reopen_with_delete(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
 
-        self.store.put("/test_table", data)
-        self.store.drop("/test_table")
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+        self.store.drop("test_table")
 
         store_2 = self.StoreInterface(self.path)
         self.assertListEqual(self.store.keys(), store_2.keys())
@@ -115,198 +118,197 @@ class TestStoreReopen(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTest
 
 class TestStorePut(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):
     def test_put_new(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
 
-        self.store.put("/test_table", data)
-        self.assertListEqual(self.store.keys(), ["/test_table"])
-        result = self.store.get("/test_table")
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+        self.assertListEqual(self.store.keys(), ["test_table"])
+        result = self.store.get("test_table")
         pd.testing.assert_frame_equal(result.compute(), data)
 
     def test_put_overwrite(self) -> None:
-        data1 = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
-        data2 = pd.DataFrame({"count": [4, 5, 6]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data1 = pd.DataFrame({"count": [1, 2, 3]}, index=index)
+        data2 = pd.DataFrame({"count": [4, 5, 6]}, index=index)
 
-        self.store.put("/test_table", data1)
-        self.store.put("/test_table", data2)
-        self.assertListEqual(self.store.keys(), ["/test_table"])
-        result = self.store.get("/test_table")
+        self.store.put("test_table", dd.from_pandas(data1, npartitions=2))
+        self.store.put("test_table", dd.from_pandas(data2, npartitions=2))
+        self.assertListEqual(self.store.keys(), ["test_table"])
+        result = self.store.get("test_table")
         pd.testing.assert_frame_equal(result.compute(), data2)
 
     def test_is_empty(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
 
         self.assertTrue(self.store.is_empty())
 
-        self.store.put("/test_table", data)
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
         self.assertFalse(self.store.is_empty())
 
 
 class TestStoreDrop(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):
     def test_drop(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
 
-        self.store.put("/test_table", data)
-        self.store.drop("/test_table")
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+        self.store.drop("test_table")
         self.assertTrue(self.store.is_empty())
 
     def test_drop_missing(self) -> None:
-        self.assertRaises(KeyError, self.store.drop, "/test_table")
+        self.assertRaises(KeyError, self.store.drop, "test_table")
 
 
 class TestStoreGet(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):
     def test_get(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
 
-        self.store.put("/test_table", data)
-        self.assertListEqual(self.store.keys(), ["/test_table"])
-        result = self.store.get("/test_table")
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+        self.assertListEqual(self.store.keys(), ["test_table"])
+        result = self.store.get("test_table")
         pd.testing.assert_frame_equal(result.compute(), data)
 
     def test_get_missing(self) -> None:
-        self.assertRaises(KeyError, self.store.get, "/test_table")
+        self.assertRaises(KeyError, self.store.get, "test_table")
 
     def test_get_column(self) -> None:
-        data = pd.DataFrame(
-            {"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=["AAA", "AAC", "AAG"]
-        )
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=index)
 
-        self.store.put("/test_table", data)
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
 
-        result = self.store.get_column("/test_table", "score")
+        result = self.store.get_column("test_table", "score")
         np.testing.assert_array_equal(result, data["score"].values)
 
     def test_get_missing_column(self) -> None:
-        data = pd.DataFrame(
-            {"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=["AAA", "AAC", "AAG"]
-        )
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=index)
 
-        self.store.put("/test_table", data)
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
 
-        self.assertRaises(KeyError, self.store.get_column, "/test_table", "missing")
+        self.assertRaises(KeyError, self.store.get_column, "test_table", "missing")
 
     def test_get_with_merge(self):
-        data1 = pd.DataFrame(
-            {"count1": [1, 2, 3], "score1": [0.1, 0.2, 0.3]},
-            index=["AAA", "AAC", "AAG"],
-        )
-        data2 = pd.DataFrame(
-            {"count2": [4, 5, 6], "score2": [0.4, 0.5, 0.6]},
-            index=["AAA", "AAC", "AAG"],
-        )
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data1 = pd.DataFrame({"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index)
+        data2 = pd.DataFrame({"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index)
 
-        self.store.put("/test_table_1", data1)
-        self.store.put("/test_table_2", data2)
+        self.store.put("test_table_1", dd.from_pandas(data1, npartitions=2))
+        self.store.put("test_table_2", dd.from_pandas(data2, npartitions=2))
 
-        result = self.store.get_with_merge(keys=["/test_table_1", "/test_table_2"])
+        result = self.store.get_with_merge(keys=["test_table_1", "test_table_2"])
         expected = data1.merge(data2, how="inner", left_index=True, right_index=True)
         pd.testing.assert_frame_equal(result.compute(), expected)
 
     def test_get_with_merge_partial(self):
-        data1 = pd.DataFrame(
-            {"count1": [1, 2, 3], "score1": [0.1, 0.2, 0.3]},
-            index=["AAA", "AAC", "CCC"],
-        )
-        data2 = pd.DataFrame(
-            {"count2": [4, 5, 6], "score2": [0.4, 0.5, 0.6]},
-            index=["AAA", "AAC", "AAG"],
-        )
+        index1 = pd.Index(["AAA", "AAC", "CCC"], name="index")
+        index2 = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data1 = pd.DataFrame({"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index1)
+        data2 = pd.DataFrame({"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index2)
 
-        self.store.put("/test_table_1", data1)
-        self.store.put("/test_table_2", data2)
+        self.store.put("test_table_1", dd.from_pandas(data1, npartitions=2))
+        self.store.put("test_table_2", dd.from_pandas(data2, npartitions=2))
 
-        result = self.store.get_with_merge(keys=["/test_table_1", "/test_table_2"])
+        result = self.store.get_with_merge(keys=["test_table_1", "test_table_2"])
         expected = data1.merge(data2, how="inner", left_index=True, right_index=True)
         pd.testing.assert_frame_equal(result.compute(), expected)
 
     def test_get_with_merge_empty(self):
-        data1 = pd.DataFrame(
-            {"count1": [1, 2, 3], "score1": [0.1, 0.2, 0.3]},
-            index=["CCC", "GGG", "TTT"],
-        )
-        data2 = pd.DataFrame(
-            {"count2": [4, 5, 6], "score2": [0.4, 0.5, 0.6]},
-            index=["AAA", "AAC", "AAG"],
-        )
+        index1 = pd.Index(["CCC", "GGG", "TTT"], name="index")
+        index2 = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data1 = pd.DataFrame({"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index1)
+        data2 = pd.DataFrame({"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index2)
 
-        self.store.put("/test_table_1", data1)
-        self.store.put("/test_table_2", data2)
+        self.store.put("test_table_1", dd.from_pandas(data1, npartitions=2))
+        self.store.put("test_table_2", dd.from_pandas(data2, npartitions=2))
 
         self.assertRaises(
             ValueError,
             self.store.get_with_merge,
-            keys=["/test_table_1", "/test_table_2"],
+            keys=["test_table_1", "test_table_2"],
         )
 
 
 class TestStoreMetadata(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):
     def test_get_set_metadata(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
         metadata = {"hello": "world"}
 
-        self.store.put("/test_table", data)
-        self.store.set_metadata("/test_table", metadata)
-        result = self.store.get_metadata("/test_table")
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+        self.store.set_metadata("test_table", metadata)
+        result = self.store.get_metadata("test_table")
         self.assertDictEqual(result, metadata)
 
     def test_get_metadata_unset(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
 
-        self.store.put("/test_table", data)
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
 
-        result = self.store.get_metadata("/test_table")
+        result = self.store.get_metadata("test_table")
         self.assertDictEqual(result, {})
 
     def test_update_metadata(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
         metadata1 = {"hello": "world"}
         metadata2 = {"foo": "bar"}
 
-        self.store.put("/test_table", data)
-        self.store.set_metadata("/test_table", metadata1)
-        self.store.set_metadata("/test_table", metadata2, update=True)
-        result = self.store.get_metadata("/test_table")
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+        self.store.set_metadata("test_table", metadata1)
+        self.store.set_metadata("test_table", metadata2, update=True)
+        result = self.store.get_metadata("test_table")
         self.assertDictEqual(result, {**metadata1, **metadata2})
 
     def test_update_metadata_same_key(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
         metadata1 = {"hello": "world"}
         metadata2 = {"hello": "everyone"}
 
-        self.store.put("/test_table", data)
-        self.store.set_metadata("/test_table", metadata1)
-        self.store.set_metadata("/test_table", metadata2, update=True)
-        result = self.store.get_metadata("/test_table")
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+        self.store.set_metadata("test_table", metadata1)
+        self.store.set_metadata("test_table", metadata2, update=True)
+        result = self.store.get_metadata("test_table")
         self.assertDictEqual(result, metadata2)
 
     def test_replace_metadata(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
         metadata1 = {"hello": "world"}
         metadata2 = {"foo": "bar"}
 
-        self.store.put("/test_table", data)
-        self.store.set_metadata("/test_table", metadata1)
-        self.store.set_metadata("/test_table", metadata2, update=False)
-        result = self.store.get_metadata("/test_table")
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+        self.store.set_metadata("test_table", metadata1)
+        self.store.set_metadata("test_table", metadata2, update=False)
+        result = self.store.get_metadata("test_table")
         self.assertDictEqual(result, metadata2)
 
     def test_bad_metadata_type(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
         metadata = ["hello", "world"]
 
-        self.store.put("/test_table", data)
-        self.assertRaises(TypeError, self.store.set_metadata, "/test_table", metadata)
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+
+        self.assertRaises(TypeError, self.store.set_metadata, "test_table", metadata)
 
     def test_set_metadata_missing_key(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
         metadata = {"hello": "world"}
 
-        self.store.put("/test_table", data)
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
 
-        self.assertRaises(KeyError, self.store.set_metadata, "/missing_table", metadata)
+        self.assertRaises(KeyError, self.store.set_metadata, "missing_table", metadata)
 
     def test_get_metadata_missing_key(self) -> None:
-        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+        index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
 
-        self.store.put("/test_table", data)
+        self.store.put("test_table", dd.from_pandas(data, npartitions=2))
 
-        self.assertRaises(KeyError, self.store.get_metadata, "/missing_table")
+        self.assertRaises(KeyError, self.store.get_metadata, "missing_table")
