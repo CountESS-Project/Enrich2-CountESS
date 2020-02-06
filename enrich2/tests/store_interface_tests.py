@@ -27,6 +27,7 @@ from enrich2.tests.config import StoreInterfaceBeingTested
 
 __all__ = [
     "TestStorePath",
+    "TestStoreReopen",
     "TestStorePut",
     "TestStoreDrop",
     "TestStoreGet",
@@ -83,6 +84,33 @@ class TestStorePath(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested
     def test_path_no_extension(self) -> None:
         test_path = pathlib.Path(self._temp_dir.name, f"test_path")
         self.assertRaises(ValueError, self.StoreInterface, test_path)
+
+
+class TestStoreReopen(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):
+    def test_reopen_empty(self) -> None:
+        store_2 = self.StoreInterface(self.path)
+        self.assertListEqual(self.store.keys(), store_2.keys())
+
+    def test_reopen_with_data(self) -> None:
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+
+        self.store.put("/test_table", data)
+
+        store_2 = self.StoreInterface(self.path)
+        self.assertListEqual(self.store.keys(), store_2.keys())
+
+        result_1 = self.store.get("/test_table")
+        result_2 = store_2.get("/test_table")
+        pd.testing.assert_frame_equal(result_1.compute(), result_2.compute())
+
+    def test_reopen_with_delete(self) -> None:
+        data = pd.DataFrame({"count": [1, 2, 3]}, index=["AAA", "AAC", "AAG"])
+
+        self.store.put("/test_table", data)
+        self.store.drop("/test_table")
+
+        store_2 = self.StoreInterface(self.path)
+        self.assertListEqual(self.store.keys(), store_2.keys())
 
 
 class TestStorePut(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):
