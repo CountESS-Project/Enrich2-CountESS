@@ -5,6 +5,7 @@ import enrich2.tests.config as config
 
 config.StoreInterfaceBeingTested = HdfStore
 from enrich2.tests.store_interface_tests import *
+
 test_cases = [globals()[x] for x in globals().keys() if x.startswith("TestStore")]
 
 # overwrite the test case's source module so it reports this file in unittest output

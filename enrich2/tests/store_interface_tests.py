@@ -25,7 +25,14 @@ import tempfile
 from enrich2.tests.config import StoreInterfaceBeingTested
 
 
-__all__ = ["TestStorePath", "TestStorePut", "TestStoreDrop", "TestStoreGet", "TestStoreMetadata",]
+__all__ = [
+    "TestStorePath",
+    "TestStorePut",
+    "TestStoreDrop",
+    "TestStoreGet",
+    "TestStoreMetadata",
+]
+
 
 class StoreInterfaceTest(unittest.TestCase):
     def setUp(self) -> None:
