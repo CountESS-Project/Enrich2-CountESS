@@ -66,7 +66,7 @@ class HdfStore(StoreInterface):
             The data frame to store.
 
         """
-        if key not in self._keys:
+        if key not in self.keys():
             self._keys.append(key)
         value.to_hdf(self.path, key, format="table")
 
@@ -88,7 +88,7 @@ class HdfStore(StoreInterface):
             If the key is not in the store.
 
         """
-        if key not in self._keys:
+        if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
             with pd.HDFStore(self.path) as store:
@@ -115,7 +115,7 @@ class HdfStore(StoreInterface):
             If the key is not in the store.
 
         """
-        if key not in self._keys:
+        if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
             return dd.read_hdf(self.path, key)
@@ -142,7 +142,7 @@ class HdfStore(StoreInterface):
             If the key is not in the store.
 
         """
-        if key not in self._keys:
+        if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
             return (
@@ -180,7 +180,7 @@ class HdfStore(StoreInterface):
 
         """
         for key in keys:
-            if key not in self._keys:
+            if key not in self.keys():
                 raise KeyError(
                     f"{self.__class__.__name__} does not contain key '{key}'"
                 )
@@ -220,7 +220,7 @@ class HdfStore(StoreInterface):
             If the metadata is not a Mapping.
 
         """
-        if key not in self._keys:
+        if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         if not isinstance(metadata, Mapping):
             raise TypeError(f"{self.__class__.__name__} must be a Mapping")
@@ -251,7 +251,7 @@ class HdfStore(StoreInterface):
             If the key is not in the store.
 
         """
-        if key not in self._keys:
+        if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
 
         with pd.HDFStore(self.path) as store:
