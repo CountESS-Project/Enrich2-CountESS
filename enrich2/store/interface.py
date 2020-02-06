@@ -25,6 +25,17 @@ import pandas as pd
 
 
 class StoreInterface(metaclass=ABCMeta):
+    """
+    TODO: this docstring
+
+    Note that the internal consistency of the keys tracked by the
+    StoreInterface is currently not maintained between instances referencing
+    the same store on disk.
+    Only one StoreInterface should be instantiated per item on disk.
+    This could be updated later by forcing the keys() method to check what's
+    on disk each time it's called, but this would add some overhead.
+
+    """
     file_extensions = None
 
     def __init__(self, path: Union[PathLike, str]) -> None:
