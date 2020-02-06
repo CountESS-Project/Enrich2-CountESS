@@ -21,7 +21,6 @@ from os import PathLike
 import pathlib
 import numpy as np
 import dask.dataframe as dd
-import pandas as pd
 
 
 class StoreInterface(metaclass=ABCMeta):
@@ -58,7 +57,7 @@ class StoreInterface(metaclass=ABCMeta):
         return self._path
 
     @abstractmethod
-    def put(self, key: str, value: Union[dd.DataFrame, pd.DataFrame]) -> None:
+    def put(self, key: str, value: dd.DataFrame) -> None:
         pass
 
     @abstractmethod

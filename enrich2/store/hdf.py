@@ -54,7 +54,7 @@ class HdfStore(StoreInterface):
             with pd.HDFStore(str(self.path)) as store:
                 self._keys.extend(store.keys())
 
-    def put(self, key: str, value: Union[dd.DataFrame, pd.DataFrame]) -> None:
+    def put(self, key: str, value: dd.DataFrame) -> None:
         """
         Stores a data frame in the HDF file under the given key.
 
@@ -62,8 +62,8 @@ class HdfStore(StoreInterface):
         ----------
         key:  str
             Name of the data frame in the store.
-        value : Union[dd.DataFrame, pd.DataFrame]
-            The data frame to store.
+        value : dd.DataFrame
+            The Dask data frame to store.
 
         """
         if key not in self.keys():
