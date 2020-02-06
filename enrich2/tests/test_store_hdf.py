@@ -23,7 +23,7 @@ test_cases = [
 
 # overwrite the test case's source module so it reports this file in unittest output
 for tc in test_cases:
-    tc.__module__ = "enrich2.tests.test_hdfstore"
+    tc.__module__ = "enrich2.tests.test_store_hdf"
 
 
 def load_tests(loader, tests, pattern) -> unittest.TestSuite:
