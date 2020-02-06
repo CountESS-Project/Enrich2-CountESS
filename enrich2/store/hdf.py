@@ -47,7 +47,7 @@ class HdfStore(StoreInterface):
     file_extensions = (".h5",)
     metadata_key = "countESS"
 
-    def __init__(self, path: Union[PathLike, str]):
+    def __init__(self, path: Union[PathLike, str]) -> None:
         super().__init__(path)
 
         if self.path.is_file():
