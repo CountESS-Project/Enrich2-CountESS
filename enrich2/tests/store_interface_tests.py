@@ -194,7 +194,11 @@ class TestStoreGet(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested)
         self.store.put("/test_table_1", data1)
         self.store.put("/test_table_2", data2)
 
-        self.assertRaises(ValueError, self.store.get_with_merge, keys=["/test_table_1", "/test_table_2"])
+        self.assertRaises(
+            ValueError,
+            self.store.get_with_merge,
+            keys=["/test_table_1", "/test_table_2"],
+        )
 
 
 class TestStoreMetadata(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested):

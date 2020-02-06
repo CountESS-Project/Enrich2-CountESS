@@ -196,7 +196,9 @@ class HdfStore(StoreInterface):
             raise ValueError(f"{self.__class__.__name__} merge result is empty")
         return result
 
-    def set_metadata(self, key: str, metadata: Mapping[str, Any], update: bool = False) -> None:
+    def set_metadata(
+        self, key: str, metadata: Mapping[str, Any], update: bool = False
+    ) -> None:
         """
         Sets the metadata of the data frame located at key with the supplied
         key-value pairs.
@@ -256,7 +258,9 @@ class HdfStore(StoreInterface):
             try:
                 metadata = store.get_storer(key).attrs[self.metadata_key]
             except KeyError as e:
-                if str(e).startswith(f"\"Attribute ('{self.metadata_key}') does not exist in node"):
+                if str(e).startswith(
+                    f"\"Attribute ('{self.metadata_key}') does not exist in node"
+                ):
                     metadata = {}
                 else:
                     raise e
