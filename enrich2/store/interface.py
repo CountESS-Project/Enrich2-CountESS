@@ -35,6 +35,7 @@ class StoreInterface(metaclass=ABCMeta):
     on disk each time it's called, but this would add some overhead.
 
     """
+
     file_extensions = None
 
     def __init__(self, path: Union[PathLike, str]) -> None:
@@ -78,7 +79,7 @@ class StoreInterface(metaclass=ABCMeta):
 
     @abstractmethod
     def set_metadata(
-        self, key: str, metadata: Mapping[str, Any], update: bool = True
+        self, key: str, metadata: Dict[str, Any], update: bool = True
     ) -> None:
         pass
 

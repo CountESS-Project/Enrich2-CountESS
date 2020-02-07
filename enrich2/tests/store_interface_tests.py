@@ -188,12 +188,18 @@ class TestStoreGet(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested)
 
         self.store.put("test_table", dd.from_pandas(data, npartitions=2))
 
-        self.assertRaises(KeyError, self.store.get_column, "test_table", "missing")
+        self.assertRaises(
+            (KeyError, ValueError), self.store.get_column, "test_table", "missing"
+        )
 
     def test_get_with_merge(self):
         index = pd.Index(["AAA", "AAC", "AAG"], name="index")
-        data1 = pd.DataFrame({"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index)
-        data2 = pd.DataFrame({"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index)
+        data1 = pd.DataFrame(
+            {"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index
+        )
+        data2 = pd.DataFrame(
+            {"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index
+        )
 
         self.store.put("test_table_1", dd.from_pandas(data1, npartitions=2))
         self.store.put("test_table_2", dd.from_pandas(data2, npartitions=2))
@@ -205,8 +211,12 @@ class TestStoreGet(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested)
     def test_get_with_merge_partial(self):
         index1 = pd.Index(["AAA", "AAC", "CCC"], name="index")
         index2 = pd.Index(["AAA", "AAC", "AAG"], name="index")
-        data1 = pd.DataFrame({"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index1)
-        data2 = pd.DataFrame({"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index2)
+        data1 = pd.DataFrame(
+            {"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index1
+        )
+        data2 = pd.DataFrame(
+            {"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index2
+        )
 
         self.store.put("test_table_1", dd.from_pandas(data1, npartitions=2))
         self.store.put("test_table_2", dd.from_pandas(data2, npartitions=2))
@@ -218,8 +228,12 @@ class TestStoreGet(StoreInterfaceTest, StoreInterface=StoreInterfaceBeingTested)
     def test_get_with_merge_empty(self):
         index1 = pd.Index(["CCC", "GGG", "TTT"], name="index")
         index2 = pd.Index(["AAA", "AAC", "AAG"], name="index")
-        data1 = pd.DataFrame({"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index1)
-        data2 = pd.DataFrame({"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index2)
+        data1 = pd.DataFrame(
+            {"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index1
+        )
+        data2 = pd.DataFrame(
+            {"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index2
+        )
 
         self.store.put("test_table_1", dd.from_pandas(data1, npartitions=2))
         self.store.put("test_table_2", dd.from_pandas(data2, npartitions=2))

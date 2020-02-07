@@ -201,7 +201,7 @@ class HdfStore(StoreInterface):
         return result
 
     def set_metadata(
-        self, key: str, metadata: Mapping[str, Any], update: bool = False
+        self, key: str, metadata: Dict[str, Any], update: bool = False
     ) -> None:
         """
         Sets the metadata of the data frame located at key with the supplied
@@ -211,7 +211,7 @@ class HdfStore(StoreInterface):
         ----------
         key: str
             The key to access.
-        metadata : Mapping[str, Any]
+        metadata : Dict[str, Any]
             The metadata to store.
         update : bool
             Update the metadata instead of replacing it. Default False.

@@ -23,14 +23,14 @@ from os import PathLike
 from enrich2.store.interface import StoreInterface
 
 
-class ParquetStore(StoreInterface):
+class CsvStore(StoreInterface):
     """
-    Implementation for using Apache Parquet as the storage backend.
+    Implementation for using comma separate value files as the storage backend.
 
     Parameters
     ----------
     path: str
-        Path to a new or existing directory for the parquet files.
+        Path to a new or existing directory for the csv files.
 
     Attributes
     ----------
@@ -40,11 +40,14 @@ class ParquetStore(StoreInterface):
 
     """
 
-    file_extensions = (".parquet",)
+    file_extensions = (".csv",)
     _metadata_file_name = "countess_metadata.json"
 
     def __init__(self, path: Union[PathLike, str]) -> None:
         super().__init__(path)
+
+        # TODO: parameterize this to support compression
+        self._csv_suffix = ".csv"
 
         self._key_file = self.path.joinpath("dataset_keys.json")
         if self.path.is_dir():
@@ -88,7 +91,7 @@ class ParquetStore(StoreInterface):
         if key not in self.keys():
             self._keys.append(key)
         self._write_key_file()
-        value.to_parquet(self.path.joinpath(key))
+        value.to_csv(self.path.joinpath(key, f"data-*{self._csv_suffix}"))
 
     def drop(self, key: str) -> None:
         """
@@ -112,10 +115,7 @@ class ParquetStore(StoreInterface):
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
             for child in self.path.joinpath(key).iterdir():
-                if child.suffix == ".parquet" or child.name in (
-                    "_metadata",
-                    "_common_metadata",
-                ):
+                if child.suffix == ".csv":
                     child.unlink()
                 elif child.name == self._metadata_file_name:
                     child.unlink()
@@ -151,7 +151,9 @@ class ParquetStore(StoreInterface):
         if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
-            return dd.read_parquet(self.path.joinpath(key))
+            return dd.read_csv(
+                self.path.joinpath(key, f"data-*{self._csv_suffix}")
+            ).set_index("index")
 
     def get_column(self, key: str, column: str) -> np.ndarray:
         """
@@ -179,7 +181,10 @@ class ParquetStore(StoreInterface):
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
             return (
-                dd.read_parquet(self.path.joinpath(key), columns=[column])
+                dd.read_csv(
+                    self.path.joinpath(key, f"data-*{self._csv_suffix}"),
+                    usecols=[column],
+                )
                 .compute()
                 .values.flatten()
             )
@@ -269,7 +274,7 @@ class ParquetStore(StoreInterface):
     def get_metadata(self, key: str) -> Dict[str, Any]:
         """
         Returns the metadata of the data frame located at key.
-        
+
         Parameters
         ----------
         key: str
