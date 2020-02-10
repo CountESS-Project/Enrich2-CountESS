@@ -1,10 +1,11 @@
 import unittest
 
 from enrich2.store.parquet import ParquetStore
-import enrich2.tests.config as config
+import tests.test_store.config as config
 
 config.StoreInterfaceBeingTested = ParquetStore
-from enrich2.tests.store_interface_tests import *
+
+from tests.test_store.store_interface_tests import *
 
 test_cases = [globals()[x] for x in globals().keys() if x.startswith("TestStore")]
 

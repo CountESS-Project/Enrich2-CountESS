@@ -1,10 +1,11 @@
 import unittest
 
-from enrich2.store.csv import CsvStore
-import enrich2.tests.config as config
+from enrich2.store.hdf import HdfStore
+import tests.test_store.config as config
 
-config.StoreInterfaceBeingTested = CsvStore
-from enrich2.tests.store_interface_tests import *
+config.StoreInterfaceBeingTested = HdfStore
+
+from tests.test_store.store_interface_tests import *
 
 test_cases = [globals()[x] for x in globals().keys() if x.startswith("TestStore")]
 

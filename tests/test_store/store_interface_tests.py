@@ -23,7 +23,7 @@ import numpy as np
 import unittest
 import tempfile
 
-from enrich2.tests.config import StoreInterfaceBeingTested
+from tests.test_store.config import StoreInterfaceBeingTested
 
 
 __all__ = [
