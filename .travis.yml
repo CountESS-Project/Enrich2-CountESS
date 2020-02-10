@@ -11,7 +11,7 @@ before_script:
   - pip3 install coveralls
   - if ! $NO_MYPY; then pip3 install mypy; fi
 script:
-  - coverage run --source enrich2 -m unittest
+  - coverage run --source enrich2 -m unittest discover -s tests
   - if ! $NO_MYPY; then mypy enrich2 tests; fi
 after_success:
   - coveralls
