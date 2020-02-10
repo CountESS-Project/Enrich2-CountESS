@@ -32,7 +32,7 @@ requirements = [
     "sphinx >= 1.5.6",
     "tables >= 3.2.0",
     "dask[dataframe]",
-    "pyarrow",
+    "fastparquet",
 ]
 
 # Copy script files
