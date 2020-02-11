@@ -16,7 +16,7 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 from abc import ABCMeta, abstractmethod
-from typing import List, Sequence, Mapping, Dict, Any, Union
+from typing import List, Sequence, Dict, Any, Union
 from os import PathLike
 import pathlib
 import numpy as np
