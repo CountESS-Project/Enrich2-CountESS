@@ -154,6 +154,16 @@ def create_test_classes(store_interface):
             self.store.drop("test_table")
             self.assertTrue(self.store.is_empty())
 
+        def test_drop_with_metadata(self) -> None:
+            index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+            data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
+            metadata = {"hello": "world"}
+
+            self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+            self.store.set_metadata("test_table", metadata)
+            self.store.drop("test_table")
+            self.assertTrue(self.store.is_empty())
+
         def test_drop_missing(self) -> None:
             self.assertRaises(KeyError, self.store.drop, "test_table")
 
@@ -167,7 +177,7 @@ def create_test_classes(store_interface):
             result = self.store.get("test_table")
             pd.testing.assert_frame_equal(result.compute(), data)
 
-        def test_get_missing(self) -> None:
+        def test_get_missing_key(self) -> None:
             self.assertRaises(KeyError, self.store.get, "test_table")
 
         def test_get_column(self) -> None:
@@ -181,7 +191,10 @@ def create_test_classes(store_interface):
             result = self.store.get_column("test_table", "score")
             np.testing.assert_array_equal(result, data["score"].values)
 
-        def test_get_missing_column(self) -> None:
+        def test_get_column_missing_key(self) -> None:
+            self.assertRaises(KeyError, self.store.get_column, "test_table", "column")
+
+        def test_get_column_missing_column(self) -> None:
             index = pd.Index(["AAA", "AAC", "AAG"], name="index")
             data = pd.DataFrame(
                 {"count": [1, 2, 3], "score": [0.1, 0.2, 0.3]}, index=index
@@ -247,6 +260,37 @@ def create_test_classes(store_interface):
                 ValueError,
                 self.store.get_with_merge,
                 keys=["test_table_1", "test_table_2"],
+            )
+
+        def test_get_with_merge_missing_key(self) -> None:
+            index1 = pd.Index(["CCC", "GGG", "TTT"], name="index")
+            index2 = pd.Index(["AAA", "AAC", "AAG"], name="index")
+            data1 = pd.DataFrame(
+                {"count": [1, 2, 3], "score1": [0.1, 0.2, 0.3]}, index=index1
+            )
+            data2 = pd.DataFrame(
+                {"count": [1, 2, 3], "score2": [0.4, 0.5, 0.6]}, index=index2
+            )
+
+            self.store.put("test_table_1", dd.from_pandas(data1, npartitions=2))
+            self.store.put("test_table_2", dd.from_pandas(data2, npartitions=2))
+
+            self.assertRaises(
+                KeyError,
+                self.store.get_with_merge,
+                keys=["missing_table_1", "test_table_2"],
+            )
+
+            self.assertRaises(
+                KeyError,
+                self.store.get_with_merge,
+                keys=["test_table_1", "missing_table_2"],
+            )
+
+            self.assertRaises(
+                KeyError,
+                self.store.get_with_merge,
+                keys=["missing_table_1", "missing_table_2"],
             )
 
     class TestStoreMetadata(StoreInterfaceTest):
@@ -335,6 +379,26 @@ def create_test_classes(store_interface):
 
             self.assertRaises(KeyError, self.store.get_metadata, "missing_table")
 
+    class TestStoreLooseFiles(StoreInterfaceTest):
+        def test_missing_key_file(self) -> None:
+            if hasattr(self.store, "_key_file"):
+                # delete the key file and try to re-open the store
+                self.store._key_file.unlink()
+                self.assertRaises(ValueError, self.StoreInterface, self.path)
+
+        def test_extra_files(self) -> None:
+            if hasattr(self.store, "_metadata_file_name"):
+                index = pd.Index(["AAA", "AAC", "AAG"], name="index")
+                data = pd.DataFrame({"count": [1, 2, 3]}, index=index)
+
+                self.store.put("test_table", dd.from_pandas(data, npartitions=2))
+
+                # create an unexpected file and make sure it's detected
+                with self.path.joinpath("test_table", "extra.txt").open("w") as handle:
+                    print("extra file", file=handle)
+
+                self.assertRaises(ValueError, self.store.drop, "test_table")
+
     return (
         TestStorePath,
         TestStoreReopen,
@@ -342,4 +406,5 @@ def create_test_classes(store_interface):
         TestStoreDrop,
         TestStoreGet,
         TestStoreMetadata,
+        TestStoreLooseFiles,
     )
