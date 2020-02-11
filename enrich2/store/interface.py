@@ -59,30 +59,30 @@ class StoreInterface(metaclass=ABCMeta):
 
     @abstractmethod
     def put(self, key: str, value: dd.DataFrame) -> None:
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def drop(self, key: str) -> None:
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def get(self, key: str) -> dd.DataFrame:
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def get_column(self, key: str, column: str) -> np.ndarray:
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def get_with_merge(self, keys: Sequence[str]) -> dd.DataFrame:
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def set_metadata(
         self, key: str, metadata: Dict[str, Any], update: bool = True
     ) -> None:
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def get_metadata(self, key: str) -> Dict[str, Any]:
-        pass
+        pass  # pragma: no cover

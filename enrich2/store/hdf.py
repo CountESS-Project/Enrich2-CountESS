@@ -267,5 +267,6 @@ class HdfStore(StoreInterface):
                 ):
                     metadata = {}
                 else:
-                    raise e
+                    # not sure what other KeyErrors could be raised
+                    raise e  # pragma: no cover
         return metadata
