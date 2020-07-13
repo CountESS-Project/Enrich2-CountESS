@@ -364,5 +364,5 @@ class RegressionScorer(BaseScorerPlugin):
         ]
         data = data[reorder_selector]
         self.store_put(
-            key="/main/{}/scores".format(label), value=data, data_columns=data.columns,
+            key="/main/{}/scores".format(label), value=data, data_columns=data.columns
         )

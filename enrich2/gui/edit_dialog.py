@@ -69,26 +69,26 @@ _FASTQ_SUFFIXES = [x + y for x in (".fq", ".fastq") for y in ("", ".bz2", ".gz")
 #: The column tuples contain keys to the dialog element's ``frame_dict`` member
 element_layouts = {
     "BcvSeqLib": [
-        ("main", "counts",),
-        ("fastq", "trimming", "filters",),
-        ("barcodes", "variants",),
+        ("main", "counts"),
+        ("fastq", "trimming", "filters"),
+        ("barcodes", "variants"),
     ],
     "BcidSeqLib": [
-        ("main", "counts",),
-        ("fastq", "trimming", "filters",),
-        ("barcodes", "identifiers",),
+        ("main", "counts"),
+        ("fastq", "trimming", "filters"),
+        ("barcodes", "identifiers"),
     ],
     "BasicSeqLib": [
-        ("main", "counts",),
-        ("fastq", "trimming", "filters",),
+        ("main", "counts"),
+        ("fastq", "trimming", "filters"),
         ("variants",),
     ],
     "BarcodeSeqLib": [
-        ("main", "counts",),
-        ("fastq", "trimming", "filters",),
+        ("main", "counts"),
+        ("fastq", "trimming", "filters"),
         ("barcodes",),
     ],
-    "IdOnlySeqLib": [("main", "counts",), ("identifiers",)],
+    "IdOnlySeqLib": [("main", "counts"), ("identifiers",)],
     "Selection": [("main",)],
     "Condition": [("main",)],
     "Experiment": [("main",)],

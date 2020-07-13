@@ -92,10 +92,7 @@ class StoreConfigTest(TestCase):
             StoreConfiguration(cfg).validate()
 
     def test_defaults_correct(self):
-        cfg = {
-            SCORER: self.scorer_cfg,
-            NAME: "test",
-        }
+        cfg = {SCORER: self.scorer_cfg, NAME: "test"}
         store_cfg = StoreConfiguration(cfg).validate()
         self.assertEqual(store_cfg.has_output_dir, False)
         self.assertEqual(store_cfg.has_store_path, False)

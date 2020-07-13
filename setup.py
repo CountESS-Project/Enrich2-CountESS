@@ -47,7 +47,7 @@ setup(
     name="Enrich2",
     version="2.0.0",
     packages=find_packages(),
-    package_data={"enrich2.tests": ["data/*/*/*"],},
+    package_data={"enrich2.tests": ["data/*/*/*"]},
     entry_points={
         "console_scripts": ["enrich_cmd = enrich2.main:main_cmd"],
         "gui_scripts": ["enrich_gui = enrich2.main:main_gui"],

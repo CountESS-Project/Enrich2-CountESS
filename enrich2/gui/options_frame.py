@@ -872,9 +872,7 @@ class ScorerScriptsDropDown(LabelFrame):
                 plugin.options, plugin.options_file
             )
             options_file_frame.update_option_frame(scorer_cfg)
-            self.add_plugin(
-                plugin, options_frame, options_file_frame,
-            )
+            self.add_plugin(plugin, options_frame, options_file_frame)
 
             _, _, _, tkname = self.plugins[hash(plugin)]
             self.drop_menu.set_menu(tkname, *self.get_views())

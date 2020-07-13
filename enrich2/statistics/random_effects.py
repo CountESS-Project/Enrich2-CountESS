@@ -28,10 +28,7 @@ score statistics. See notes for references.
 import numpy as np
 
 
-__all__ = [
-    "rml_estimator",
-    "nan_filter_generator",
-]
+__all__ = ["rml_estimator", "nan_filter_generator"]
 
 
 def rml_estimator(y, sigma2i, iterations=50):

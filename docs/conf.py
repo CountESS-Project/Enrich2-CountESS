@@ -197,7 +197,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ("index", "Enrich2.tex", u"Enrich2 Documentation", u"Alan F Rubin", "manual"),
+    ("index", "Enrich2.tex", u"Enrich2 Documentation", u"Alan F Rubin", "manual")
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -245,7 +245,7 @@ texinfo_documents = [
         "Enrich2",
         "One line description of project.",
         "Miscellaneous",
-    ),
+    )
 ]
 
 # Documents to append as an appendix to all manuals.
