@@ -91,7 +91,7 @@ class CsvStore(StoreInterface):
         if key not in self.keys():
             self._keys.append(key)
         self._write_key_file()
-        value.to_csv(self.path.joinpath(key, f"data-*{self._csv_suffix}"))
+        value.to_csv(str(self.path.joinpath(key, f"data-*{self._csv_suffix}")))
 
     def drop(self, key: str) -> None:
         """
