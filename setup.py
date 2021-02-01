@@ -1,25 +1,10 @@
-#  Copyright 2016-2017 Alan F Rubin, Daniel Esposito
-#
-#  This file is part of Enrich2.
-#
-#  Enrich2 is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#
-#  Enrich2 is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
-
 import os
-import sys
 import shutil
 import glob
-from setuptools import setup, find_packages
+import setuptools
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 requirements = [
     "numpy >= 1.10.4",
@@ -36,27 +21,36 @@ requirements = [
 ]
 
 # Copy script files
-plugins_folder = os.path.join(os.path.expanduser("~"), ".enrich2/")
+plugins_folder = os.path.join(os.path.expanduser("~"), ".countess/")
 os.makedirs(plugins_folder, exist_ok=True)
 for file in glob.glob("plugins/*.py"):
     shutil.copy(file, plugins_folder)
 for file in glob.glob("plugins/*.txt"):
     shutil.copy(file, plugins_folder)
 
-setup(
-    name="Enrich2",
-    version="2.0.0",
-    packages=find_packages(),
-    package_data={"enrich2.tests": ["data/*/*/*"]},
-    entry_points={
-        "console_scripts": ["enrich_cmd = enrich2.main:main_cmd"],
-        "gui_scripts": ["enrich_gui = enrich2.main:main_gui"],
-    },
-    test_suite="enrich2.tests.test_enrich2",
+setuptools.setup(
+    name="CountESS",
+    version="0.0.1",
     author="Alan F Rubin",
     author_email="alan.rubin@wehi.edu.au",
     description="Analysis program for calculating variant scores from "
     "deep mutational scanning data.",
-    url="https://github.com/FowlerLab/Enrich2/",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/countess-project/countess",
+    packages=setuptools.find_packages(),
+    entry_points={
+        "console_scripts": ["enrich_cmd = countess.main:main_cmd"],
+        "gui_scripts": ["enrich_gui = countess.main:main_gui"],
+    },
+    classifiers=[
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+    ],
     install_requires=requirements,
+    test_suite="tests",
 )
