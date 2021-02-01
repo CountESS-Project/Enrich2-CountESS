@@ -15,7 +15,7 @@ options.add_option(
     varname="logr_method",
     dtype=str,
     default="Wild Type",
-    choices={"Wild Type": "wt", "Complete Cases": "complete", "All Reads": "full"},
+    choices={"Wild Type": "wt", "Full": "full", "Complete": "complete"},
     hidden=False,
 )
 

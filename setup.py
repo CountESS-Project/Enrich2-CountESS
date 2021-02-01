@@ -1,8 +1,10 @@
 import os
-import sys
 import shutil
 import glob
-from setuptools import setup, find_packages
+import setuptools
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 requirements = [
     "numpy >= 1.10.4",
@@ -14,30 +16,41 @@ requirements = [
     "sphinx_rtd_theme",
     "sphinx >= 1.5.6",
     "tables >= 3.2.0",
+    "dask[dataframe]",
+    "fastparquet",
 ]
 
 # Copy script files
-plugins_folder = os.path.join(os.path.expanduser("~"), ".enrich2/")
+plugins_folder = os.path.join(os.path.expanduser("~"), ".countess/")
 os.makedirs(plugins_folder, exist_ok=True)
 for file in glob.glob("plugins/*.py"):
     shutil.copy(file, plugins_folder)
 for file in glob.glob("plugins/*.txt"):
     shutil.copy(file, plugins_folder)
 
-setup(
-    name="Enrich2",
-    version="2.0.0",
-    packages=find_packages(),
-    package_data={"enrich2.tests": ["data/*/*/*"],},
-    entry_points={
-        "console_scripts": ["enrich_cmd = enrich2.main:main_cmd"],
-        "gui_scripts": ["enrich_gui = enrich2.main:main_gui"],
-    },
-    test_suite="enrich2.tests.test_enrich2",
+setuptools.setup(
+    name="CountESS",
+    version="0.0.1",
     author="Alan F Rubin",
     author_email="alan.rubin@wehi.edu.au",
     description="Analysis program for calculating variant scores from "
     "deep mutational scanning data.",
-    url="https://github.com/FowlerLab/Enrich2/",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/countess-project/countess",
+    packages=setuptools.find_packages(),
+    entry_points={
+        "console_scripts": ["enrich_cmd = countess.main:main_cmd"],
+        "gui_scripts": ["enrich_gui = countess.main:main_gui"],
+    },
+    classifiers=[
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+    ],
     install_requires=requirements,
+    test_suite="tests",
 )
