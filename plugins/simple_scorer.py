@@ -19,8 +19,8 @@ import logging
 import numpy as np
 import pandas as pd
 
-from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.base.utils import log_message
+from countess.plugins.scoring import BaseScorerPlugin
+from countess.base.utils import log_message
 
 
 class SimpleScorer(BaseScorerPlugin):

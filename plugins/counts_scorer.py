@@ -16,7 +16,7 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from enrich2.plugins.scoring import BaseScorerPlugin
+from countess.plugins.scoring import BaseScorerPlugin
 
 
 class CountsScorer(BaseScorerPlugin):

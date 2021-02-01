@@ -1,6 +1,6 @@
 import unittest
 
-from enrich2.store.hdf import HdfStore
+from countess.store.hdf import HdfStore
 from tests.test_store.store_interface_tests import create_test_classes
 
 

@@ -15,22 +15,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
+import pandas as pd
 import dask.dataframe as dd
 import numpy as np
-import json
 from typing import Union, Sequence, Mapping, Any, Dict
 from os import PathLike
-from enrich2.store.interface import StoreInterface
+from countess.store.interface import StoreInterface
 
 
-class ParquetStore(StoreInterface):
-    """
-    Implementation for using Apache Parquet as the storage backend.
+class HdfStore(StoreInterface):
+    """Implementation for using a single HDF5 file as the storage backend.
+
+    To ensure compatibility with Dask, the file is written using table format.
+    Attempting to use an existing HDF5 file in fixed format may result in a
+    TypeError.
+
+    Leading "/" characters are removed from the HDF5 keys when an existing
+    store is loaded.
 
     Parameters
     ----------
     path: str
-        Path to a new or existing directory for the parquet files.
+        Path to a new or existing HDF5 file.
 
     Attributes
     ----------
@@ -40,38 +46,17 @@ class ParquetStore(StoreInterface):
 
     """
 
-    file_extensions = (".parquet",)
-    _metadata_file_name = "countess_metadata.json"
+    file_extensions = (".h5",)
+    metadata_key = "countESS"
 
     def __init__(self, path: Union[PathLike, str]) -> None:
         super().__init__(path)
 
-        self._key_file = self.path.joinpath("dataset_keys.json")
-        if self.path.is_dir():
-            if self._key_file.exists():
-                with self._key_file.open() as handle:
-                    # TODO: validation for the json key file
-                    self._keys.extend(json.load(handle))
-            else:
-                raise ValueError(f"unable to read keys for {self.__class__.__name__}")
-        else:
-            # will raise a FileExistsError if the path exists
-            self.path.mkdir(parents=True)
-            self._write_key_file()
-
-    def _write_key_file(self) -> None:
-        """Writes the contents of self.keys() to the key file.
-
-        This is required after put() and drop() operations to keep the keys in
-        the file in sync with what's in the data structure.
-
-        Returns
-        -------
-        None
-
-        """
-        with self._key_file.open(mode="w") as handle:
-            json.dump(self.keys(), handle, indent=2)
+        if self.path.is_file():
+            with pd.HDFStore(str(self.path)) as store:
+                # drop the leading "/" from the file keys
+                file_keys = [k[1:] if k.startswith("/") else k for k in store.keys()]
+                self._keys.extend(file_keys)
 
     def put(self, key: str, value: dd.DataFrame) -> None:
         """
@@ -82,13 +67,12 @@ class ParquetStore(StoreInterface):
         key:  str
             Name of the data frame in the store.
         value : dd.DataFrame
-            The data frame to store.
+            The Dask data frame to store.
 
         """
         if key not in self.keys():
             self._keys.append(key)
-        self._write_key_file()
-        value.to_parquet(self.path.joinpath(key))
+        value.to_hdf(self.path, key, format="table")
 
     def drop(self, key: str) -> None:
         """
@@ -111,22 +95,9 @@ class ParquetStore(StoreInterface):
         if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
-            for child in self.path.joinpath(key).iterdir():
-                if child.suffix == ".parquet" or child.name in (
-                    "_metadata",
-                    "_common_metadata",
-                ):
-                    child.unlink()
-                elif child.name == self._metadata_file_name:
-                    child.unlink()
-            try:
-                self.path.joinpath(key).rmdir()
-            except OSError:
-                raise ValueError(
-                    f"unexpected files remaining in {self.__class__.__name__} directory"
-                )
+            with pd.HDFStore(self.path) as store:
+                del store[key]
             self._keys.remove(key)
-            self._write_key_file()
 
     def get(self, key: str) -> dd.DataFrame:
         """
@@ -151,7 +122,7 @@ class ParquetStore(StoreInterface):
         if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
-            return dd.read_parquet(self.path.joinpath(key))
+            return dd.read_hdf(self.path, key)
 
     def get_column(self, key: str, column: str) -> np.ndarray:
         """
@@ -179,9 +150,7 @@ class ParquetStore(StoreInterface):
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
         else:
             return (
-                dd.read_parquet(self.path.joinpath(key), columns=[column])
-                .compute()
-                .values.flatten()
+                dd.read_hdf(self.path, key, columns=[column]).compute().values.flatten()
             )
 
     def get_with_merge(self, keys: Sequence[str]) -> dd.DataFrame:
@@ -263,8 +232,8 @@ class ParquetStore(StoreInterface):
         if update:
             existing = self.get_metadata(key)
             metadata.update(existing)
-        with self.path.joinpath(key, self._metadata_file_name).open(mode="w") as handle:
-            json.dump(metadata, handle, indent=2)
+        with pd.HDFStore(self.path) as store:
+            store.get_storer(key).attrs[self.metadata_key] = metadata
 
     def get_metadata(self, key: str) -> Dict[str, Any]:
         """
@@ -289,10 +258,15 @@ class ParquetStore(StoreInterface):
         if key not in self.keys():
             raise KeyError(f"{self.__class__.__name__} does not contain key '{key}'")
 
-        metadata_path = self.path.joinpath(key, self._metadata_file_name)
-        if metadata_path.exists():
-            with metadata_path.open() as handle:
-                metadata = json.load(handle)
-        else:
-            metadata = {}
+        with pd.HDFStore(self.path) as store:
+            try:
+                metadata = store.get_storer(key).attrs[self.metadata_key]
+            except KeyError as e:
+                if str(e).startswith(
+                    f"\"Attribute ('{self.metadata_key}') does not exist in node"
+                ):
+                    metadata = {}
+                else:
+                    # not sure what other KeyErrors could be raised
+                    raise e  # pragma: no cover
         return metadata

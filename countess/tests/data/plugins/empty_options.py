@@ -16,8 +16,8 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import Options
+from countess.plugins.scoring import BaseScorerPlugin
+from countess.plugins.options import Options
 
 options_1 = Options()
 

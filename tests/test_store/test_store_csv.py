@@ -1,6 +1,6 @@
 import unittest
 
-from enrich2.store.csv import CsvStore
+from countess.store.csv import CsvStore
 from tests.test_store.store_interface_tests import create_test_classes
 
 

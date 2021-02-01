@@ -16,12 +16,7 @@
 #  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import Options
-
-
-options_1 = Options()
-options_2 = Options()
+from countess.plugins.scoring import BaseScorerPlugin
 
 
 class CountsScorer(BaseScorerPlugin):
@@ -30,11 +25,5 @@ class CountsScorer(BaseScorerPlugin):
     version = "1.0"
     author = "Alan Rubin, Daniel Esposito"
 
-    def __init__(self, store_manager, options):
-        super().__init__(store_manager, options)
-
     def compute_scores(self):
-        return
-
-    def row_apply_function(self, *args, **kwargs):
         return

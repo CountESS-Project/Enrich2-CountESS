@@ -21,12 +21,12 @@ import pandas as pd
 import statsmodels.api as sm
 import scipy.stats as stats
 
-from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import Options
-from enrich2.base.constants import WILD_TYPE_VARIANT
-from enrich2.base.constants import VARIANTS, IDENTIFIERS
+from countess.plugins.scoring import BaseScorerPlugin
+from countess.plugins.options import Options
+from countess.base.constants import WILD_TYPE_VARIANT
+from countess.base.constants import VARIANTS, IDENTIFIERS
 
-from enrich2.base.utils import log_message
+from countess.base.utils import log_message
 
 options = Options()
 options.add_option(

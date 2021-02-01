@@ -19,11 +19,11 @@ import logging
 import numpy as np
 import pandas as pd
 
-from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import Options
-from enrich2.base.constants import WILD_TYPE_VARIANT
-from enrich2.base.utils import log_message
-from enrich2.base.constants import IDENTIFIERS, VARIANTS
+from countess.plugins.scoring import BaseScorerPlugin
+from countess.plugins.options import Options
+from countess.base.constants import WILD_TYPE_VARIANT
+from countess.base.utils import log_message
+from countess.base.constants import IDENTIFIERS, VARIANTS
 
 
 options = Options()

@@ -20,7 +20,7 @@ import numpy as np
 import json
 from typing import Union, Sequence, Mapping, Any, Dict
 from os import PathLike
-from enrich2.store.interface import StoreInterface
+from countess.store.interface import StoreInterface
 
 
 class CsvStore(StoreInterface):

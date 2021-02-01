@@ -34,7 +34,7 @@ from .utils import nested_format
 from ..base.utils import fix_filename
 from .config_constants import SCORER, SCORER_PATH
 from ..base.constants import ELEMENT_LABELS
-from enrich2.store.hdf import HdfStore
+from countess.store.hdf import HdfStore
 
 import logging
 from ..base.utils import log_message

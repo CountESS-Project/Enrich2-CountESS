@@ -583,7 +583,7 @@ def make_dna_scoring_matrix(similarity, ordering="ACGTNX"):
 
 
 def test(seq1, seq2):
-    from enrich2.sequence.aligner import Aligner
+    from countess.sequence.aligner import Aligner
 
     amb = Aligner(backend="ambivert")
     aen = Aligner(backend="enrich2")
@@ -592,7 +592,7 @@ def test(seq1, seq2):
 
 
 def build_aligners():
-    from enrich2.sequence.aligner import Aligner
+    from countess.sequence.aligner import Aligner
 
     amb = Aligner(backend="ambivert")
     aen = Aligner(backend="enrich2")
