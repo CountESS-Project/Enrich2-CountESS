@@ -1,6 +1,6 @@
 import unittest
 
-from enrich2.store.parquet import ParquetStore
+from countess.store.parquet import ParquetStore
 from tests.test_store.store_interface_tests import create_test_classes
 
 

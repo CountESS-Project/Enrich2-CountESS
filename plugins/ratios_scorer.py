@@ -1,29 +1,12 @@
-#  Copyright 2016-2017 Alan F Rubin
-#
-#  This file is part of Enrich2.
-#
-#  Enrich2 is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or
-#  (at your option) any later version.
-#
-#  Enrich2 is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with Enrich2.  If not, see <http://www.gnu.org/licenses/>.
-
 import logging
 import numpy as np
 import pandas as pd
 
-from enrich2.plugins.scoring import BaseScorerPlugin
-from enrich2.plugins.options import Options
-from enrich2.base.constants import WILD_TYPE_VARIANT
-from enrich2.base.utils import log_message
-from enrich2.base.constants import IDENTIFIERS, VARIANTS
+from countess.plugins.scoring import BaseScorerPlugin
+from countess.plugins.options import Options
+from countess.base.constants import WILD_TYPE_VARIANT
+from countess.base.utils import log_message
+from countess.base.constants import IDENTIFIERS, VARIANTS
 
 
 options = Options()

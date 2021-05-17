@@ -1,16 +1,12 @@
 
-Enrich2: deep mutational scanning data analysis
-===============================================
+CountESS: Count-based Experiment Scoring and Statistics
+=======================================================
 
-Enrich2 is a general software tool for processing, analyzing, and visualizing data from deep mutational scanning experiments.
+CountESS is a general software tool for processing, analyzing, and visualizing data from multiplexed assays of variant effect.
 
-The software is freely available from https://github.com/FowlerLab/Enrich2/ under the `GPLv3 license <https://www.gnu.org/licenses/gpl-3.0.txt>`_.
+The software is freely available from https://github.com/CountESS-Project/CountESS/ under the BSD 3-clause license.
 
-For an example dataset, visit https://github.com/FowlerLab/Enrich2-Example/.
-
-To cite Enrich2, please reference `Enrich2: a statistical framework for analyzing deep mutational scanning data <http://biorxiv.org>`_.
-
-Enrich2 was written by `Alan F Rubin <mailto:alan.rubin@wehi.edu.au>`_ |ORCID_icon| http://orcid.org/0000-0003-1474-605X
+CountESS is maintained by `Alan F Rubin <mailto:alan.rubin@wehi.edu.au>`_ |ORCID_icon| http://orcid.org/0000-0003-1474-605X
 
 .. |ORCID_icon| image:: _static/iD_icon.png
     :target: http://orcid.org
